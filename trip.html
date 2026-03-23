@@ -1,979 +1,447 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travelman 行程頁</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>旅遊管家 - 行程詳情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    :root {
-      --primary: #06c755;
-      --primary-dark: #05a847;
-      --primary-soft: #e9fff2;
-      --bg: #f5f6f8;
-      --panel: #ffffff;
-      --border: #d9dee5;
-      --text: #222;
-      --muted: #6b7280;
-      --dark: #1f2937;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --radius: 14px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, "Noto Sans TC", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    button, input {
-      font: inherit;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .page {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 16px 14px 120px;
-    }
-
-    .topbar {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      box-shadow: var(--shadow);
-    }
-
-    .brand-badge {
-      display: inline-block;
-      background: var(--primary);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .top-title {
-      font-size: 26px;
-      font-weight: 800;
-      line-height: 1.25;
-      margin: 0;
-      word-break: break-word;
-    }
-
-    .top-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .btn:hover {
-      filter: brightness(0.98);
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-dark {
-      background: var(--dark);
-      border-color: var(--dark);
-      color: #fff;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-head {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-      font-weight: 800;
-    }
-
-    .card-body {
-      padding: 14px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .hero-image {
-      width: 100%;
-      height: 320px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #e5e7eb;
-      display: block;
-    }
-
-    .hero-info {
-      display: grid;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .trip-title {
-      font-size: 32px;
-      font-weight: 800;
-      line-height: 1.35;
-      margin: 0;
-      word-break: break-word;
-    }
-
-    .trip-subtitle {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.8;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .trip-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #eef2ff;
-      color: #334155;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .trip-price {
-      font-size: 34px;
-      font-weight: 800;
-      color: var(--primary);
-      line-height: 1.1;
-    }
-
-    .trip-note {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .simple-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .simple-box {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .simple-label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .simple-value {
-      font-size: 24px;
-      font-weight: 800;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-
-    .rich-text {
-      font-size: 15px;
-      line-height: 1.95;
-      color: #334155;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag-chip {
-      background: #f3f4f6;
-      color: #111827;
-      border: 1px solid #e5e7eb;
-      padding: 7px 11px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .timeline {
-      display: grid;
-      gap: 10px;
-    }
-
-    .timeline-item {
-      display: grid;
-      grid-template-columns: 90px 1fr;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      align-items: start;
-    }
-
-    .timeline-day {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      border-radius: 10px;
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      border: 1px solid #c7f0d9;
-      font-size: 13px;
-      font-weight: 800;
-      padding: 8px 10px;
-    }
-
-    .timeline-content {
-      font-size: 14px;
-      line-height: 1.85;
-      color: #334155;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .ref-box {
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.8;
-      word-break: break-word;
-    }
-
-    .status-box {
-      background: #111827;
-      color: #d1fae5;
-      border-radius: 10px;
-      padding: 12px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 12px;
-      line-height: 1.7;
-      font-family: Consolas, Monaco, monospace;
-      min-height: 90px;
-      max-height: 180px;
-      overflow: auto;
-    }
-
-    .sticky-cta {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 30;
-      background: rgba(255,255,255,.96);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-      padding: 12px 14px;
-    }
-
-    .sticky-inner {
-      max-width: 1080px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .sticky-left {
-      min-width: 0;
-    }
-
-    .sticky-title {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .sticky-price {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--primary);
-      line-height: 1.1;
-      word-break: break-word;
-    }
-
-    .sticky-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .empty {
-      text-align: center;
-      color: var(--muted);
-      padding: 16px;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      background: #fafbfc;
-    }
-
-    @media (max-width: 980px) {
-      .hero,
-      .simple-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .top-actions,
-      .hero-actions,
-      .sticky-actions {
-        width: 100%;
-      }
-
-      .top-actions .btn,
-      .hero-actions .btn,
-      .sticky-actions .btn {
-        flex: 1 1 100%;
-      }
-
-      .trip-title {
-        font-size: 28px;
-      }
-
-      .trip-price,
-      .sticky-price {
-        font-size: 30px;
-      }
-
-      .timeline-item {
-        grid-template-columns: 1fr;
-      }
-    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    @keyframes run { 0% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-8px) rotate(5deg); } 50% { transform: translateY(0) rotate(0deg); } 75% { transform: translateY(-8px) rotate(-5deg); } 100% { transform: translateY(0) rotate(0deg); } }
+    .animate-run { animation: run 0.5s infinite ease-in-out; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .line-chat-bg { background-color: #749cbd; }
+    body { overflow-x: hidden; }
   </style>
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div>
-        <div id="brandBadge" class="brand-badge">TravelKeeper</div>
-        <h1 id="topTitle" class="top-title">行程載入中...</h1>
-        <div class="top-sub">簡單看行程、直接報名、綁定 LINE 會員</div>
-      </div>
-      <div class="top-actions">
-        <a id="btnHome" class="btn" href="./index.html">回首頁</a>
-        <button id="btnCopyPage" class="btn" type="button">複製此頁連結</button>
-      </div>
-    </div>
+<body class="bg-gray-50 font-sans text-gray-800">
+  <div id="root"></div>
 
-    <div class="card">
-      <div class="card-head">行程主資訊</div>
-      <div class="card-body">
-        <div class="hero">
-          <img id="coverImage" class="hero-image" src="https://picsum.photos/1200/800" alt="trip cover" />
+  <script type="text/babel" data-presets="react,env">
+    const { useState, useEffect, useRef } = React;
 
-          <div class="hero-info">
-            <h2 id="tripTitle" class="trip-title">行程載入中...</h2>
-            <div id="tripSubtitle" class="trip-subtitle">請稍候，系統正在讀取真實行程資料。</div>
-            <div id="tripMeta" class="trip-meta"></div>
-            <div id="tripPrice" class="trip-price">--</div>
-            <div class="trip-note">價格與資料以系統設定為準，送單後會寫入正式訂單。</div>
+    const IconWrapper = ({ children, className = "w-6 h-6" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>;
+    const Navigation = ({ className }) => <IconWrapper className={className}><polygon points="3 11 22 2 13 21 11 13 3 11"/></IconWrapper>;
+    const Calendar = ({ className }) => <IconWrapper className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconWrapper>;
+    const ArrowLeft = ({ className }) => <IconWrapper className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></IconWrapper>;
+    const ArrowUp = ({ className }) => <IconWrapper className={className}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></IconWrapper>;
+    const Users = ({ className }) => <IconWrapper className={className}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
+    const Briefcase = ({ className }) => <IconWrapper className={className}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></IconWrapper>;
+    const ClipboardList = ({ className }) => <IconWrapper className={className}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></IconWrapper>;
+    const X = ({ className }) => <IconWrapper className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
+    const RefreshCw = ({ className }) => <IconWrapper className={className}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconWrapper>;
 
-            <div class="hero-actions">
-              <button id="btnLineLogin" class="btn btn-primary" type="button">LINE 登入 / 綁定</button>
-              <button id="btnOrderHero" class="btn btn-dark" type="button">立即報名</button>
+    const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
+    const LIFF_ID = '2009367829-BDZCGti8';
+    const DEFAULT_TENANT = 't001';
+
+    const getQS = (key) => new URL(window.location.href).searchParams.get(key) || '';
+    const formatPhone = (phone) => {
+      if (!phone) return '';
+      const p = String(phone).trim();
+      if (p.length === 9 && p.startsWith('9')) return '0' + p;
+      return p;
+    };
+
+    const renderAgencyBlogDescription = (text) => {
+      if (!text) return <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 text-[1.1rem] leading-[2.2] text-gray-700 tracking-wide whitespace-pre-wrap font-medium">目前此行程尚無詳細內容。</div>;
+      const lines = String(text).split('\n');
+      const blocks = [];
+      let currentBlock = { type: 'intro', dayText: '行程介紹', title: '', content: [], meals: [], hotels: [] };
+      let inMeal = false, inHotel = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (!line) { currentBlock.content.push({ type: 'space' }); continue; }
+        const dayMatch = line.match(/^(Day\s*\d+|第\s*[\d一二三四五六七八九十]+\s*天)(.*)/i);
+        if (dayMatch) {
+          if (currentBlock.content.length > 0 || currentBlock.meals.length > 0 || currentBlock.hotels.length > 0 || currentBlock.dayText !== '行程介紹') blocks.push(currentBlock);
+          currentBlock = { type: 'day', dayText: dayMatch[1].replace(/\s+/g, ''), title: dayMatch[2].replace(/^[:：\-\s]+/, ''), content: [], meals: [], hotels: [] };
+          inMeal = false; inHotel = false; continue;
+        }
+        if (line.match(/^(餐食|早餐|午餐|晚餐)[:：]/)) { inMeal = true; inHotel = false; currentBlock.meals.push(line); continue; }
+        if (line.match(/^(住宿|飯店|旅館|酒店)[:：]/)) { inHotel = true; inMeal = false; currentBlock.hotels.push(line); continue; }
+        if (inMeal && line.match(/^(早餐|午餐|晚餐|早|午|晚)[:：]/)) { currentBlock.meals.push(line); continue; }
+        if (inHotel && line.length < 40) { currentBlock.hotels.push(line); continue; }
+        inMeal = false; inHotel = false;
+        currentBlock.content.push({ type: 'text', text: line });
+      }
+      blocks.push(currentBlock);
+
+      return blocks.map((block, bIdx) => (
+        <div key={bIdx} className="mb-12 w-full max-w-full">
+          {block.dayText !== '行程介紹' && (
+            <div className="mb-10 mt-16 w-full">
+              <div className="text-center relative mb-8"><div className="absolute top-1/2 left-0 w-full border-t-[2px] border-dashed border-[#b82337] -z-10"></div><h2 className="inline-block px-6 bg-white text-4xl md:text-5xl font-black text-gray-900 tracking-widest">{block.dayText}</h2></div>
+              {block.title && (<div className="flex items-start mb-6 px-2"><span className="text-[#b82337] font-light text-2xl mr-3 flex-shrink-0">—</span><h3 className="text-xl md:text-2xl font-bold text-gray-800 leading-snug pt-0.5">{block.title}</h3></div>)}
             </div>
+          )}
+          <div className="text-[1.15rem] leading-[2.2] text-gray-700 tracking-wide text-justify w-full break-words">
+            {block.content.map((item, idx) => item.type === 'space' ? <div key={idx} className="h-6"></div> : <p key={idx} className="mb-5 break-words whitespace-pre-wrap">{item.text}</p>)}
           </div>
+          {(block.meals.length > 0 || block.hotels.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-10">
+              {block.meals.length > 0 && (
+                <div className="border border-gray-200 p-6 flex items-start bg-white w-full rounded-md shadow-sm hover:shadow-md transition">
+                  <div className="text-3xl mr-4 opacity-90 flex-shrink-0 text-[#b82337]">🍽️</div>
+                  <div className="w-full border-l-[3px] border-[#b82337] pl-5 min-w-0"><p className="font-bold text-gray-900 mb-2 text-lg">餐食</p><div className="space-y-1 text-gray-600 font-medium text-[0.95rem] break-words">{block.meals.map((m, mIdx) => <p key={mIdx}>{m}</p>)}</div></div>
+                </div>
+              )}
+              {block.hotels.length > 0 && (
+                <div className="border border-gray-200 p-6 flex items-start bg-white w-full rounded-md shadow-sm hover:shadow-md transition">
+                  <div className="text-3xl mr-4 opacity-90 flex-shrink-0 text-[#b82337]">🏨</div>
+                  <div className="w-full border-l-[3px] border-[#b82337] pl-5 min-w-0"><p className="font-bold text-gray-900 mb-2 text-lg">住宿</p><div className="space-y-1 text-gray-600 font-medium text-[0.95rem] break-words">{block.hotels.map((h, hIdx) => <p key={hIdx}>{h}</p>)}</div></div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      ));
+    };
 
-    <div class="card">
-      <div class="card-head">簡要資訊</div>
-      <div class="card-body">
-        <div class="simple-grid">
-          <div class="simple-box">
-            <div class="simple-label">品牌</div>
-            <div id="summaryBrand" class="simple-value">--</div>
-          </div>
-          <div class="simple-box">
-            <div class="simple-label">目的地</div>
-            <div id="summaryPlace" class="simple-value">--</div>
-          </div>
-          <div class="simple-box">
-            <div class="simple-label">天數</div>
-            <div id="summaryDays" class="simple-value">--</div>
-          </div>
-          <div class="simple-box">
-            <div class="simple-label">出發</div>
-            <div id="summaryStartDate" class="simple-value">--</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    function App() {
+      const [tourDetailTab, setTourDetailTab] = useState('itinerary');
+      const [trip, setTrip] = useState(null);
+      const [tenant, setTenant] = useState(null);
+      const [liffProfile, setLiffProfile] = useState(null);
+      const [isLiffReady, setIsLiffReady] = useState(false);
+      const [isGeneralMember, setIsGeneralMember] = useState(false);
+      const [myUserPhone, setMyUserPhone] = useState('');
+      const [bookingModalData, setBookingModalData] = useState(null);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [statusLines, setStatusLines] = useState(['初始化中...']);
+      const [priceCardStyle, setPriceCardStyle] = useState({});
+      const articleTopRef = useRef(null);
+      const priceCardAnchorRef = useRef(null);
+      const articleBodyRef = useRef(null);
 
-    <div class="card">
-      <div class="card-head">行程介紹</div>
-      <div class="card-body">
-        <div id="tripDescription" class="rich-text">載入中...</div>
-      </div>
-    </div>
+      const tenantId = getQS('tenantId') || localStorage.getItem('tk_tenant_id') || localStorage.getItem('travelman_tenant_id') || DEFAULT_TENANT;
+      const selectedTourId = getQS('it') || getQS('itineraryId') || localStorage.getItem('tk_itinerary_id') || '';
+      const refUid = getQS('ref') || localStorage.getItem('tk_ref_uid') || '';
 
-    <div class="card">
-      <div class="card-head">行程亮點</div>
-      <div class="card-body">
-        <div id="tripHighlights" class="tag-list">
-          <div class="empty">載入中...</div>
-        </div>
-      </div>
-    </div>
+      const log = (msg) => setStatusLines(prev => [...prev, `[${new Date().toLocaleString('zh-Hant-TW')}] ${msg}`]);
 
-    <div class="card">
-      <div class="card-head">每日行程</div>
-      <div class="card-body">
-        <div id="tripDays" class="timeline">
-          <div class="empty">載入中...</div>
-        </div>
-      </div>
-    </div>
+      const roleBadge = isGeneralMember
+        ? <span className="bg-orange-100 text-orange-700 text-[11px] px-2 py-0.5 rounded font-bold border border-orange-200">👤 一般會員</span>
+        : <span className="bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded font-bold border border-gray-200">訪客</span>;
 
-    <div class="card">
-      <div class="card-head">來源與綁定狀態</div>
-      <div class="card-body">
-        <div id="refInfo" class="ref-box" style="margin-bottom:12px;"></div>
-        <div id="statusBox" class="status-box">尚未初始化</div>
-      </div>
-    </div>
-  </div>
+      useEffect(() => {
+        localStorage.setItem('tk_tenant_id', tenantId);
+        localStorage.setItem('travelman_tenant_id', tenantId);
+        if (selectedTourId) localStorage.setItem('tk_itinerary_id', selectedTourId);
+        if (refUid) localStorage.setItem('tk_ref_uid', refUid);
+        init();
+      }, []);
 
-  <div class="sticky-cta">
-    <div class="sticky-inner">
-      <div class="sticky-left">
-        <div class="sticky-title">目前行程</div>
-        <div id="stickyPrice" class="sticky-price">--</div>
-      </div>
-      <div class="sticky-actions">
-        <button id="btnLineLoginBottom" class="btn btn-primary" type="button">LINE 登入 / 綁定</button>
-        <button id="btnOrderBottom" class="btn btn-dark" type="button">立即報名</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
-    const DEFAULT_TENANT = "t001";
-    const LIFF_ID = "2009367829-Ewwp8jfA";
-    const DEFAULT_ORDER_AMOUNT = 29900;
-
-    let tenantData = null;
-    let tripData = null;
-    let currentProfile = null;
-    let currentLineUserId = "";
-
-    function qs(name) {
-      const url = new URL(window.location.href);
-      return url.searchParams.get(name) || "";
-    }
-
-    function logStatus(message, append = false) {
-      const el = document.getElementById("statusBox");
-      const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
-      const line = stamp + " " + message;
-      el.textContent = append ? (el.textContent + "\\n" + line) : line;
-      el.scrollTop = el.scrollHeight;
-    }
-
-    function saveTrackingParams() {
-      const ref = qs("ref");
-      const itineraryId = qs("it") || qs("itineraryId");
-      const tenantId = qs("tenantId") || localStorage.getItem("travelman_tenant_id") || DEFAULT_TENANT;
-
-      if (ref) localStorage.setItem("tk_ref_uid", ref);
-      if (itineraryId) localStorage.setItem("tk_itinerary_id", itineraryId);
-      if (tenantId) {
-        localStorage.setItem("tk_tenant_id", tenantId);
-        localStorage.setItem("travelman_tenant_id", tenantId);
-      }
-
-      const url = new URL(window.location.href);
-      if (!url.searchParams.get("tenantId")) {
-        url.searchParams.set("tenantId", tenantId);
-        history.replaceState({}, "", url.toString());
-      }
-    }
-
-    function getTrackingState() {
-      return {
-        tenantId: qs("tenantId") || localStorage.getItem("tk_tenant_id") || localStorage.getItem("travelman_tenant_id") || DEFAULT_TENANT,
-        refUid: qs("ref") || localStorage.getItem("tk_ref_uid") || "",
-        itineraryId: qs("it") || qs("itineraryId") || localStorage.getItem("tk_itinerary_id") || ""
-      };
-    }
-
-    function apiGet(path) {
-      return fetch(WORKER_URL + path).then(res => res.json());
-    }
-
-    function apiPost(path, body) {
-      return fetch(WORKER_URL + path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      }).then(res => res.json());
-    }
-
-    function parseMaybeJson(value, fallback) {
-      try {
-        if (!value) return fallback;
-        if (Array.isArray(value)) return value;
-        if (typeof value === "object") return value;
-        return JSON.parse(value);
-      } catch (e) {
-        return fallback;
-      }
-    }
-
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function formatCurrency(value, currency = "TWD") {
-      return currency + " " + Number(value || 0).toLocaleString();
-    }
-
-    function formatDateText(value) {
-      if (!value) return "--";
-      return String(value).replace(/-/g, "/");
-    }
-
-    function copyText(text) {
-      if (!navigator.clipboard) {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.top = "0";
-        ta.style.left = "0";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand("copy");
-          logStatus("已複製頁面連結", true);
-        } catch (e) {
-          logStatus("複製失敗：" + (e.message || String(e)), true);
-        }
-        document.body.removeChild(ta);
-        return;
-      }
-
-      navigator.clipboard.writeText(text)
-        .then(() => logStatus("已複製頁面連結", true))
-        .catch(err => logStatus("複製失敗：" + (err.message || String(err)), true));
-    }
-
-    function normalizeHighlights(data) {
-      if (!data) return [];
-      const arr = parseMaybeJson(data, []);
-      if (!Array.isArray(arr)) return [];
-      return arr
-        .map(item => {
-          if (typeof item === "string") return item.trim();
-          if (item && typeof item === "object") return String(item.title || item.name || item.label || "").trim();
-          return "";
-        })
-        .filter(Boolean);
-    }
-
-    function normalizeDayByDay(data) {
-      const arr = parseMaybeJson(data, []);
-      if (!Array.isArray(arr) || !arr.length) return [];
-
-      return arr.map((item, idx) => {
-        if (typeof item === "string") {
-          return {
-            day: "Day " + (idx + 1),
-            content: item
-          };
-        }
-
-        if (item && typeof item === "object") {
-          return {
-            day: item.day || item.title || ("Day " + (idx + 1)),
-            content: item.content || item.description || item.text || JSON.stringify(item)
-          };
-        }
-
-        return {
-          day: "Day " + (idx + 1),
-          content: String(item || "")
+      useEffect(() => {
+        if (!selectedTourId) return;
+        const CARD_WIDTH = 360;
+        const TOP_OFFSET = 130;
+        const updateCardPos = () => {
+          if (!priceCardAnchorRef.current || !articleBodyRef.current) return;
+          const anchorRect  = priceCardAnchorRef.current.getBoundingClientRect();
+          const articleRect = articleBodyRef.current.getBoundingClientRect();
+          const rightGap = window.innerWidth - anchorRect.right;
+          if (articleRect.top > TOP_OFFSET) setPriceCardStyle({ display:'none' });
+          else setPriceCardStyle({ position:'fixed', top:TOP_OFFSET+'px', right:Math.max(rightGap,12)+'px', width:CARD_WIDTH+'px', zIndex:20, display:'block' });
         };
-      });
-    }
+        const tid = setTimeout(updateCardPos, 80);
+        window.addEventListener('scroll', updateCardPos, { passive:true });
+        window.addEventListener('resize', updateCardPos, { passive:true });
+        return () => { clearTimeout(tid); window.removeEventListener('scroll', updateCardPos); window.removeEventListener('resize', updateCardPos); };
+      }, [selectedTourId, trip]);
 
-    function mapToOldStyle(data) {
-      const highlights = normalizeHighlights(data.highlightsJson || data.highlights || []);
-      const days = normalizeDayByDay(data.dayByDayJson || data.dayByDay || []);
-
-      return {
-        title: data.title || "",
-        subtitle: data.subtitle || "",
-        region: data.region || data.country || "",
-        country: data.country || "",
-        city: data.city || "",
-        price: Number(data.price || 0),
-        currency: data.currency || "TWD",
-        days: Number(data.days || 0),
-        nights: Number(data.nights || 0),
-        startDate: data.departureDate || data.startDate || "",
-        endDate: data.returnDate || data.endDate || "",
-        image: data.coverImageUrl || data.image || "",
-        description: data.description || "",
-        notes: highlights.join(" / "),
-        highlights: highlights,
-        schedule: days,
-        itineraryId: data.itineraryId || "",
-        status: data.status || "draft"
+      const init = async () => {
+        try {
+          await Promise.all([loadTenant(), loadTrip(), initLiff()]);
+          log('trip.html 舊殼新芯版初始化完成');
+        } catch (e) {
+          log('初始化失敗：' + (e.message || String(e)));
+        }
       };
-    }
 
-    async function loadTenant() {
-      const state = getTrackingState();
-      const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(state.tenantId));
-      tenantData = res && res.data ? res.data.data : null;
+      const loadTenant = async () => {
+        const res = await fetch(`${WORKER_URL}/api/public/tenant?tenantId=${encodeURIComponent(tenantId)}`);
+        const json = await res.json();
+        const t = json?.data?.data || json?.data || null;
+        setTenant(t);
+      };
 
-      if (tenantData) {
-        const brand = tenantData.brandName || "TravelKeeper";
-        const color = tenantData.primaryColor || "#06c755";
+      const normalizeTrip = (raw) => ({
+        id: raw.itineraryId || raw.id || '',
+        title: raw.title || '',
+        region: raw.region || raw.country || '',
+        country: raw.country || '',
+        city: raw.city || '',
+        price: Number(raw.price || 0),
+        days: Number(raw.days || 0),
+        startDate: raw.departureDate || raw.startDate || '',
+        endDate: raw.returnDate || raw.endDate || '',
+        image: raw.coverImageUrl || raw.image || '',
+        description: raw.description || '',
+        notes: Array.isArray(raw.noticeJson) ? raw.noticeJson.join('\n') : (raw.notes || ''),
+        currency: raw.currency || 'TWD'
+      });
 
-        document.getElementById("brandBadge").textContent = brand;
-        document.getElementById("summaryBrand").textContent = brand;
-        document.documentElement.style.setProperty("--primary", color);
-        document.documentElement.style.setProperty("--primary-dark", color);
-        document.documentElement.style.setProperty("--primary-soft", color + "1A");
-      }
+      const loadTrip = async () => {
+        if (!selectedTourId) { log('缺少 itineraryId'); return; }
+        const res = await fetch(`${WORKER_URL}/api/public/itinerary?tenantId=${encodeURIComponent(tenantId)}&itineraryId=${encodeURIComponent(selectedTourId)}`);
+        const json = await res.json();
+        const data = json?.data?.data || json?.data || null;
+        if (data) { setTrip(normalizeTrip(data)); log(`已載入行程：${data.title || selectedTourId}`); }
+        else log('找不到此行程');
+      };
 
-      document.getElementById("btnHome").href = "./index.html?tenantId=" + encodeURIComponent(state.tenantId);
-    }
+      const initLiff = async () => {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+          setIsLiffReady(true);
+          if (liff.isLoggedIn()) {
+            const profile = await liff.getProfile();
+            setLiffProfile(profile);
+            setIsGeneralMember(true);
+            await registerMember(profile);
+          }
+        } catch (e) {
+          log('LIFF 初始化失敗');
+        }
+      };
 
-    function renderTrip(oldData, rawData) {
-      document.getElementById("tripTitle").textContent = oldData.title || "未命名行程";
-      document.getElementById("topTitle").textContent = oldData.title || "未命名行程";
-      document.getElementById("tripSubtitle").textContent =
-        oldData.subtitle ||
-        oldData.description ||
-        ((oldData.country || "") + " " + (oldData.city || "")).trim() ||
-        "歡迎查看本行程";
+      const registerMember = async (profile) => {
+        try {
+          const res = await fetch(`${WORKER_URL}/api/member/register`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+              tenantId,
+              uid: profile.userId,
+              name: profile.displayName || '',
+              avatarUrl: profile.pictureUrl || '',
+              lineDisplayName: profile.displayName || '',
+              linePictureUrl: profile.pictureUrl || '',
+              role: 'member',
+              status: 'active',
+              sourceChannel: 'line_liff',
+              refDistributorUid: refUid || '',
+              notes: selectedTourId ? ('from_itinerary:' + selectedTourId) : ''
+            })
+          });
+          const json = await res.json();
+          if (json?.ok) log('LINE 會員綁定完成');
+        } catch (e) {
+          log('LINE 會員綁定略過');
+        }
+      };
 
-      document.getElementById("tripPrice").textContent = formatCurrency(oldData.price || DEFAULT_ORDER_AMOUNT, oldData.currency || "TWD");
-      document.getElementById("stickyPrice").textContent = formatCurrency(oldData.price || DEFAULT_ORDER_AMOUNT, oldData.currency || "TWD");
-      document.getElementById("summaryPlace").textContent = ((oldData.country || "") + " " + (oldData.city || "")).trim() || "--";
-      document.getElementById("summaryDays").textContent = oldData.days ? (oldData.days + " 天") : "--";
-      document.getElementById("summaryStartDate").textContent = formatDateText(oldData.startDate);
+      const goHome = () => { window.location.href = `./index.html?tenantId=${encodeURIComponent(tenantId)}&tab=home`; };
+      const goTab = (tab) => { window.location.href = `./index.html?tenantId=${encodeURIComponent(tenantId)}&tab=${encodeURIComponent(tab)}`; };
+      const scrollArticleToTop = () => { if (articleTopRef.current) articleTopRef.current.scrollIntoView({ behavior:'smooth' }); else window.scrollTo({ top:0, behavior:'smooth' }); };
 
-      document.getElementById("tripDescription").textContent = oldData.description || "暫無說明";
-      document.getElementById("coverImage").src = oldData.image || "https://picsum.photos/1200/800";
+      const handleBookNow = (tour) => {
+        if (!isLiffReady) { log('LIFF 尚未就緒'); return; }
+        if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
+        setBookingModalData({
+          tourId: tour.id,
+          tourTitle: tour.title,
+          price: tour.price,
+          pax: 1,
+          totalAmount: tour.price,
+          contactName: liffProfile?.displayName || '',
+          contactPhone: formatPhone(myUserPhone || ''),
+          note: ''
+        });
+      };
 
-      const meta = [];
-      if (oldData.region) meta.push(`<span class="pill">🧭 ${escapeHtml(oldData.region)}</span>`);
-      if (oldData.country) meta.push(`<span class="pill">🌍 ${escapeHtml(oldData.country)}</span>`);
-      if (oldData.city) meta.push(`<span class="pill">📍 ${escapeHtml(oldData.city)}</span>`);
-      if (oldData.days) meta.push(`<span class="pill">🗓️ ${escapeHtml(String(oldData.days))} 天</span>`);
-      if (oldData.nights) meta.push(`<span class="pill">🌙 ${escapeHtml(String(oldData.nights))} 夜</span>`);
-      if (oldData.startDate) meta.push(`<span class="pill">✈️ ${escapeHtml(formatDateText(oldData.startDate))}</span>`);
-      if (rawData.status) meta.push(`<span class="pill">📌 ${escapeHtml(String(rawData.status))}</span>`);
-      document.getElementById("tripMeta").innerHTML = meta.join("");
+      const submitBooking = async (e) => {
+        e.preventDefault();
+        if (!bookingModalData || !trip || !liffProfile) return;
+        setIsSubmitting(true);
+        try {
+          const payload = {
+            tenantId,
+            itineraryId: trip.id,
+            uid: liffProfile.userId,
+            customerName: bookingModalData.contactName,
+            customerPhone: bookingModalData.contactPhone,
+            customerEmail: '',
+            travelDate: trip.startDate || '',
+            qty: bookingModalData.pax,
+            totalAmount: bookingModalData.totalAmount,
+            currency: trip.currency || 'TWD',
+            paymentMethod: 'line_liff_demo',
+            paymentStatus: 'unpaid',
+            attributionSource: refUid ? 'line_referral' : 'direct',
+            distributorUid: refUid || '',
+            promoCode: '',
+            refUid: refUid || '',
+            sourcePage: window.location.href,
+            notes: bookingModalData.note || ''
+          };
+          const res = await fetch(`${WORKER_URL}/api/admin/create-order`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          const ok = json?.ok !== false;
+          if (!ok) throw new Error(json?.message || '訂單建立失敗');
+          const data = json?.data?.data || json?.data || {};
+          const orderId = data.orderId || data.id || data.order_id || `order_${Date.now()}`;
+          log('訂單建立成功：' + orderId);
+          const successUrl = `./success.html?tenantId=${encodeURIComponent(tenantId)}&it=${encodeURIComponent(trip.id)}&amount=${encodeURIComponent(bookingModalData.totalAmount)}&orderId=${encodeURIComponent(orderId)}${refUid ? `&ref=${encodeURIComponent(refUid)}` : ''}`;
+          window.location.href = successUrl;
+        } catch (err) {
+          log('訂單送出失敗：' + (err.message || String(err)));
+          alert('訂單送出失敗，請查看頁面下方狀態區。');
+          setIsSubmitting(false);
+        }
+      };
 
-      document.getElementById("tripHighlights").innerHTML = oldData.highlights.length
-        ? oldData.highlights.map(item => `<span class="tag-chip">${escapeHtml(item)}</span>`).join("")
-        : `<div class="empty">目前尚未設定亮點</div>`;
-
-      document.getElementById("tripDays").innerHTML = oldData.schedule.length
-        ? oldData.schedule.map((item, idx) => `
-            <div class="timeline-item">
-              <div class="timeline-day">${escapeHtml(item.day || ("Day " + (idx + 1)))}</div>
-              <div class="timeline-content">${escapeHtml(item.content || "")}</div>
+      const renderNavBar = () => (
+        <nav className="bg-white shadow-sm sticky top-0 z-50">
+          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+            <div className="flex flex-col md:flex-row md:items-center justify-between py-3 md:py-0 md:h-16">
+              <div className="flex justify-between items-center w-full md:w-auto">
+                <div className="flex items-center cursor-pointer mr-8" onClick={goHome}><Navigation className="h-8 w-8 text-blue-600 mr-2" /><span className="font-bold text-xl tracking-wider text-blue-900">旅遊管家</span></div>
+                <div className="md:hidden flex items-center">{liffProfile ? (<div className="flex items-center gap-2"><div className="flex flex-col items-end">{roleBadge}</div><img src={liffProfile.pictureUrl || 'https://via.placeholder.com/150'} className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" /></div>) : (<button onClick={() => liff.login({ redirectUri: window.location.href })} className="bg-[#00B900] hover:bg-[#009900] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">LINE 登入</button>)}</div>
+              </div>
+              <div className="flex items-center space-x-1 overflow-x-auto custom-scrollbar mt-3 md:mt-0 pb-1 md:pb-0 w-full md:w-auto flex-nowrap">
+                <button onClick={() => goTab('home')} className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold text-blue-700 bg-blue-50">找行程</button>
+                <button onClick={() => goTab('member')} className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center text-gray-600 hover:bg-gray-100"><Users className="w-4 h-4 mr-1.5" /> 會員中心</button>
+                <button onClick={() => goTab('distributor')} className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center text-gray-600 hover:bg-gray-100"><Briefcase className="w-4 h-4 mr-1.5" /> 經銷商專區</button>
+              </div>
+              <div className="hidden md:flex items-center ml-4 pl-4 border-l border-gray-200 shrink-0">
+                {liffProfile ? (<div className="flex items-center gap-3"><div className="text-right"><p className="text-sm font-bold text-gray-800 leading-none mb-1.5">{liffProfile.displayName}</p><div className="flex justify-end">{roleBadge}</div></div><img src={liffProfile.pictureUrl || 'https://via.placeholder.com/150'} className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" /></div>) : (<button onClick={() => liff.login({ redirectUri: window.location.href })} className="bg-[#00B900] hover:bg-[#009900] text-white px-4 py-2 rounded-lg text-sm font-bold transition shadow-sm">LINE 登入</button>)}
+              </div>
             </div>
-          `).join("")
-        : `<div class="empty">目前尚未設定每日行程</div>`;
-    }
-
-    async function loadTrip() {
-      const state = getTrackingState();
-
-      if (!state.itineraryId) {
-        document.getElementById("tripTitle").textContent = "缺少 itineraryId";
-        document.getElementById("topTitle").textContent = "缺少 itineraryId";
-        document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 或 ?itineraryId=... 的連結進入";
-        return;
-      }
-
-      const res = await apiGet(
-        "/api/public/itinerary?tenantId=" +
-        encodeURIComponent(state.tenantId) +
-        "&itineraryId=" +
-        encodeURIComponent(state.itineraryId)
+          </div>
+        </nav>
       );
 
-      tripData = res && res.data ? res.data.data : null;
+      const PriceCard = () => {
+        if (!trip) return null;
+        return (
+          <div className="bg-white shadow-2xl border border-gray-100 overflow-hidden rounded-2xl">
+            <div className="bg-[#b82337] text-white p-6 text-center">
+              <p className="text-xs font-bold tracking-widest mb-1 opacity-90">專案特惠價</p>
+              <p className="text-4xl font-black"><span className="text-lg font-medium mr-1">TWD</span>{Number(trip.price).toLocaleString()}</p>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4 mb-6 border-b border-gray-100 pb-6">
+                <div className="flex items-center text-gray-800 text-base font-bold"><div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center mr-3"><Calendar className="w-5 h-5 text-[#b82337]" /></div>{trip.days} 天精彩行程</div>
+                {trip.startDate && (<div className="flex items-center text-gray-800 text-base font-bold"><div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center mr-3"><Navigation className="w-5 h-5 text-[#b82337]" /></div>出發日：{trip.startDate}</div>)}
+              </div>
+              <button onClick={() => handleBookNow(trip)} className="w-full bg-[#b82337] hover:bg-red-800 text-white font-bold py-3 px-4 shadow-md transition-all text-lg mb-6 rounded-xl">立即報名保留名額</button>
+              <p className="text-center text-gray-400 text-xs font-bold mb-4">—— 聯絡專屬旅遊顧問 ——</p>
+              <button onClick={() => liff.isLoggedIn() ? alert('目前未串接專屬顧問資料，請透過 LINE 或官方客服聯繫。') : liff.login({ redirectUri: window.location.href })} className="w-full bg-[#00B900] hover:bg-[#009900] text-white font-bold py-2.5 px-4 shadow-md transition-all text-sm flex items-center justify-center rounded-lg mb-3"><span className="mr-2">💬</span> 聯絡官方客服</button>
+            </div>
+          </div>
+        );
+      };
 
-      if (!tripData) {
-        document.getElementById("tripTitle").textContent = "找不到行程";
-        document.getElementById("topTitle").textContent = "找不到行程";
-        document.getElementById("tripDescription").textContent = "請確認 itineraryId 是否存在";
-        return;
+      if (!selectedTourId) {
+        return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-center p-6"><div><p className="text-2xl font-black text-gray-700 mb-4">缺少 itineraryId</p><button onClick={goHome} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl">回首頁</button></div></div>;
       }
 
-      const oldData = mapToOldStyle(tripData);
-      renderTrip(oldData, tripData);
-      logStatus("行程載入完成：" + (oldData.title || state.itineraryId), true);
-    }
-
-    function renderReferralInfo() {
-      const state = getTrackingState();
-
-      document.getElementById("refInfo").innerHTML =
-        "tenantId：<b>" + escapeHtml(state.tenantId || "-") + "</b><br>" +
-        "itineraryId：<b>" + escapeHtml(state.itineraryId || "-") + "</b><br>" +
-        "refUid：<b>" + escapeHtml(state.refUid || "direct") + "</b><br><br>" +
-        "用戶從這個行程頁進站後，系統會記錄來源，後續綁定 LINE 與下單時自動帶入。";
-    }
-
-    async function initLiffOnly() {
-      logStatus("初始化 LIFF 中...");
-      await liff.init({ liffId: LIFF_ID });
-
-      if (!liff.isLoggedIn()) {
-        logStatus("尚未登入 LINE，請點擊下方或頁面中的 LINE 登入按鈕");
-        return { loggedIn: false };
+      if (!trip) {
+        return <div className="min-h-screen flex flex-col bg-gray-50">{renderNavBar()}<div className="text-center py-32 text-gray-500"><RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500" /><p className="text-lg">載入行程中...</p></div></div>;
       }
 
-      const profile = await liff.getProfile();
-      currentProfile = profile;
-      currentLineUserId = profile.userId || "";
+      return (
+        <div className="min-h-screen flex flex-col bg-gray-50">
+          {renderNavBar()}
+          <div ref={articleTopRef} className="w-full bg-white min-h-screen animate-fade-in pb-20 overflow-x-hidden">
+            <div className="w-full h-[50vh] md:h-[65vh] relative">
+              <img src={trip.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80'} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 w-full pb-16">
+                <div className="w-full px-6 lg:px-16">
+                  <div className="flex gap-3 mb-6">
+                    <span className="bg-[#b82337] text-white px-5 py-1.5 text-sm font-bold tracking-widest">{trip.region || '精選行程'}</span>
+                    <span className="bg-black/50 backdrop-blur-sm text-white px-5 py-1.5 text-sm font-bold tracking-widest">{trip.days} 天精華</span>
+                  </div>
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight drop-shadow-2xl">{trip.title}</h1>
+                </div>
+              </div>
+            </div>
+            <div className="w-full border-b border-gray-200 bg-white sticky top-16 z-30 shadow-sm hidden md:block">
+              <div className="w-full px-6 lg:px-16 flex justify-between items-center h-16">
+                <div className="flex space-x-8 text-lg font-bold text-gray-500 h-full">
+                  <button onClick={() => setTourDetailTab('itinerary')} className={`h-full px-4 transition-colors ${tourDetailTab === 'itinerary' ? 'text-[#b82337] border-b-4 border-[#b82337]' : 'hover:text-[#b82337]'}`}>行程介紹與內容</button>
+                  <button onClick={() => setTourDetailTab('notes')} className={`h-full px-4 transition-colors ${tourDetailTab === 'notes' ? 'text-[#b82337] border-b-4 border-[#b82337]' : 'hover:text-[#b82337]'}`}>注意事項</button>
+                </div>
+                <button onClick={goHome} className="flex items-center text-gray-500 hover:text-[#b82337] font-bold transition"><ArrowLeft className="w-5 h-5 mr-2" /> 返回行程總覽</button>
+              </div>
+            </div>
+            <div className="block lg:hidden px-4 pt-6"><PriceCard /></div>
+            <div ref={articleBodyRef} className="w-full py-10 flex relative items-start">
+              <div ref={priceCardAnchorRef} className="hidden lg:block absolute top-0 right-6 xl:right-12 w-[360px] h-px pointer-events-none" />
+              <div className="w-full min-w-0 overflow-hidden px-6 md:px-10 lg:px-16 xl:px-20 lg:pr-[420px] xl:pr-[440px]">
+                <div className="md:hidden mb-8"><button onClick={goHome} className="flex items-center text-gray-500 hover:text-[#b82337] font-bold transition"><ArrowLeft className="w-5 h-5 mr-2" /> 返回行程總覽</button></div>
+                <div className="md:hidden flex space-x-4 mb-6 border-b border-gray-200">
+                  <button onClick={() => setTourDetailTab('itinerary')} className={`pb-2 font-bold ${tourDetailTab === 'itinerary' ? 'text-[#b82337] border-b-2 border-[#b82337]' : 'text-gray-500'}`}>行程介紹</button>
+                  <button onClick={() => setTourDetailTab('notes')} className={`pb-2 font-bold ${tourDetailTab === 'notes' ? 'text-[#b82337] border-b-2 border-[#b82337]' : 'text-gray-500'}`}>注意事項</button>
+                </div>
+                <div className="pb-10 w-full min-w-0 animate-fade-in break-words">
+                  {tourDetailTab === 'itinerary'
+                    ? renderAgencyBlogDescription(trip.description)
+                    : (<div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 text-[1.1rem] leading-[2.2] text-gray-700 tracking-wide whitespace-pre-wrap font-medium">{trip.notes || '目前此行程尚無特殊注意事項。'}</div>)
+                  }
+                </div>
+                <div className="border-t-2 border-dashed border-gray-200 pt-10 pb-6 mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <button onClick={scrollArticleToTop} className="flex items-center gap-2 text-gray-500 hover:text-[#b82337] font-bold transition group bg-gray-50 hover:bg-red-50 border border-gray-200 hover:border-red-200 px-6 py-3 rounded-xl"><ArrowUp className="w-5 h-5 group-hover:text-[#b82337] transition" />回到頁面頂端</button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => handleBookNow(trip)} className="bg-[#b82337] hover:bg-red-800 text-white font-bold px-8 py-3 rounded-xl shadow-md transition-all">立即報名</button>
+                    <button onClick={goHome} className="flex items-center gap-2 text-gray-500 hover:text-[#b82337] font-bold transition group bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 px-6 py-3 rounded-xl"><ArrowLeft className="w-5 h-5" />返回行程列表</button>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:block" style={priceCardStyle}><PriceCard /></div>
+            </div>
+          </div>
 
-      logStatus(
-        "LINE 已登入\\n" +
-        "userId：" + (profile.userId || "") + "\\n" +
-        "displayName：" + (profile.displayName || "")
+          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-10">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mt-4">
+              <div className="font-bold text-gray-700 mb-2">系統狀態</div>
+              <div className="bg-[#0b1220] text-[#d1fae5] rounded-xl p-4 whitespace-pre-wrap break-words text-[12px] leading-7 font-mono min-h-[100px]">{statusLines.join('\n')}</div>
+            </div>
+          </div>
+
+          {bookingModalData && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl animate-fade-in-up overflow-hidden">
+                <div className="bg-[#b82337] p-6 text-white flex justify-between items-center"><h3 className="text-xl font-bold flex items-center"><ClipboardList className="w-6 h-6 mr-2" /> 填寫報名資料</h3><button onClick={() => setBookingModalData(null)} className="text-white hover:text-red-200 transition"><X className="w-6 h-6" /></button></div>
+                <form onSubmit={submitBooking} className="p-6 md:p-8">
+                  <div className="mb-6 pb-6 border-b border-gray-100">
+                    <p className="text-sm font-bold text-gray-400 mb-1">預約行程</p>
+                    <p className="text-xl font-black text-gray-800 leading-tight mb-2">{bookingModalData.tourTitle}</p>
+                    <div className="flex justify-between items-end gap-4">
+                      <div><label className="block text-sm font-bold text-gray-500 mb-1">報名人數</label><input type="number" min="1" required value={bookingModalData.pax} onChange={(e) => setBookingModalData({...bookingModalData,pax:parseInt(e.target.value)||1,totalAmount:(parseInt(e.target.value)||1)*bookingModalData.price})} className="w-24 rounded-lg border-gray-300 border p-2 outline-none text-center font-bold text-lg"/></div>
+                      <div className="text-right"><p className="text-xs text-gray-400 font-bold mb-1">總金額</p><p className="text-2xl font-black text-[#b82337]">TWD {Number(bookingModalData.totalAmount).toLocaleString()}</p></div>
+                    </div>
+                  </div>
+                  <div className="space-y-4 mb-8">
+                    <div><label className="block text-sm font-bold text-gray-700 mb-1.5">主要聯絡人姓名</label><input type="text" required value={bookingModalData.contactName} onChange={(e) => setBookingModalData({...bookingModalData,contactName:e.target.value})} className="w-full rounded-xl border-gray-300 border p-3 outline-none text-base"/></div>
+                    <div><label className="block text-sm font-bold text-gray-700 mb-1.5">聯絡電話</label><input type="tel" required value={bookingModalData.contactPhone} onChange={(e) => { setBookingModalData({...bookingModalData,contactPhone:e.target.value}); setMyUserPhone(e.target.value); }} className="w-full rounded-xl border-gray-300 border p-3 outline-none text-base"/></div>
+                    <div><label className="block text-sm font-bold text-gray-700 mb-1.5">特殊需求備註 (選填)</label><textarea rows="2" value={bookingModalData.note} onChange={(e) => setBookingModalData({...bookingModalData,note:e.target.value})} className="w-full rounded-xl border-gray-300 border p-3 outline-none text-base" placeholder="例如：素食、嬰兒車需求等"></textarea></div>
+                  </div>
+                  <button type="submit" disabled={isSubmitting} className={`w-full bg-[#b82337] hover:bg-red-800 text-white font-bold py-4 rounded-xl shadow-lg transition-all text-lg ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}>{isSubmitting ? '訂單處理中...' : '確認送出訂單'}</button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
       );
-
-      return { loggedIn: true, profile: profile };
     }
 
-    async function registerLineMember() {
-      const initResult = await initLiffOnly();
-
-      if (!initResult.loggedIn) {
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      const profile = initResult.profile;
-      const state = getTrackingState();
-
-      logStatus("LINE 已登入，開始寫入會員資料...", true);
-
-      const res = await apiPost("/api/member/register", {
-        tenantId: state.tenantId,
-        uid: profile.userId,
-        name: profile.displayName || "",
-        avatarUrl: profile.pictureUrl || "",
-        lineDisplayName: profile.displayName || "",
-        linePictureUrl: profile.pictureUrl || "",
-        role: "member",
-        status: "active",
-        sourceChannel: "line_liff",
-        refDistributorUid: state.refUid,
-        notes: state.itineraryId ? ("from_itinerary:" + state.itineraryId) : ""
-      });
-
-      logStatus("會員綁定結果：\\n" + JSON.stringify(res, null, 2), true);
-      return res;
-    }
-
-    async function submitOrder() {
-      const state = getTrackingState();
-
-      if (!state.itineraryId) {
-        alert("缺少 itineraryId");
-        return;
-      }
-
-      if (!currentProfile) {
-        const li = await initLiffOnly();
-        if (!li.loggedIn) {
-          alert("請先完成 LINE 登入");
-          return;
-        }
-        currentProfile = li.profile;
-      }
-
-      const amount = Number((tripData && tripData.price) || DEFAULT_ORDER_AMOUNT);
-
-      const res = await apiPost("/api/admin/create-order", {
-        tenantId: state.tenantId,
-        itineraryId: state.itineraryId,
-        uid: currentProfile.userId,
-        customerName: currentProfile.displayName || "LINE會員",
-        customerPhone: "",
-        customerEmail: "",
-        travelDate: (tripData && (tripData.departureDate || tripData.travelDate)) || "",
-        qty: 1,
-        totalAmount: amount,
-        currency: (tripData && tripData.currency) || "TWD",
-        paymentMethod: "line_liff_demo",
-        paymentStatus: "unpaid",
-        attributionSource: state.refUid ? "line_referral" : "direct",
-        distributorUid: state.refUid,
-        refUid: state.refUid,
-        sourcePage: window.location.href,
-        notes: "trip.html 舊模型融合版下單"
-      });
-
-      logStatus("訂單建立結果：\\n" + JSON.stringify(res, null, 2), true);
-
-      if (res && res.success) {
-        const orderId = (res.data && res.data.orderId) || res.orderId || "";
-        const successUrl =
-          "./success.html?tenantId=" + encodeURIComponent(state.tenantId) +
-          "&it=" + encodeURIComponent(state.itineraryId) +
-          "&amount=" + encodeURIComponent(amount) +
-          "&orderId=" + encodeURIComponent(orderId) +
-          (state.refUid ? "&ref=" + encodeURIComponent(state.refUid) : "");
-        window.location.href = successUrl;
-      } else {
-        alert("訂單送出失敗，請查看狀態區");
-      }
-    }
-
-    function bindEvents() {
-      document.getElementById("btnCopyPage").addEventListener("click", function() {
-        copyText(window.location.href);
-      });
-
-      document.getElementById("btnLineLogin").addEventListener("click", async function() {
-        try {
-          await registerLineMember();
-        } catch (err) {
-          logStatus("LINE 綁定失敗：\\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnLineLoginBottom").addEventListener("click", async function() {
-        try {
-          await registerLineMember();
-        } catch (err) {
-          logStatus("LINE 綁定失敗：\\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnOrderHero").addEventListener("click", async function() {
-        try {
-          await submitOrder();
-        } catch (err) {
-          logStatus("建立訂單失敗：\\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnOrderBottom").addEventListener("click", async function() {
-        try {
-          await submitOrder();
-        } catch (err) {
-          logStatus("建立訂單失敗：\\n" + (err.message || String(err)), true);
-        }
-      });
-    }
-
-    async function boot() {
-      try {
-        saveTrackingParams();
-        bindEvents();
-        renderReferralInfo();
-        await loadTenant();
-        await loadTrip();
-        await initLiffOnly();
-      } catch (err) {
-        logStatus("初始化失敗：\\n" + (err.message || String(err)));
-      }
-    }
-
-    boot();
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
