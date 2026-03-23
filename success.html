@@ -7,98 +7,403 @@
   <style>
     :root {
       --primary: #06c755;
-      --bg: #f4f6f8;
+      --primary-dark: #05a847;
+      --primary-soft: #e9fff2;
+      --bg: #f4f7fb;
       --panel: #ffffff;
       --border: #dfe3e8;
       --text: #1f2937;
       --muted: #6b7280;
+      --dark: #111827;
+      --success: #16a34a;
+      --info: #2563eb;
+      --warn: #d97706;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+      --header-bg: rgba(255,255,255,0.92);
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       font-family: Arial, "Noto Sans TC", sans-serif;
       background: var(--bg);
       color: var(--text);
     }
 
-    .wrap {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 20px;
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .topbar {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .brand {
-      display: inline-block;
+    .topbar-left {
+      min-width: 0;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: var(--primary);
       color: #fff;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 999px;
       font-size: 12px;
+      font-weight: 700;
       margin-bottom: 8px;
     }
 
-    .title {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 8px;
+    .topbar-title {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.3;
     }
 
-    .desc {
+    .topbar-sub {
       color: var(--muted);
-      line-height: 1.7;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.18s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-dark {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .btn-ghost {
+      background: #f8fafc;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 16px 36px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fffb 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0;
+      min-height: 320px;
+    }
+
+    .hero-left {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .hero-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      margin-bottom: 18px;
+      border: 1px solid #c7f0d9;
+    }
+
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .hero-desc {
+      color: var(--muted);
+      line-height: 1.85;
+      font-size: 15px;
+      margin-bottom: 18px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f4f6;
+      color: #111827;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #e5e7eb;
+    }
+
+    .hero-right {
+      background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .hero-right-title {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.92;
+      letter-spacing: 0.4px;
+    }
+
+    .hero-right-value {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+
+    .hero-right-sub {
+      font-size: 13px;
+      line-height: 1.8;
+      opacity: 0.92;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius);
       overflow: hidden;
-      margin-bottom: 16px;
+      box-shadow: var(--shadow);
     }
 
     .panel-head {
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
-      font-weight: 700;
       background: #fff;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .panel-body {
-      padding: 14px;
+      padding: 16px;
     }
 
-    .grid {
+    .summary-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
     }
 
-    .box {
+    .summary-box {
+      background: #fff;
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .summary-value {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+
+    .summary-sub {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
       padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       background: #fff;
     }
 
-    .label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
+    .step-no {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      border: 1px solid #c7f0d9;
     }
 
-    .value {
-      font-size: 22px;
-      font-weight: 700;
+    .step-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .notice-box {
+      background: #eff6ff;
+      color: #1e40af;
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid #bfdbfe;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .status-box {
+      background: #0b1220;
+      color: #d1fae5;
+      border-radius: 14px;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.75;
+      font-family: Consolas, Monaco, monospace;
+      min-height: 120px;
     }
 
     .actions {
@@ -107,105 +412,410 @@
       flex-wrap: wrap;
     }
 
-    .btn {
-      border: none;
-      border-radius: 8px;
-      padding: 11px 14px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      word-break: break-all;
     }
 
-    .btn-dark {
-      background: #111827;
-      color: #fff;
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid transparent;
+      white-space: nowrap;
     }
 
-    @media (max-width: 900px) {
-      .grid {
+    .pill-green {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .pill-blue {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-inner,
+      .summary-grid,
+      .grid-2,
+      .field-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar-right {
+        width: 100%;
+      }
+
+      .topbar-right .btn {
+        flex: 1;
+      }
+
+      .hero-left,
+      .hero-right,
+      .panel-body {
+        padding: 16px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .hero-right-value {
+        font-size: 30px;
+      }
+
+      .wrap {
+        padding: 14px 14px 24px;
+      }
+
+      .actions .btn {
+        flex: 1 1 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="app">
     <div class="topbar">
-      <div id="brandName" class="brand">TravelKeeper</div>
-      <h1 class="title">報名成功</h1>
-      <div class="desc">
-        我們已收到你的報名資料，後續可由 LINE 或人工客服協助你完成確認。
+      <div class="topbar-left">
+        <div>
+          <div id="brandName" class="brand-badge">TravelKeeper</div>
+          <div class="topbar-title">報名成功</div>
+          <div class="topbar-sub">系統已收到你的訂單資料，後續可由 LINE 或人工客服進一步確認。</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a id="btnBackTripTop" class="btn btn-ghost" href="#">回行程頁</a>
+        <a id="btnHomeTop" class="btn btn-dark" href="./">回首頁</a>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-head">訂單資訊</div>
-      <div class="panel-body">
-        <div class="grid">
-          <div class="box">
-            <div class="label">訂單號</div>
-            <div id="orderId" class="value">--</div>
+    <div class="wrap">
+      <section class="hero">
+        <div class="hero-inner">
+          <div class="hero-left">
+            <div class="hero-icon">✅</div>
+            <div class="hero-title">你的報名已建立成功</div>
+            <div class="hero-desc">
+              我們已收到本次行程的報名資料。接下來可依據品牌流程，由 LINE、
+              分銷商或人工客服進行後續聯繫與確認。
+            </div>
+            <div class="hero-tags">
+              <span class="tag">📦 訂單已建立</span>
+              <span class="tag">🧾 後續可追蹤</span>
+              <span class="tag">💬 可回到行程頁繼續瀏覽</span>
+            </div>
           </div>
-          <div class="box">
-            <div class="label">行程 ID</div>
-            <div id="itineraryId" class="value">--</div>
-          </div>
-          <div class="box">
-            <div class="label">金額</div>
-            <div id="amount" class="value">--</div>
+          <div class="hero-right">
+            <div>
+              <div class="hero-right-title">訂單號</div>
+              <div id="heroOrderId" class="hero-right-value">--</div>
+            </div>
+            <div>
+              <div class="hero-right-title">本次金額</div>
+              <div id="heroAmount" class="hero-right-value">--</div>
+            </div>
+            <div class="hero-right-sub">
+              若後續有付款、確認、退款或客服處理狀態，皆可由後台 CRM 與分銷商儀表板追蹤。
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="panel">
-      <div class="panel-head">下一步</div>
-      <div class="panel-body">
-        <div class="desc" style="margin-bottom:12px;">
-          你可以回到行程頁、查看其他行程，或等待後續聯繫。
+      <section class="summary-grid">
+        <div class="summary-box">
+          <div class="summary-label">訂單號</div>
+          <div id="orderId" class="summary-value">--</div>
+          <div class="summary-sub">可用於客服查詢與後台對單</div>
         </div>
-        <div class="actions">
-          <a id="btnBackTrip" class="btn btn-primary" href="#">回行程頁</a>
-          <a id="btnHome" class="btn btn-dark" href="./">回首頁</a>
+        <div class="summary-box">
+          <div class="summary-label">行程 ID</div>
+          <div id="itineraryId" class="summary-value">--</div>
+          <div class="summary-sub">對應本次成交頁來源</div>
         </div>
+        <div class="summary-box">
+          <div class="summary-label">金額</div>
+          <div id="amount" class="summary-value">--</div>
+          <div class="summary-sub">依下單當下帶入的金額</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">來源狀態</div>
+          <div id="refStatus" class="summary-value">直客</div>
+          <div class="summary-sub">若有 refUid 會顯示為分銷來源</div>
+        </div>
+      </section>
+
+      <div class="grid-2">
+        <section class="panel">
+          <div class="panel-head">訂單資訊</div>
+          <div class="panel-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>tenantId</label>
+                <input id="tenantIdInput" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>itineraryId</label>
+                <input id="itineraryIdInput" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>orderId</label>
+                <input id="orderIdInput" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>amount</label>
+                <input id="amountInput" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>refUid</label>
+                <input id="refUidInput" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>建立來源</label>
+                <input id="sourcePageInput" type="text" readonly />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">下一步</div>
+          <div class="panel-body">
+            <div class="steps">
+              <div class="step">
+                <div class="step-no">1</div>
+                <div>
+                  <div class="step-title">保留訂單號</div>
+                  <div class="step-desc">建議將本頁訂單號保存下來，方便後續客服查詢。</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-no">2</div>
+                <div>
+                  <div class="step-title">等待後續確認</div>
+                  <div class="step-desc">可由 LINE、客服或分銷商接續通知付款、確認或補件資訊。</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-no">3</div>
+                <div>
+                  <div class="step-title">回到行程頁 / 繼續瀏覽</div>
+                  <div class="step-desc">你可以直接回原行程頁，或返回首頁查看其他行程。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
+
+      <div class="grid-2">
+        <section class="panel">
+          <div class="panel-head">操作</div>
+          <div class="panel-body">
+            <div class="actions">
+              <a id="btnBackTrip" class="btn btn-primary" href="#">回行程頁</a>
+              <a id="btnHome" class="btn btn-dark" href="./">回首頁</a>
+              <button id="btnCopyOrderId" class="btn btn-ghost" type="button">複製訂單號</button>
+              <button id="btnCopyPage" class="btn btn-ghost" type="button">複製此頁連結</button>
+            </div>
+            <div class="tiny" style="margin-top:12px;">
+              若這頁是由 `trip.html` 跳轉而來，系統會自動保留 `tenantId / itineraryId / refUid`。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">系統狀態</div>
+          <div class="panel-body">
+            <div id="statusBox" class="status-box">尚未初始化</div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">提醒</div>
+        <div class="panel-body">
+          <div class="notice-box">
+            目前 success.html 以「成交完成提示頁」為主，不額外重新寫入訂單。
+            <br>它只負責承接 `trip.html` 已建立好的 `orderId / tenantId / itineraryId / refUid / amount`
+            並引導用戶回原頁或返回首頁。
+          </div>
+          <div style="margin-top:12px;">
+            <span class="pill pill-green">成交頁流程已完成</span>
+            <span class="pill pill-blue">可接 CRM / 分銷後台查詢</span>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <script>
+    const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+    const DEFAULT_TENANT = "t001";
+
+    let tenantData = null;
+
     function qs(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name) || "";
+    }
+
+    function setStatus(message, append = false) {
+      const el = document.getElementById("statusBox");
+      const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
+      const line = stamp + " " + message;
+      el.textContent = append ? (el.textContent + "\n" + line) : line;
     }
 
     function formatNumber(n) {
       return Number(n || 0).toLocaleString();
     }
 
-    (function init() {
+    function apiGet(path) {
+      return fetch(WORKER_URL + path).then(res => res.json());
+    }
+
+    function copyText(text, successMsg) {
+      if (!navigator.clipboard) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "0";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          setStatus(successMsg, true);
+        } catch (e) {
+          setStatus("複製失敗：" + (e.message || String(e)), true);
+        }
+        document.body.removeChild(ta);
+        return;
+      }
+
+      navigator.clipboard.writeText(text)
+        .then(() => setStatus(successMsg, true))
+        .catch(err => setStatus("複製失敗：" + (err.message || String(err)), true));
+    }
+
+    function getTenantId() {
+      return qs("tenantId") || localStorage.getItem("tk_tenant_id") || localStorage.getItem("travelman_tenant_id") || DEFAULT_TENANT;
+    }
+
+    async function loadTenant() {
+      const tenantId = getTenantId();
+      try {
+        const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(tenantId));
+        tenantData = res && res.data ? res.data.data : null;
+
+        if (tenantData) {
+          const brand = tenantData.brandName || "TravelKeeper";
+          const color = tenantData.primaryColor || "#06c755";
+          document.getElementById("brandName").textContent = brand;
+          document.documentElement.style.setProperty("--primary", color);
+          document.documentElement.style.setProperty("--primary-dark", color);
+          document.documentElement.style.setProperty("--primary-soft", color + "1A");
+        }
+      } catch (err) {
+        setStatus("品牌載入失敗：" + (err.message || String(err)), true);
+      }
+    }
+
+    function renderOrderInfo() {
       const orderId = qs("orderId");
-      const it = qs("it");
+      const it = qs("it") || qs("itineraryId");
       const amount = qs("amount");
-      const tenantId = qs("tenantId");
-      const ref = qs("ref");
+      const tenantId = getTenantId();
+      const ref = qs("ref") || "";
+
+      if (tenantId) {
+        localStorage.setItem("tk_tenant_id", tenantId);
+        localStorage.setItem("travelman_tenant_id", tenantId);
+      }
+      if (it) localStorage.setItem("tk_itinerary_id", it);
+      if (ref) localStorage.setItem("tk_ref_uid", ref);
+
+      const amountText = amount ? ("NT$ " + formatNumber(amount)) : "--";
+      const refText = ref || "direct";
+      const refStatus = ref ? "分銷來源" : "直客";
 
       document.getElementById("orderId").textContent = orderId || "--";
+      document.getElementById("heroOrderId").textContent = orderId || "--";
       document.getElementById("itineraryId").textContent = it || "--";
-      document.getElementById("amount").textContent = amount ? ("NT$ " + formatNumber(amount)) : "--";
+      document.getElementById("amount").textContent = amountText;
+      document.getElementById("heroAmount").textContent = amountText;
+      document.getElementById("refStatus").textContent = refStatus;
+
+      document.getElementById("tenantIdInput").value = tenantId || "";
+      document.getElementById("itineraryIdInput").value = it || "";
+      document.getElementById("orderIdInput").value = orderId || "";
+      document.getElementById("amountInput").value = amountText;
+      document.getElementById("refUidInput").value = refText;
+      document.getElementById("sourcePageInput").value = "./trip.html";
 
       const tripUrl =
-        "./trip.html?tenantId=" + encodeURIComponent(tenantId || "t001") +
+        "./trip.html?tenantId=" + encodeURIComponent(tenantId || DEFAULT_TENANT) +
         "&it=" + encodeURIComponent(it || "") +
         (ref ? "&ref=" + encodeURIComponent(ref) : "");
 
+      const homeUrl = "./?tenantId=" + encodeURIComponent(tenantId || DEFAULT_TENANT);
+
       document.getElementById("btnBackTrip").href = tripUrl;
-    })();
+      document.getElementById("btnBackTripTop").href = tripUrl;
+      document.getElementById("btnHome").href = homeUrl;
+      document.getElementById("btnHomeTop").href = homeUrl;
+    }
+
+    function bindEvents() {
+      document.getElementById("btnCopyOrderId").addEventListener("click", function() {
+        const orderId = qs("orderId") || "";
+        if (!orderId) {
+          setStatus("目前沒有可複製的訂單號", true);
+          return;
+        }
+        copyText(orderId, "已複製訂單號：" + orderId);
+      });
+
+      document.getElementById("btnCopyPage").addEventListener("click", function() {
+        copyText(window.location.href, "已複製成功頁連結");
+      });
+    }
+
+    async function boot() {
+      try {
+        renderOrderInfo();
+        bindEvents();
+        await loadTenant();
+        setStatus("success.html 初始化完成");
+      } catch (err) {
+        setStatus("初始化失敗：" + (err.message || String(err)));
+      }
+    }
+
+    boot();
   </script>
 </body>
 </html>
