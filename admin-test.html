@@ -1,149 +1,191 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>TravelKeeper SaaS Admin 測試</title>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    h2 {
-      margin-top: 30px;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-      border: none;
-      background: #0A84FF;
-      color: white;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    button:hover {
-      opacity: 0.8;
-    }
-    pre {
-      background: #000;
-      color: #0f0;
-      padding: 10px;
-      height: 250px;
-      overflow: auto;
-    }
-  </style>
-</head>
-<body>
+<meta charset="UTF-8" />
+<title>TravelKeeper Admin v2</title>
 
-<h1>🚀 TravelKeeper SaaS Admin 測試頁</h1>
+<style>
+body {
+  font-family: Arial;
+  background: #f5f5f5;
+  padding: 20px;
+}
+h1 { margin-bottom: 10px; }
 
-<h2>📦 行程</h2>
-<button onclick="saveItinerary()">建立行程</button>
-<button onclick="listItineraries()">查詢行程</button>
-
-<h2>👤 會員</h2>
-<button onclick="registerMember()">建立會員</button>
-<button onclick="getMemberOrders()">查會員訂單</button>
-
-<h2>🤝 分銷商</h2>
-<button onclick="registerDistributor()">建立分銷商</button>
-<button onclick="getDistributorDashboard()">查分銷 Dashboard</button>
-
-<h2>💰 訂單</h2>
-<button onclick="createOrder()">建立訂單</button>
-
-<h2>📊 回應結果</h2>
-<pre id="result"></pre>
-
-<script>
-const BASE_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
-const TENANT_ID = "t001";
-
-function show(res) {
-  document.getElementById("result").textContent =
-    JSON.stringify(res, null, 2);
+.section {
+  margin-top: 30px;
 }
 
-async function post(path, data) {
-  const res = await fetch(BASE_URL + path, {
+button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  background: #0A84FF;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card {
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.card img {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.link-box {
+  background: #000;
+  color: #0f0;
+  padding: 10px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🚀 TravelKeeper Admin v2</h1>
+
+<div class="section">
+<h2>📦 行程</h2>
+<button onclick="saveItinerary()">建立測試行程</button>
+<button onclick="loadItineraries()">刷新列表</button>
+<div id="itineraryList"></div>
+</div>
+
+<div class="section">
+<h2>🤝 分銷</h2>
+<button onclick="generateLink()">產生分銷連結</button>
+<div id="linkBox" class="link-box"></div>
+</div>
+
+<div class="section">
+<h2>💰 訂單</h2>
+<button onclick="createOrder()">建立測試訂單</button>
+<button onclick="loadOrders()">查訂單</button>
+<table class="table">
+<thead>
+<tr>
+<th>訂單</th>
+<th>會員</th>
+<th>金額</th>
+<th>分銷</th>
+</tr>
+</thead>
+<tbody id="orderTable"></tbody>
+</table>
+</div>
+
+<script>
+const BASE = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+const TENANT = "t001";
+
+// ===== API =====
+async function get(url) {
+  const res = await fetch(BASE + url);
+  return await res.json();
+}
+async function post(url, data) {
+  const res = await fetch(BASE + url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify(data)
   });
   return await res.json();
 }
 
-async function get(path) {
-  const res = await fetch(BASE_URL + path);
-  return await res.json();
-}
-
 // ===== 行程 =====
 async function saveItinerary() {
-  const res = await post("/api/admin/save-itinerary", {
-    tenantId: TENANT_ID,
-    itineraryId: "it_001",
+  await post("/api/admin/save-itinerary", {
+    tenantId: TENANT,
+    itineraryId: "it_" + Date.now(),
     title: "東京賞櫻五日遊",
     price: 29900,
     status: "published",
     country: "日本",
     city: "東京",
-    days: 5,
-    coverImageUrl: "https://picsum.photos/400/300"
+    coverImageUrl: "https://picsum.photos/200/120"
   });
-  show(res);
+  loadItineraries();
 }
 
-async function listItineraries() {
-  const res = await get(`/api/public/itineraries?tenantId=${TENANT_ID}`);
-  show(res);
-}
+async function loadItineraries() {
+  const res = await get(`/api/public/itineraries?tenantId=${TENANT}`);
+  const list = res?.data?.items || [];
 
-// ===== 會員 =====
-async function registerMember() {
-  const res = await post("/api/member/register", {
-    tenantId: TENANT_ID,
-    uid: "U_MEMBER_001",
-    name: "王小明",
-    phone: "0912345678",
-    email: "test@example.com"
-  });
-  show(res);
-}
+  const html = list.map(it => `
+    <div class="card">
+      <img src="${it.coverImageUrl || 'https://picsum.photos/200'}">
+      <div>
+        <div><b>${it.title}</b></div>
+        <div>💰 ${it.price || 0}</div>
+        <button onclick="createOrder('${it.itineraryId}')">下單</button>
+      </div>
+    </div>
+  `).join("");
 
-async function getMemberOrders() {
-  const res = await get(`/api/member/orders?tenantId=${TENANT_ID}&uid=U_MEMBER_001`);
-  show(res);
+  document.getElementById("itineraryList").innerHTML = html;
 }
 
 // ===== 分銷 =====
-async function registerDistributor() {
-  const res = await post("/api/distributor/register", {
-    tenantId: TENANT_ID,
-    uid: "U_DIST_001",
-    name: "陳顧問",
-    commissionRate: 10
-  });
-  show(res);
-}
-
-async function getDistributorDashboard() {
-  const res = await get(`/api/distributor/dashboard?tenantId=${TENANT_ID}&uid=U_DIST_001`);
-  show(res);
+function generateLink() {
+  const ref = "U_DIST_001";
+  const link = `${location.origin}?ref=${ref}`;
+  document.getElementById("linkBox").innerText = link;
 }
 
 // ===== 訂單 =====
-async function createOrder() {
-  const res = await post("/api/admin/create-order", {
-    tenantId: TENANT_ID,
-    itineraryId: "it_001",
+async function createOrder(itineraryId="it_001") {
+  await post("/api/admin/create-order", {
+    tenantId: TENANT,
+    itineraryId,
     uid: "U_MEMBER_001",
     customerName: "王小明",
     totalAmount: 29900,
     distributorUid: "U_DIST_001"
   });
-  show(res);
+  loadOrders();
 }
+
+async function loadOrders() {
+  const res = await get(`/api/member/orders?tenantId=${TENANT}&uid=U_MEMBER_001`);
+  const list = res?.data?.items || [];
+
+  const html = list.map(o => `
+    <tr>
+      <td>${o.orderId}</td>
+      <td>${o.customerName}</td>
+      <td>${o.totalAmount}</td>
+      <td>${o.distributorUid || "-"}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("orderTable").innerHTML = html;
+}
+
+// init
+loadItineraries();
 </script>
 
 </body>
