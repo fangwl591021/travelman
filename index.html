@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travelman Console</title>
+  <style>
+    :root {
+      --primary: #06c755;
+      --primary-dark: #05a847;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --border: #dfe3e8;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --sidebar: #1f2a37;
+      --sidebar-text: #e5e7eb;
+      --header: #ffffff;
+      --table-head: #f7f9fb;
+      --dark: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100%;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--sidebar);
+      color: var(--sidebar-text);
+      padding: 18px 14px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .nav-group {
+      margin-top: 18px;
+    }
+
+    .nav-title {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--sidebar-text);
+      border: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-item.active,
+    .nav-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      background: var(--header);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .topbar-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn-dark {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    .content {
+      padding: 16px 18px 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .kpi-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .kpi-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .status-box {
+      background: #0b1220;
+      color: #d1fae5;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      background: var(--table-head);
+      color: #374151;
+      font-weight: 700;
+    }
+
+    .trip-table th:nth-child(1) { width: 70px; }
+    .trip-table th:nth-child(2) { width: auto; }
+    .trip-table th:nth-child(3) { width: 120px; }
+    .trip-table th:nth-child(4) { width: 140px; }
+
+    .thumb {
+      width: 56px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #ddd;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .tab-page {
+      display: none;
+    }
+
+    .tab-page.active {
+      display: grid;
+      gap: 14px;
+    }
+
+    .empty {
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-link {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    @media (max-width: 1100px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .kpi-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .kpi-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        Travelman Console
+        <div id="sideBrand" class="brand-badge">TravelKeeper</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">主控台</div>
+        <button class="nav-item active" data-tab-btn="home">首頁總覽</button>
+        <button class="nav-item" data-tab-btn="itineraries">行程管理</button>
+        <button class="nav-item" data-tab-btn="orders">訂單管理</button>
+        <button class="nav-item" data-tab-btn="distributors">分銷管理</button>
+        <button class="nav-item" data-tab-btn="settings">品牌設定</button>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">外部頁</div>
+        <a class="nav-item" href="./trip.html" target="_blank">trip.html</a>
+        <a class="nav-item" href="./success.html" target="_blank">success.html</a>
+        <a class="nav-item" href="./distributor-dashboard.html" target="_blank">分銷商後台</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div id="pageTitle" class="topbar-title">首頁總覽</div>
+          <div class="topbar-sub">Travelman SaaS 主控台</div>
+        </div>
+        <div class="topbar-right">
+          <button id="btnRefreshAll" class="btn btn-dark">刷新資料</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div id="tab-home" class="tab-page active">
+          <div class="kpi-row">
+            <div class="kpi-box">
+              <div class="kpi-label">行程數</div>
+              <div id="kpiItineraries" class="kpi-value">0</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">訂單數</div>
+              <div id="kpiOrders" class="kpi-value">0</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">分銷商數</div>
+              <div id="kpiDistributors" class="kpi-value">0</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">總營收</div>
+              <div id="kpiRevenue" class="kpi-value">0</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">快速入口</div>
+            <div class="panel-body">
+              <div class="quick-links">
+                <a class="quick-link" href="./trip.html" target="_blank">客戶成交頁</a>
+                <a class="quick-link" href="./success.html" target="_blank">成功頁</a>
+                <a class="quick-link" href="./distributor-dashboard.html" target="_blank">分銷商工作台</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">系統狀態</div>
+            <div class="panel-body">
+              <div id="statusBox" class="status-box">尚未初始化</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-itineraries" class="tab-page">
+          <div class="panel">
+            <div class="panel-head">行程管理</div>
+            <div class="table-wrap">
+              <table class="trip-table">
+                <thead>
+                  <tr>
+                    <th>圖片</th>
+                    <th>行程</th>
+                    <th>價格</th>
+                    <th>狀態</th>
+                  </tr>
+                </thead>
+                <tbody id="itineraryTable">
+                  <tr><td colspan="4" class="empty">載入中...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-orders" class="tab-page">
+          <div class="panel">
+            <div class="panel-head">訂單管理</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>訂單號</th>
+                    <th>客戶</th>
+                    <th>金額</th>
+                    <th>付款狀態</th>
+                    <th>分銷 UID</th>
+                    <th>行程 ID</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTable">
+                  <tr><td colspan="6" class="empty">載入中...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-distributors" class="tab-page">
+          <div class="panel">
+            <div class="panel-head">分銷管理</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>UID</th>
+                    <th>姓名</th>
+                    <th>狀態</th>
+                    <th>佣金比例</th>
+                    <th>訂單數</th>
+                    <th>營收</th>
+                  </tr>
+                </thead>
+                <tbody id="distributorsTable">
+                  <tr><td colspan="6" class="empty">載入中...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-settings" class="tab-page">
+          <div class="panel">
+            <div class="panel-head">品牌設定</div>
+            <div class="panel-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>品牌名稱</label>
+                  <input id="brandNameInput" type="text" readonly />
+                </div>
+                <div class="field">
+                  <label>主色</label>
+                  <input id="primaryColorInput" type="text" readonly />
+                </div>
+                <div class="field">
+                  <label>方案</label>
+                  <input id="planInput" type="text" readonly />
+                </div>
+                <div class="field">
+                  <label>Tenant ID</label>
+                  <input id="tenantIdInput" type="text" readonly />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const BASE = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+    const TENANT = "t001";
+
+    let tenantData = null;
+    let itineraries = [];
+    let orders = [];
+    let distributors = [];
+
+    function setStatus(msg, append = false) {
+      const el = document.getElementById("statusBox");
+      if (append) {
+        el.textContent += "\n" + msg;
+      } else {
+        el.textContent = msg;
+      }
+    }
+
+    function qs(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function formatNumber(n) {
+      return Number(n || 0).toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function apiGet(path) {
+      const res = await fetch(BASE + path);
+      return await res.json();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll("[data-tab-btn]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tabBtn === tab);
+      });
+
+      document.querySelectorAll(".tab-page").forEach(page => {
+        page.classList.remove("active");
+      });
+
+      const target = document.getElementById("tab-" + tab);
+      if (target) target.classList.add("active");
+
+      const titleMap = {
+        home: "首頁總覽",
+        itineraries: "行程管理",
+        orders: "訂單管理",
+        distributors: "分銷管理",
+        settings: "品牌設定"
+      };
+
+      document.getElementById("pageTitle").textContent = titleMap[tab] || "Travelman Console";
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      history.replaceState({}, "", url.toString());
+    }
+
+    async function loadTenant() {
+      const res = await apiGet(`/api/public/tenant?tenantId=${TENANT}`);
+      tenantData = res && res.data ? res.data.data : null;
+
+      if (tenantData) {
+        const brand = tenantData.brandName || "TravelKeeper";
+        const color = tenantData.primaryColor || "#06c755";
+
+        document.getElementById("sideBrand").textContent = brand;
+        document.documentElement.style.setProperty("--primary", color);
+        document.documentElement.style.setProperty("--primary-dark", color);
+
+        document.getElementById("brandNameInput").value = brand;
+        document.getElementById("primaryColorInput").value = color;
+        document.getElementById("planInput").value = tenantData.plan || "";
+        document.getElementById("tenantIdInput").value = tenantData.tenantId || TENANT;
+      }
+    }
+
+    async function loadItineraries() {
+      const res = await apiGet(`/api/public/itineraries?tenantId=${TENANT}`);
+      itineraries = res && res.data ? (res.data.items || []) : [];
+
+      document.getElementById("kpiItineraries").textContent = formatNumber(itineraries.length);
+
+      const html = itineraries.length
+        ? itineraries.map(it => `
+          <tr>
+            <td><img class="thumb" src="${it.coverImageUrl || "https://picsum.photos/200"}" alt="trip"></td>
+            <td>
+              <div><b>${escapeHtml(it.title || "未命名行程")}</b></div>
+              <div class="small">${escapeHtml(it.country || "")} ${escapeHtml(it.city || "")}</div>
+              <div class="small">ID：${escapeHtml(it.itineraryId || "")}</div>
+            </td>
+            <td>NT$ ${formatNumber(it.price || 0)}</td>
+            <td>${escapeHtml(it.status || "-")}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="4" class="empty">目前尚無行程</td></tr>`;
+
+      document.getElementById("itineraryTable").innerHTML = html;
+    }
+
+    async function loadOrders() {
+      const res = await apiGet(`/api/admin/get-orders?tenantId=${TENANT}`).catch(() => null);
+
+      if (res && res.data && res.data.items) {
+        orders = res.data.items;
+      } else {
+        const fallback = await apiGet(`/api/member/orders?tenantId=${TENANT}&uid=U_MEMBER_001`);
+        orders = fallback && fallback.data ? (fallback.data.items || []) : [];
+      }
+
+      document.getElementById("kpiOrders").textContent = formatNumber(orders.length);
+
+      const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+      document.getElementById("kpiRevenue").textContent = formatNumber(totalRevenue);
+
+      const html = orders.length
+        ? orders.map(o => `
+          <tr>
+            <td>${escapeHtml(o.orderId)}</td>
+            <td>${escapeHtml(o.customerName || "")}</td>
+            <td>${formatNumber(o.totalAmount || 0)}</td>
+            <td>${escapeHtml(o.paymentStatus || "-")}</td>
+            <td>${escapeHtml(o.distributorUid || "-")}</td>
+            <td>${escapeHtml(o.itineraryId || "")}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="6" class="empty">目前尚無訂單</td></tr>`;
+
+      document.getElementById("ordersTable").innerHTML = html;
+    }
+
+    async function loadDistributors() {
+      const res = await apiGet(`/api/distributor/list?tenantId=${TENANT}`).catch(() => null);
+
+      if (res && res.data && res.data.items) {
+        distributors = res.data.items;
+      } else {
+        distributors = [];
+      }
+
+      document.getElementById("kpiDistributors").textContent = formatNumber(distributors.length);
+
+      const html = distributors.length
+        ? distributors.map(d => `
+          <tr>
+            <td>${escapeHtml(d.uid || "")}</td>
+            <td>${escapeHtml(d.name || "")}</td>
+            <td>${escapeHtml(d.status || "")}</td>
+            <td>${escapeHtml(d.commissionRate || 0)}%</td>
+            <td>${formatNumber(d.orderCount || 0)}</td>
+            <td>${formatNumber(d.revenueAmount || 0)}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="6" class="empty">目前尚無分銷資料或尚未開放列表 API</td></tr>`;
+
+      document.getElementById("distributorsTable").innerHTML = html;
+    }
+
+    async function refreshAll() {
+      setStatus("開始刷新資料...");
+      await loadTenant();
+      await loadItineraries();
+      await loadOrders();
+      await loadDistributors();
+      setStatus("資料刷新完成");
+    }
+
+    document.querySelectorAll("[data-tab-btn]").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tabBtn));
+    });
+
+    document.getElementById("btnRefreshAll").addEventListener("click", refreshAll);
+
+    (async function boot() {
+      const tab = qs("tab") || "home";
+      switchTab(tab);
+      await refreshAll();
+    })();
+  </script>
+</body>
+</html>
