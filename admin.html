@@ -3,487 +3,369 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travelman 後台上稿</title>
+  <title>Travelman 行程上稿</title>
   <style>
-    :root {
-      --primary: #06c755;
-      --primary-dark: #05a847;
-      --bg: #f6f8fb;
-      --panel: #ffffff;
-      --border: #dfe3e8;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --dark: #111827;
-      --info: #2563eb;
-      --warn: #d97706;
-      --danger: #dc2626;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
+    :root{
+      --primary:#06c755;
+      --primary-dark:#05a847;
+      --bg:#f5f6f8;
+      --panel:#ffffff;
+      --border:#d9dee5;
+      --text:#222;
+      --muted:#6b7280;
+      --dark:#1f2937;
+      --info:#2563eb;
+      --warn:#d97706;
+      --danger:#dc2626;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:Arial,"Noto Sans TC",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    button,input,textarea,select{font:inherit}
+    a{text-decoration:none;color:inherit}
+
+    .page{
+      max-width:1180px;
+      margin:0 auto;
+      padding:18px 14px 40px;
     }
 
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, "Noto Sans TC", sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    .topbar{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px 16px;
+      margin-bottom:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .topbar-left .tag{
+      display:inline-block;
+      background:var(--primary);
+      color:#fff;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .title{
+      font-size:28px;
+      font-weight:800;
+      line-height:1.2;
+      margin:0;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
+    .topbar-right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
     }
 
-    button, input, textarea, select {
-      font: inherit;
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:700;
+    }
+    .btn-primary{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+    }
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-dark{
+      background:var(--dark);
+      border-color:var(--dark);
+      color:#fff;
+    }
+    .btn-info{
+      background:#eff6ff;
+      border-color:#bfdbfe;
+      color:#1d4ed8;
+    }
+    .btn-warn{
+      background:#fff7ed;
+      border-color:#fed7aa;
+      color:#9a3412;
     }
 
-    .app {
-      min-height: 100vh;
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+    .card-head{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      font-weight:800;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .card-body{
+      padding:14px;
     }
 
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+    .main{
+      display:grid;
+      grid-template-columns:420px 1fr;
+      gap:14px;
+      align-items:start;
     }
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--primary);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .field-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
     }
-
-    .title {
-      font-size: 24px;
-      font-weight: 800;
-      line-height: 1.3;
+    .field{
+      display:grid;
+      gap:6px;
     }
-
-    .sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 4px;
+    .field.full{
+      grid-column:1 / -1;
     }
-
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+    .field label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
     }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .btn:hover {
-      filter: brightness(.98);
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-dark {
-      background: var(--dark);
-      border-color: var(--dark);
-      color: #fff;
-    }
-
-    .btn-info {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-      color: #1d4ed8;
-    }
-
-    .btn-warn {
-      background: #fff7ed;
-      border-color: #fed7aa;
-      color: #9a3412;
-    }
-
-    .wrap {
-      width: 100%;
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 18px 16px 28px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .panel-head {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .panel-body {
-      padding: 16px;
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .step {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .step-no {
-      display: inline-flex;
-      width: 32px;
-      height: 32px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      background: #ecfdf5;
-      color: var(--primary-dark);
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-
-    .step-title {
-      font-size: 16px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .step-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
-    }
-
-    .field label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
     .field input,
     .field textarea,
-    .field select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      font-size: 14px;
-      outline: none;
+    .field select{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#fff;
+      outline:none;
+      font-size:14px;
     }
-
     .field input:focus,
     .field textarea:focus,
-    .field select:focus {
-      border-color: var(--primary);
+    .field select:focus{
+      border-color:var(--primary);
     }
 
-    .upload-box {
-      border: 2px dashed #cbd5e1;
-      border-radius: 18px;
-      padding: 16px;
-      background: #f8fafc;
-      display: grid;
-      gap: 12px;
+    .upload-box{
+      border:1px dashed #c7ced8;
+      border-radius:12px;
+      padding:12px;
+      background:#fafbfc;
+    }
+    .upload-zone{
+      min-height:240px;
+      border:1px dashed #c7ced8;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      padding:12px;
+      text-align:center;
+      overflow:hidden;
+    }
+    .upload-zone.has-image{
+      border-style:solid;
+    }
+    .upload-hint{
+      color:var(--muted);
+      line-height:1.8;
+      font-size:14px;
+    }
+    .preview-image{
+      width:100%;
+      max-height:420px;
+      object-fit:contain;
+      display:block;
+      border-radius:8px;
     }
 
-    .upload-zone {
-      min-height: 240px;
-      border: 2px dashed #cbd5e1;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      padding: 12px;
-      text-align: center;
-      overflow: hidden;
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
     }
 
-    .upload-zone.has-image {
-      border-style: solid;
+    .status-box{
+      background:#111827;
+      color:#d1fae5;
+      border-radius:10px;
+      padding:12px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:13px;
+      line-height:1.7;
+      font-family:Consolas,Monaco,monospace;
+      min-height:100px;
+      max-height:200px;
+      overflow:auto;
     }
 
-    .upload-hint {
-      color: var(--muted);
-      line-height: 1.8;
-      font-size: 14px;
+    .preview{
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .preview-cover{
+      width:100%;
+      height:230px;
+      object-fit:cover;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#eceff3;
+      display:block;
+    }
+    .preview-right{
+      display:grid;
+      gap:10px;
+    }
+    .preview-title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1.35;
+      word-break:break-word;
+    }
+    .preview-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .pill{
+      background:#eef2ff;
+      color:#334155;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .price{
+      font-size:30px;
+      font-weight:800;
+      color:var(--primary);
+    }
+    .desc{
+      color:#4b5563;
+      line-height:1.8;
+      font-size:14px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .tag-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .tag-chip{
+      background:#f3f4f6;
+      color:#111827;
+      border:1px solid #e5e7eb;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
     }
 
-    .preview-image {
-      width: 100%;
-      max-height: 420px;
-      object-fit: contain;
-      display: block;
-      border-radius: 12px;
+    .helper{
+      background:#eff6ff;
+      border:1px solid #bfdbfe;
+      color:#1e40af;
+      padding:12px;
+      border-radius:10px;
+      font-size:13px;
+      line-height:1.8;
     }
 
-    .preview-card {
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-      background: #fff;
+    .advanced-wrap{
+      display:none;
+    }
+    .advanced-wrap.open{
+      display:block;
     }
 
-    .preview-cover {
-      width: 100%;
-      height: 240px;
-      object-fit: cover;
-      background: #e5e7eb;
-      display: block;
+    .json-box{
+      width:100%;
+      min-height:220px;
+      background:#0f172a;
+      color:#d1fae5;
+      border:1px solid #1e293b;
+      border-radius:12px;
+      padding:12px;
+      white-space:pre-wrap;
+      overflow:auto;
+      font-family:Consolas,Monaco,monospace;
+      font-size:12px;
+      line-height:1.7;
     }
 
-    .preview-body {
-      padding: 16px;
-      display: grid;
-      gap: 10px;
+    .small-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.7;
     }
 
-    .preview-title {
-      font-size: 24px;
-      font-weight: 800;
-      line-height: 1.4;
-      word-break: break-word;
-    }
-
-    .preview-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #eef2ff;
-      color: #334155;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .preview-price {
-      font-size: 30px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .preview-desc {
-      color: var(--muted);
-      line-height: 1.8;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      background: #f3f4f6;
-      color: #111827;
-      border: 1px solid #e5e7eb;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .status-box {
-      background: #0b1220;
-      color: #d1fae5;
-      border-radius: 14px;
-      padding: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 13px;
-      line-height: 1.75;
-      font-family: Consolas, Monaco, monospace;
-      min-height: 100px;
-      max-height: 220px;
-      overflow: auto;
-    }
-
-    .notice {
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
-      padding: 14px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .collapse {
-      display: none;
-    }
-
-    .collapse.open {
-      display: block;
-    }
-
-    .json-box {
-      width: 100%;
-      min-height: 240px;
-      background: #0f172a;
-      color: #d1fae5;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 14px;
-      white-space: pre-wrap;
-      overflow: auto;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .tiny {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    @media (max-width: 980px) {
-      .steps,
-      .main-grid,
-      .field-grid {
-        grid-template-columns: 1fr;
+    @media (max-width: 980px){
+      .main,
+      .preview,
+      .field-grid{
+        grid-template-columns:1fr;
       }
     }
 
-    @media (max-width: 768px) {
-      .top-actions {
-        width: 100%;
+    @media (max-width: 768px){
+      .topbar-right{
+        width:100%;
       }
-
-      .top-actions .btn {
-        flex: 1 1 100%;
+      .topbar-right .btn{
+        flex:1 1 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="page">
     <div class="topbar">
-      <div>
-        <div class="brand">Travelman Admin</div>
-        <div class="title">極簡上稿模式</div>
-        <div class="sub">旅遊業者只需要：上傳海報 → 確認重點 → 儲存 / 發布</div>
+      <div class="topbar-left">
+        <div class="tag">Travelman 行程上稿</div>
+        <h1 class="title">簡單操作版</h1>
+        <div class="sub">上傳海報 → 確認內容 → 儲存草稿 / 正式發布</div>
       </div>
-      <div class="top-actions">
+      <div class="topbar-right">
         <a class="btn" href="./index.html" target="_blank">回首頁</a>
         <button id="btnOpenTripPreview" class="btn btn-info" type="button">預覽行程頁</button>
         <button id="btnClearAll" class="btn btn-warn" type="button">清空</button>
       </div>
     </div>
 
-    <div class="wrap">
-      <div class="panel">
-        <div class="panel-body">
-          <div class="steps">
-            <div class="step">
-              <div class="step-no">1</div>
-              <div class="step-title">上傳海報</div>
-              <div class="step-desc">只要上傳一張旅行 DM，系統先幫你抓內容。</div>
-            </div>
-            <div class="step">
-              <div class="step-no">2</div>
-              <div class="step-title">確認重點欄位</div>
-              <div class="step-desc">只看標題、價格、天數、日期、封面、簡介。</div>
-            </div>
-            <div class="step">
-              <div class="step-no">3</div>
-              <div class="step-title">儲存或發布</div>
-              <div class="step-desc">確認沒問題後，直接存成草稿或正式上架。</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="main-grid">
-        <div class="panel">
-          <div class="panel-head">第一步：上傳海報</div>
-          <div class="panel-body">
+    <div class="main">
+      <div class="left-col">
+        <div class="card">
+          <div class="card-head">第一步：上傳海報</div>
+          <div class="card-body">
             <div class="field-grid">
               <div class="field">
                 <label>Worker Base URL</label>
@@ -499,7 +381,7 @@
               </div>
             </div>
 
-            <div class="upload-box" style="margin-top:16px;">
+            <div class="upload-box" style="margin-top:12px;">
               <div id="uploadZone" class="upload-zone">
                 <div class="upload-hint">
                   請上傳旅遊海報 / DM。<br>
@@ -511,36 +393,42 @@
                 <button id="btnParse" class="btn btn-primary" type="button">開始解析</button>
                 <button id="btnUsePosterAsCover" class="btn" type="button">用海報當封面</button>
               </div>
-
-              <div class="notice">
-                系統目前會呼叫：
-                <br>• <b>/api/ai/upload-dm</b>：解析海報並建立草稿
-                <br>• <b>/api/admin/save-itinerary</b>：儲存行程
-              </div>
-            </div>
-
-            <div style="margin-top:16px;">
-              <div class="field">
-                <label>解析 / 儲存狀態</label>
-                <div id="statusBox" class="status-box">尚未開始</div>
-              </div>
             </div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel-head">
+        <div class="card">
+          <div class="card-head">系統訊息</div>
+          <div class="card-body">
+            <div id="statusBox" class="status-box">尚未開始</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">操作提醒</div>
+          <div class="card-body">
+            <div class="helper">
+              這個頁面只保留少數重點欄位。<br>
+              若要補更多細節，可以按「顯示進階欄位」再展開。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="card">
+          <div class="card-head">
             <span>第二步：確認內容</span>
             <span id="draftBadge" class="pill">draftId：--</span>
           </div>
-          <div class="panel-body">
-            <div class="preview-card">
+          <div class="card-body">
+            <div class="preview">
               <img id="previewCover" class="preview-cover" src="https://picsum.photos/1000/600" alt="cover" />
-              <div class="preview-body">
+              <div class="preview-right">
                 <div id="previewTitle" class="preview-title">尚未解析</div>
                 <div id="previewMeta" class="preview-meta"></div>
-                <div id="previewPrice" class="preview-price">--</div>
-                <div id="previewDesc" class="preview-desc">請先上傳海報並解析，或手動輸入下方欄位。</div>
+                <div id="previewPrice" class="price">--</div>
+                <div id="previewDesc" class="desc">請先上傳海報並解析，或手動輸入內容。</div>
                 <div id="previewHighlights" class="tag-list"></div>
               </div>
             </div>
@@ -582,143 +470,146 @@
               </div>
             </div>
 
-            <div class="actions" style="margin-top:16px;">
+            <div class="actions">
               <button id="btnSaveDraft" class="btn btn-dark" type="button">儲存草稿</button>
               <button id="btnPublish" class="btn btn-primary" type="button">正式發布</button>
               <button id="btnToggleAdvanced" class="btn btn-info" type="button">顯示進階欄位</button>
               <button id="btnCopyJson" class="btn" type="button">複製 JSON</button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div id="advancedPanel" class="panel collapse">
-        <div class="panel-head">進階欄位</div>
-        <div class="panel-body">
-          <div class="field-grid">
-            <div class="field">
-              <label>itineraryId</label>
-              <input id="itineraryId" type="text" />
-            </div>
-
-            <div class="field">
-              <label>status</label>
-              <select id="status">
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-                <option value="inactive">inactive</option>
-              </select>
-            </div>
-
-            <div class="field full">
-              <label>subtitle</label>
-              <input id="subtitle" type="text" />
-            </div>
-
-            <div class="field">
-              <label>region</label>
-              <input id="region" type="text" />
-            </div>
-
-            <div class="field">
-              <label>productType</label>
-              <input id="productType" type="text" value="group_tour" />
-            </div>
-
-            <div class="field">
-              <label>country</label>
-              <input id="country" type="text" />
-            </div>
-
-            <div class="field">
-              <label>city</label>
-              <input id="city" type="text" />
-            </div>
-
-            <div class="field">
-              <label>nights</label>
-              <input id="nights" type="number" min="0" />
-            </div>
-
-            <div class="field">
-              <label>returnDate</label>
-              <input id="returnDate" type="date" />
-            </div>
-
-            <div class="field full">
-              <label>highlightsJson（可貼 JSON 或每行一條）</label>
-              <textarea id="highlightsInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>dayByDayJson（可貼 JSON 或每行一條）</label>
-              <textarea id="dayByDayInput" rows="6"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>includesJson</label>
-              <textarea id="includesInput" rows="3"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>excludesJson</label>
-              <textarea id="excludesInput" rows="3"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>noticeJson</label>
-              <textarea id="noticeInput" rows="3"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>faqJson</label>
-              <textarea id="faqInput" rows="3"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>tagsJson</label>
-              <textarea id="tagsInput" rows="3"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>galleryJson（JSON）</label>
-              <textarea id="galleryInput" rows="3">[]</textarea>
-            </div>
-
-            <div class="field full">
-              <label>promoConfigJson（JSON）</label>
-              <textarea id="promoConfigInput" rows="3">{}</textarea>
-            </div>
-
-            <div class="field">
-              <label>draftId</label>
-              <input id="draftId" type="text" />
-            </div>
-
-            <div class="field">
-              <label>updatedBy</label>
-              <input id="updatedBy" type="text" value="tony" />
-            </div>
-
-            <div class="field">
-              <label>createdBy</label>
-              <input id="createdBy" type="text" value="tony" />
-            </div>
-
-            <div class="field">
-              <label>sourceType</label>
-              <input id="sourceType" type="text" value="dm_image" />
+            <div class="small-note" style="margin-top:10px;">
+              目前會對接：<b>/api/ai/upload-dm</b> 與 <b>/api/admin/save-itinerary</b>
             </div>
           </div>
         </div>
-      </div>
 
-      <div id="jsonPanel" class="panel collapse">
-        <div class="panel-head">Payload 預覽</div>
-        <div class="panel-body">
-          <pre id="jsonPreview" class="json-box">{}</pre>
-          <div class="tiny" style="margin-top:10px;">
-            這是送到 `/api/admin/save-itinerary` 的資料。
+        <div id="advancedWrap" class="advanced-wrap">
+          <div class="card">
+            <div class="card-head">進階欄位</div>
+            <div class="card-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>itineraryId</label>
+                  <input id="itineraryId" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>status</label>
+                  <select id="status">
+                    <option value="draft">draft</option>
+                    <option value="published">published</option>
+                    <option value="inactive">inactive</option>
+                  </select>
+                </div>
+
+                <div class="field full">
+                  <label>subtitle</label>
+                  <input id="subtitle" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>region</label>
+                  <input id="region" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>productType</label>
+                  <input id="productType" type="text" value="group_tour" />
+                </div>
+
+                <div class="field">
+                  <label>country</label>
+                  <input id="country" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>city</label>
+                  <input id="city" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>nights</label>
+                  <input id="nights" type="number" min="0" />
+                </div>
+
+                <div class="field">
+                  <label>returnDate</label>
+                  <input id="returnDate" type="date" />
+                </div>
+
+                <div class="field full">
+                  <label>highlightsJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="highlightsInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>dayByDayJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="dayByDayInput" rows="6"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>includesJson</label>
+                  <textarea id="includesInput" rows="3"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>excludesJson</label>
+                  <textarea id="excludesInput" rows="3"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>noticeJson</label>
+                  <textarea id="noticeInput" rows="3"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>faqJson</label>
+                  <textarea id="faqInput" rows="3"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>tagsJson</label>
+                  <textarea id="tagsInput" rows="3"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>galleryJson（JSON）</label>
+                  <textarea id="galleryInput" rows="3">[]</textarea>
+                </div>
+
+                <div class="field full">
+                  <label>promoConfigJson（JSON）</label>
+                  <textarea id="promoConfigInput" rows="3">{}</textarea>
+                </div>
+
+                <div class="field">
+                  <label>draftId</label>
+                  <input id="draftId" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>updatedBy</label>
+                  <input id="updatedBy" type="text" value="tony" />
+                </div>
+
+                <div class="field">
+                  <label>createdBy</label>
+                  <input id="createdBy" type="text" value="tony" />
+                </div>
+
+                <div class="field">
+                  <label>sourceType</label>
+                  <input id="sourceType" type="text" value="dm_image" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">Payload 預覽</div>
+            <div class="card-body">
+              <pre id="jsonPreview" class="json-box">{}</pre>
+            </div>
           </div>
         </div>
       </div>
@@ -736,7 +627,7 @@
       const el = document.getElementById("statusBox");
       const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
       const line = stamp + " " + message;
-      el.textContent = append ? (el.textContent + "\n" + line) : line;
+      el.textContent = append ? (el.textContent + "\\n" + line) : line;
       el.scrollTop = el.scrollHeight;
     }
 
@@ -753,7 +644,7 @@
 
     function linesToArray(text) {
       return String(text || "")
-        .split("\n")
+        .split("\\n")
         .map(s => s.trim())
         .filter(Boolean);
     }
@@ -876,8 +767,7 @@
       document.getElementById("previewCover").src =
         payload.coverImageUrl || state.posterObjectUrl || "https://picsum.photos/1000/600";
 
-      document.getElementById("previewTitle").textContent =
-        payload.title || "尚未解析";
+      document.getElementById("previewTitle").textContent = payload.title || "尚未解析";
 
       const meta = [];
       if (payload.region) meta.push("🧭 " + payload.region);
@@ -898,7 +788,7 @@
 
       const highlights = Array.isArray(payload.highlightsJson) ? payload.highlightsJson : [];
       document.getElementById("previewHighlights").innerHTML = highlights.length
-        ? highlights.map(item => `<span class="tag">${item}</span>`).join("")
+        ? highlights.map(item => `<span class="tag-chip">${item}</span>`).join("")
         : "";
 
       document.getElementById("draftBadge").textContent = "draftId：" + (payload.draftId || "--");
@@ -1083,25 +973,22 @@
         });
 
         const raw = await res.json();
-        logStatus("儲存 API 回應：\n" + JSON.stringify(raw, null, 2), true);
+        logStatus("儲存 API 回應：\\n" + JSON.stringify(raw, null, 2), true);
       } catch (err) {
         logStatus("儲存失敗：" + (err.message || String(err)), true);
       }
     }
 
     function toggleAdvanced() {
-      const advanced = document.getElementById("advancedPanel");
-      const jsonPanel = document.getElementById("jsonPanel");
+      const wrap = document.getElementById("advancedWrap");
       const btn = document.getElementById("btnToggleAdvanced");
-      const open = advanced.classList.contains("open");
+      const open = wrap.classList.contains("open");
 
       if (open) {
-        advanced.classList.remove("open");
-        jsonPanel.classList.remove("open");
+        wrap.classList.remove("open");
         btn.textContent = "顯示進階欄位";
       } else {
-        advanced.classList.add("open");
-        jsonPanel.classList.add("open");
+        wrap.classList.add("open");
         btn.textContent = "隱藏進階欄位";
       }
     }
@@ -1245,7 +1132,7 @@
       clearAll();
       document.getElementById("tenantId").value = tenantId;
       refreshJsonPreview();
-      logStatus("極簡版 admin.html 初始化完成", true);
+      logStatus("admin.html 舊模型融合版初始化完成", true);
     }
 
     boot();
