@@ -53,6 +53,28 @@
       return p;
     };
 
+    const extractDriveFileId = (url) => {
+      if (!url) return '';
+      const str = String(url).trim();
+      let m = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      m = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      m = str.match(/\/uc\?export=(?:download|view)&id=([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      return '';
+    };
+
+    const normalizeDriveImageUrl = (url) => {
+      if (!url) return '';
+      const str = String(url).trim();
+      if (!str) return '';
+      if (str.startsWith('data:')) return str;
+      const driveId = extractDriveFileId(str);
+      if (driveId) return `https://drive.google.com/thumbnail?id=${driveId}&sz=w2000`;
+      return str;
+    };
+
     const renderAgencyBlogDescription = (text) => {
       if (!text) return <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 text-[1.1rem] leading-[2.2] text-gray-700 tracking-wide whitespace-pre-wrap font-medium">目前此行程尚無詳細內容。</div>;
       const lines = String(text).split('\n');
@@ -187,7 +209,7 @@
         days: Number(raw.days || 0),
         startDate: raw.departureDate || raw.startDate || '',
         endDate: raw.returnDate || raw.endDate || '',
-        image: raw.coverImageUrl || raw.image || '',
+        image: normalizeDriveImageUrl(raw.coverImageUrl || raw.image || ''),
         description: raw.description || '',
         notes: Array.isArray(raw.noticeJson) ? raw.noticeJson.join('\n') : (raw.notes || ''),
         currency: raw.currency || 'TWD'
