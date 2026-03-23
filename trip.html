@@ -725,7 +725,14 @@
       setStatus("訂單建立結果：\n" + JSON.stringify(res, null, 2), true);
 
       if (res && res.success) {
-        alert("訂單已送出");
+        const orderId = (res.data && res.data.orderId) || res.orderId || "";
+        const successUrl =
+          "./success.html?tenantId=" + encodeURIComponent(state.tenantId) +
+          "&it=" + encodeURIComponent(state.itineraryId) +
+          "&amount=" + encodeURIComponent(amount) +
+          "&orderId=" + encodeURIComponent(orderId) +
+          (state.refUid ? "&ref=" + encodeURIComponent(state.refUid) : "");
+        window.location.href = successUrl;
       } else {
         alert("訂單送出失敗，請看狀態區");
       }
