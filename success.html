@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>報名成功</title>
+  <style>
+    :root {
+      --primary: #06c755;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --border: #dfe3e8;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .panel-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-dark {
+      background: #111827;
+      color: #fff;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div id="brandName" class="brand">TravelKeeper</div>
+      <h1 class="title">報名成功</h1>
+      <div class="desc">
+        我們已收到你的報名資料，後續可由 LINE 或人工客服協助你完成確認。
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">訂單資訊</div>
+      <div class="panel-body">
+        <div class="grid">
+          <div class="box">
+            <div class="label">訂單號</div>
+            <div id="orderId" class="value">--</div>
+          </div>
+          <div class="box">
+            <div class="label">行程 ID</div>
+            <div id="itineraryId" class="value">--</div>
+          </div>
+          <div class="box">
+            <div class="label">金額</div>
+            <div id="amount" class="value">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">下一步</div>
+      <div class="panel-body">
+        <div class="desc" style="margin-bottom:12px;">
+          你可以回到行程頁、查看其他行程，或等待後續聯繫。
+        </div>
+        <div class="actions">
+          <a id="btnBackTrip" class="btn btn-primary" href="#">回行程頁</a>
+          <a id="btnHome" class="btn btn-dark" href="./">回首頁</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function qs(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function formatNumber(n) {
+      return Number(n || 0).toLocaleString();
+    }
+
+    (function init() {
+      const orderId = qs("orderId");
+      const it = qs("it");
+      const amount = qs("amount");
+      const tenantId = qs("tenantId");
+      const ref = qs("ref");
+
+      document.getElementById("orderId").textContent = orderId || "--";
+      document.getElementById("itineraryId").textContent = it || "--";
+      document.getElementById("amount").textContent = amount ? ("NT$ " + formatNumber(amount)) : "--";
+
+      const tripUrl =
+        "./trip.html?tenantId=" + encodeURIComponent(tenantId || "t001") +
+        "&it=" + encodeURIComponent(it || "") +
+        (ref ? "&ref=" + encodeURIComponent(ref) : "");
+
+      document.getElementById("btnBackTrip").href = tripUrl;
+    })();
+  </script>
+</body>
+</html>
