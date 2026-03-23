@@ -1,611 +1,220 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>報名成功</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>旅遊管家 · 報名成功</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --primary: #06c755;
-      --primary-dark: #05a847;
-      --primary-soft: #e9fff2;
-      --bg: #f5f6f8;
-      --panel: #ffffff;
-      --border: #d9dee5;
-      --text: #222;
-      --muted: #6b7280;
-      --dark: #1f2937;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --radius: 14px;
+      --red: #b82337;
+      --red-dark: #8f1a29;
+      --green: #00B900;
+      --emerald: #10b981;
+      --slate: #1e293b;
+      --line-bg: #749cbd;
     }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, "Noto Sans TC", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    button, input {
-      font: inherit;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .page {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 16px 14px 40px;
-    }
-
-    .topbar {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      box-shadow: var(--shadow);
-    }
-
-    .brand-badge {
-      display: inline-block;
-      background: var(--primary);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .top-title {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.25;
-      margin: 0;
-      word-break: break-word;
-    }
-
-    .top-sub {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn:hover {
-      filter: brightness(.98);
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-dark {
-      background: var(--dark);
-      border-color: var(--dark);
-      color: #fff;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-head {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-      font-weight: 800;
-    }
-
-    .card-body {
-      padding: 14px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 14px;
-      align-items: stretch;
-    }
-
-    .hero-left {
-      display: grid;
-      align-content: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .ok-icon {
-      width: 72px;
-      height: 72px;
-      border-radius: 18px;
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      border: 1px solid #c7f0d9;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 34px;
-      font-weight: 800;
-    }
-
-    .hero-title {
-      font-size: 34px;
-      font-weight: 800;
-      line-height: 1.25;
-      margin: 0;
-      word-break: break-word;
-    }
-
-    .hero-desc {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.9;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag-chip {
-      background: #f3f4f6;
-      color: #111827;
-      border: 1px solid #e5e7eb;
-      padding: 7px 11px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .hero-right {
-      border-radius: 12px;
-      background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: #fff;
-      padding: 18px;
-      display: grid;
-      gap: 14px;
-      align-content: center;
-      min-width: 0;
-    }
-
-    .hero-label {
-      font-size: 12px;
-      font-weight: 700;
-      opacity: .92;
-      margin-bottom: 6px;
-    }
-
-    .hero-value {
-      font-size: 32px;
-      font-weight: 800;
-      line-height: 1.15;
-      word-break: break-word;
-    }
-
-    .simple-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .simple-box {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .simple-label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .simple-value {
-      font-size: 24px;
-      font-weight: 800;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-
-    .simple-sub {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .field label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .field input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .steps {
-      display: grid;
-      gap: 10px;
-    }
-
-    .step {
-      display: grid;
-      grid-template-columns: 42px 1fr;
-      gap: 12px;
-      align-items: start;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-    }
-
-    .step-no {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      border: 1px solid #c7f0d9;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-    }
-
-    .step-title {
-      font-size: 15px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .step-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
-    .notice-box {
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
+    body { font-family: "Noto Sans TC", Arial, sans-serif; }
+    .line-chat-bg { background-color: var(--line-bg); }
+    .shadow-soft { box-shadow: 0 12px 32px rgba(15, 23, 42, .10); }
+    .btn-main { background: var(--green); color:#fff; font-weight:700; border-radius:12px; }
+    .btn-main:hover { filter: brightness(1.06); }
+    .btn-sub { background:#fff; color:#334155; font-weight:700; border:1px solid #e2e8f0; border-radius:12px; }
+    .info-pill { border-radius:999px; font-size:12px; font-weight:800; padding:6px 10px; }
     .status-box {
-      background: #111827;
+      background: #0f172a;
       color: #d1fae5;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 12px;
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 12px;
       line-height: 1.7;
       font-family: Consolas, Monaco, monospace;
-      min-height: 90px;
-      max-height: 180px;
-      overflow: auto;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tiny {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-
-    .pill-green {
-      background: #dcfce7;
-      color: #166534;
-      border-color: #bbf7d0;
-    }
-
-    .pill-blue {
-      background: #dbeafe;
-      color: #1d4ed8;
-      border-color: #bfdbfe;
-    }
-
-    @media (max-width: 980px) {
-      .hero,
-      .simple-grid,
-      .grid-2,
-      .field-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .top-actions,
-      .actions {
-        width: 100%;
-      }
-
-      .top-actions .btn,
-      .actions .btn {
-        flex: 1 1 100%;
-      }
-
-      .hero-title {
-        font-size: 28px;
-      }
-
-      .hero-value {
-        font-size: 28px;
-      }
+      min-height: 96px;
     }
   </style>
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div>
-        <div id="brandName" class="brand-badge">TravelKeeper</div>
-        <h1 class="top-title">報名成功</h1>
-        <div class="top-sub">系統已收到你的訂單資料，後續可由客服或分銷夥伴接續處理。</div>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <div class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="brandBadge" class="inline-flex items-center gap-2 bg-[var(--red)] text-white px-3 py-1 rounded-full text-xs font-black tracking-wide">旅遊管家</div>
+        <div class="hidden sm:block text-sm font-bold text-slate-700 truncate">報名成功</div>
       </div>
-      <div class="top-actions">
-        <a id="btnBackTripTop" class="btn" href="#">回行程頁</a>
-        <a id="btnHomeTop" class="btn btn-dark" href="./">回首頁</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-body">
-        <div class="hero">
-          <div class="hero-left">
-            <div class="ok-icon">✅</div>
-            <h2 class="hero-title">你的報名已建立成功</h2>
-            <div class="hero-desc">
-              我們已收到這次行程的報名資料。接下來可以由 LINE、客服或分銷夥伴進行後續聯繫、確認與付款安排。
-            </div>
-            <div class="tag-list">
-              <span class="tag-chip">📦 訂單已建立</span>
-              <span class="tag-chip">🧾 可追蹤訂單號</span>
-              <span class="tag-chip">💬 可回原行程頁</span>
-            </div>
-          </div>
-
-          <div class="hero-right">
-            <div>
-              <div class="hero-label">訂單號</div>
-              <div id="heroOrderId" class="hero-value">--</div>
-            </div>
-            <div>
-              <div class="hero-label">本次金額</div>
-              <div id="heroAmount" class="hero-value">--</div>
-            </div>
-            <div class="tiny" style="color:rgba(255,255,255,.92);">
-              這一頁只負責承接 `trip.html` 的成功結果，不會再次重複建立訂單。
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="simple-grid">
-      <div class="simple-box">
-        <div class="simple-label">訂單號</div>
-        <div id="orderId" class="simple-value">--</div>
-        <div class="simple-sub">可用於客服查詢</div>
-      </div>
-      <div class="simple-box">
-        <div class="simple-label">行程 ID</div>
-        <div id="itineraryId" class="simple-value">--</div>
-        <div class="simple-sub">對應本次成交頁</div>
-      </div>
-      <div class="simple-box">
-        <div class="simple-label">金額</div>
-        <div id="amount" class="simple-value">--</div>
-        <div class="simple-sub">依下單時帶入</div>
-      </div>
-      <div class="simple-box">
-        <div class="simple-label">來源狀態</div>
-        <div id="refStatus" class="simple-value">直客</div>
-        <div class="simple-sub">有 refUid 則為分銷來源</div>
-      </div>
-    </div>
-
-    <div class="grid-2" style="margin-top:14px;">
-      <div class="card">
-        <div class="card-head">訂單資訊</div>
-        <div class="card-body">
-          <div class="field-grid">
-            <div class="field">
-              <label>tenantId</label>
-              <input id="tenantIdInput" type="text" readonly />
-            </div>
-            <div class="field">
-              <label>itineraryId</label>
-              <input id="itineraryIdInput" type="text" readonly />
-            </div>
-            <div class="field">
-              <label>orderId</label>
-              <input id="orderIdInput" type="text" readonly />
-            </div>
-            <div class="field">
-              <label>amount</label>
-              <input id="amountInput" type="text" readonly />
-            </div>
-            <div class="field">
-              <label>refUid</label>
-              <input id="refUidInput" type="text" readonly />
-            </div>
-            <div class="field">
-              <label>來源頁</label>
-              <input id="sourcePageInput" type="text" readonly />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">下一步</div>
-        <div class="card-body">
-          <div class="steps">
-            <div class="step">
-              <div class="step-no">1</div>
-              <div>
-                <div class="step-title">保留訂單號</div>
-                <div class="step-desc">建議保存訂單號，方便後續查詢與對單。</div>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-no">2</div>
-              <div>
-                <div class="step-title">等待後續確認</div>
-                <div class="step-desc">可由 LINE、客服或分銷夥伴進行付款、補件或確認流程。</div>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-no">3</div>
-              <div>
-                <div class="step-title">回原行程頁或首頁</div>
-                <div class="step-desc">你可以回到原本行程頁，或返回首頁查看其他行程。</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-2" style="margin-top:14px;">
-      <div class="card">
-        <div class="card-head">操作</div>
-        <div class="card-body">
-          <div class="actions">
-            <a id="btnBackTrip" class="btn btn-primary" href="#">回行程頁</a>
-            <a id="btnHome" class="btn btn-dark" href="./">回首頁</a>
-            <button id="btnCopyOrderId" class="btn" type="button">複製訂單號</button>
-            <button id="btnCopyPage" class="btn" type="button">複製此頁連結</button>
-          </div>
-          <div class="tiny" style="margin-top:12px;">
-            這頁會自動保留 `tenantId / itineraryId / refUid`，方便回上一頁時不遺失來源資訊。
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">系統狀態</div>
-        <div class="card-body">
-          <div id="statusBox" class="status-box">尚未初始化</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">提醒</div>
-      <div class="card-body">
-        <div class="notice-box">
-          success.html 目前定位是「成交完成提示頁」。<br>
-          它只負責承接 `trip.html` 已建立好的 `orderId / tenantId / itineraryId / refUid / amount`，
-          不會在這一頁再次重複建立訂單。
-        </div>
-        <div style="margin-top:12px;">
-          <span class="pill pill-green">成交流程已完成</span>
-          <span class="pill pill-blue">可接 CRM / 分銷後台查詢</span>
-        </div>
+      <div class="flex items-center gap-2">
+        <a id="btnBackTripTop" href="#" class="px-3 py-2 text-sm btn-sub">回行程頁</a>
+        <a id="btnHomeTop" href="./" class="px-3 py-2 text-sm btn-main">回首頁</a>
       </div>
     </div>
   </div>
 
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <section class="grid grid-cols-1 lg:grid-cols-[1.08fr_0.92fr] gap-5 mb-5">
+      <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-soft">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-5">✅</div>
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-tight">你的報名已建立成功</h1>
+        <p class="text-slate-500 leading-8 mt-4 text-[15px]">
+          系統已經收到這次行程的報名資料。接下來可由客服、LINE 官方帳號或分銷夥伴接續聯繫、確認與付款流程。
+        </p>
+        <div class="flex flex-wrap gap-2 mt-5">
+          <span class="info-pill bg-emerald-50 text-emerald-700 border border-emerald-200">📦 訂單已建立</span>
+          <span class="info-pill bg-blue-50 text-blue-700 border border-blue-200">🧾 可追蹤訂單號</span>
+          <span class="info-pill bg-amber-50 text-amber-700 border border-amber-200">💬 可回原行程頁</span>
+        </div>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a id="btnBackTrip" href="#" class="px-5 py-3 btn-main">回行程頁</a>
+          <a id="btnHome" href="./" class="px-5 py-3 btn-sub">回首頁</a>
+          <button id="btnCopyOrderId" type="button" class="px-5 py-3 btn-sub">複製訂單號</button>
+        </div>
+      </div>
+
+      <div class="line-chat-bg rounded-3xl p-4 sm:p-5 shadow-soft">
+        <div class="max-w-sm mx-auto bg-white rounded-[24px] overflow-hidden border-[3px] border-slate-800 shadow-2xl">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <div class="text-xs font-bold text-slate-400 tracking-widest uppercase">成交結果</div>
+            <div class="text-2xl font-black text-slate-900 mt-2">報名完成</div>
+            <div class="text-sm text-slate-500 mt-1">以下資訊可供客服追蹤</div>
+          </div>
+          <div class="p-5 space-y-4">
+            <div>
+              <div class="text-xs text-slate-400 font-bold mb-1">訂單號</div>
+              <div id="heroOrderId" class="text-2xl font-black text-[var(--red)] break-all">--</div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-400 font-bold mb-1">本次金額</div>
+              <div id="heroAmount" class="text-3xl font-black text-emerald-600">--</div>
+            </div>
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-sm text-slate-600 leading-7">
+              這一頁只承接 `trip.html` 傳來的成功結果，不會在這裡重複建立訂單。
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400 font-black tracking-wide mb-2">訂單號</div>
+        <div id="orderId" class="text-2xl font-black text-slate-900 break-all">--</div>
+        <div class="text-xs text-slate-400 mt-2">可用於客服查詢</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400 font-black tracking-wide mb-2">行程 ID</div>
+        <div id="itineraryId" class="text-2xl font-black text-slate-900 break-all">--</div>
+        <div class="text-xs text-slate-400 mt-2">對應本次成交頁</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400 font-black tracking-wide mb-2">金額</div>
+        <div id="amount" class="text-2xl font-black text-emerald-600">--</div>
+        <div class="text-xs text-slate-400 mt-2">依下單當下帶入</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-soft">
+        <div class="text-xs text-slate-400 font-black tracking-wide mb-2">來源狀態</div>
+        <div id="refStatus" class="text-2xl font-black text-slate-900">直客</div>
+        <div class="text-xs text-slate-400 mt-2">有 refUid 則為分銷來源</div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 font-black text-slate-900">訂單資訊</div>
+        <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">tenantId</label>
+            <input id="tenantIdInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">itineraryId</label>
+            <input id="itineraryIdInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">orderId</label>
+            <input id="orderIdInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">amount</label>
+            <input id="amountInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">refUid</label>
+            <input id="refUidInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1.5">來源頁</label>
+            <input id="sourcePageInput" readonly class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 font-black text-slate-900">下一步</div>
+        <div class="p-5 space-y-3">
+          <div class="grid grid-cols-[42px_1fr] gap-3 border border-slate-200 rounded-2xl p-4">
+            <div class="w-[42px] h-[42px] rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 font-black flex items-center justify-center">1</div>
+            <div>
+              <div class="font-black text-slate-900">保留訂單號</div>
+              <div class="text-sm text-slate-500 leading-7 mt-1">建議保存訂單號，方便後續客服查詢與對單。</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-[42px_1fr] gap-3 border border-slate-200 rounded-2xl p-4">
+            <div class="w-[42px] h-[42px] rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 font-black flex items-center justify-center">2</div>
+            <div>
+              <div class="font-black text-slate-900">等待後續確認</div>
+              <div class="text-sm text-slate-500 leading-7 mt-1">可由 LINE、客服或分銷夥伴接續付款、補件與確認流程。</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-[42px_1fr] gap-3 border border-slate-200 rounded-2xl p-4">
+            <div class="w-[42px] h-[42px] rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 font-black flex items-center justify-center">3</div>
+            <div>
+              <div class="font-black text-slate-900">回原頁或首頁</div>
+              <div class="text-sm text-slate-500 leading-7 mt-1">你可以回到原本行程頁，或繼續瀏覽其他行程。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 font-black text-slate-900">操作</div>
+        <div class="p-5">
+          <div class="flex flex-wrap gap-3">
+            <a id="btnBackTrip2" href="#" class="px-5 py-3 btn-main">回行程頁</a>
+            <a id="btnHome2" href="./" class="px-5 py-3 btn-sub">回首頁</a>
+            <button id="btnCopyOrderId2" type="button" class="px-5 py-3 btn-sub">複製訂單號</button>
+            <button id="btnCopyPage" type="button" class="px-5 py-3 btn-sub">複製此頁連結</button>
+          </div>
+          <div class="text-xs text-slate-400 leading-7 mt-3">這頁會自動保留 tenantId / itineraryId / refUid，方便回上一頁時不遺失來源資訊。</div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 font-black text-slate-900">系統狀態</div>
+        <div class="p-5">
+          <div id="statusBox" class="status-box">尚未初始化</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-3xl shadow-soft overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 font-black text-slate-900">提醒</div>
+      <div class="p-5">
+        <div class="rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 text-sm leading-7">
+          success.html 目前定位是「成交完成提示頁」。<br>
+          它只負責承接 trip.html 已建立好的 <b>orderId / tenantId / itineraryId / refUid / amount</b>，不會在這一頁重複建立訂單。
+        </div>
+        <div class="flex flex-wrap gap-2 mt-4">
+          <span class="info-pill bg-emerald-50 text-emerald-700 border border-emerald-200">成交流程已完成</span>
+          <span class="info-pill bg-blue-50 text-blue-700 border border-blue-200">可接 CRM / 分銷後台查詢</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <script>
     const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
     const DEFAULT_TENANT = "t001";
-
-    let tenantData = null;
 
     function qs(name) {
       const url = new URL(window.location.href);
@@ -616,7 +225,7 @@
       const el = document.getElementById("statusBox");
       const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
       const line = stamp + " " + message;
-      el.textContent = append ? (el.textContent + "\\n" + line) : line;
+      el.textContent = append ? (el.textContent + "\n" + line) : line;
       el.scrollTop = el.scrollHeight;
     }
 
@@ -647,7 +256,6 @@
         document.body.removeChild(ta);
         return;
       }
-
       navigator.clipboard.writeText(text)
         .then(() => logStatus(successMsg, true))
         .catch(err => logStatus("複製失敗：" + (err.message || String(err)), true));
@@ -661,15 +269,13 @@
       const tenantId = getTenantId();
       try {
         const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(tenantId));
-        tenantData = res && res.data ? res.data.data : null;
-
+        const tenantData = res && res.data ? res.data.data : null;
         if (tenantData) {
-          const brand = tenantData.brandName || "TravelKeeper";
-          const color = tenantData.primaryColor || "#06c755";
-          document.getElementById("brandName").textContent = brand;
-          document.documentElement.style.setProperty("--primary", color);
-          document.documentElement.style.setProperty("--primary-dark", color);
-          document.documentElement.style.setProperty("--primary-soft", color + "1A");
+          const brand = tenantData.brandName || "旅遊管家";
+          const color = tenantData.primaryColor || "#b82337";
+          document.getElementById("brandBadge").textContent = brand;
+          document.documentElement.style.setProperty("--red", color);
+          document.documentElement.style.setProperty("--red-dark", color);
         }
       } catch (err) {
         logStatus("品牌載入失敗：" + (err.message || String(err)), true);
@@ -708,32 +314,30 @@
       document.getElementById("refUidInput").value = refText;
       document.getElementById("sourcePageInput").value = "./trip.html";
 
-      const tripUrl =
-        "./trip.html?tenantId=" + encodeURIComponent(tenantId || DEFAULT_TENANT) +
-        "&it=" + encodeURIComponent(it || "") +
-        (ref ? "&ref=" + encodeURIComponent(ref) : "");
-
+      const tripUrl = "./trip.html?tenantId=" + encodeURIComponent(tenantId || DEFAULT_TENANT) + "&it=" + encodeURIComponent(it || "") + (ref ? "&ref=" + encodeURIComponent(ref) : "");
       const homeUrl = "./?tenantId=" + encodeURIComponent(tenantId || DEFAULT_TENANT);
 
-      document.getElementById("btnBackTrip").href = tripUrl;
       document.getElementById("btnBackTripTop").href = tripUrl;
-      document.getElementById("btnHome").href = homeUrl;
+      document.getElementById("btnBackTrip").href = tripUrl;
+      document.getElementById("btnBackTrip2").href = tripUrl;
       document.getElementById("btnHomeTop").href = homeUrl;
+      document.getElementById("btnHome").href = homeUrl;
+      document.getElementById("btnHome2").href = homeUrl;
     }
 
     function bindEvents() {
-      document.getElementById("btnCopyOrderId").addEventListener("click", function() {
+      const copyOrder = () => {
         const orderId = qs("orderId") || "";
         if (!orderId) {
           logStatus("目前沒有可複製的訂單號", true);
           return;
         }
         copyText(orderId, "已複製訂單號：" + orderId);
-      });
+      };
 
-      document.getElementById("btnCopyPage").addEventListener("click", function() {
-        copyText(window.location.href, "已複製成功頁連結");
-      });
+      document.getElementById("btnCopyOrderId").addEventListener("click", copyOrder);
+      document.getElementById("btnCopyOrderId2").addEventListener("click", copyOrder);
+      document.getElementById("btnCopyPage").addEventListener("click", () => copyText(window.location.href, "已複製成功頁連結"));
     }
 
     async function boot() {
