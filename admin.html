@@ -144,7 +144,7 @@
 
     .wrap {
       width: 100%;
-      max-width: 1480px;
+      max-width: 1560px;
       margin: 0 auto;
       padding: 18px 16px 28px;
       display: grid;
@@ -152,18 +152,18 @@
     }
 
     .grid-main {
-  display: grid;
-  grid-template-columns: 420px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
 
-.left-stack,
-.right-stack {
-  display: grid;
-  gap: 16px;
-  align-items: start;
-}
+    .left-stack,
+    .right-stack {
+      display: grid;
+      gap: 16px;
+      align-items: start;
+    }
 
     .panel {
       background: var(--panel);
@@ -281,7 +281,9 @@
       font-size: 13px;
       line-height: 1.75;
       font-family: Consolas, Monaco, monospace;
-      min-height: 180px;
+      min-height: 120px;
+      max-height: 260px;
+      overflow: auto;
     }
 
     .notice-box {
@@ -419,7 +421,7 @@
     }
 
     @media (max-width: 1180px) {
-      .grid-2,
+      .grid-main,
       .field-grid {
         grid-template-columns: 1fr;
       }
@@ -463,268 +465,252 @@
     </div>
 
     <div class="wrap">
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">1. 上傳與 API 設定</div>
-          <div class="panel-body">
-            <div class="field-grid">
-              <div class="field">
-                <label>Worker Base URL</label>
-                <input id="workerUrl" type="text" value="https://travelkeeper-saas-worker.fangwl591021.workers.dev" />
-              </div>
-              <div class="field">
-                <label>tenantId</label>
-                <input id="tenantId" type="text" />
-              </div>
-              <div class="field">
-                <label>解析 Endpoint</label>
-                <input id="parseEndpoint" type="text" value="/api/ai/upload-dm" />
-              </div>
-              <div class="field">
-                <label>儲存 Endpoint</label>
-                <input id="saveEndpoint" type="text" value="/api/admin/save-itinerary" />
-              </div>
-              <div class="field">
-                <label>createdBy</label>
-                <input id="createdBy" type="text" value="tony" />
-              </div>
-              <div class="field">
-                <label>sourceType</label>
-                <input id="sourceType" type="text" value="dm_image" />
-              </div>
-              <div class="field full">
-                <label>海報圖片檔</label>
-                <input id="posterFile" type="file" accept="image/*" />
-              </div>
-            </div>
-
-            <div class="upload-box section-gap">
-              <div id="uploadZone" class="upload-zone">
-                <div class="upload-hint">
-                  上傳旅行海報 / DM 後，系統會呼叫 AI 解析。<br>
-                  建議圖片內容包含：標題、價格、天數、地區、亮點、行程內容。
+      <div class="grid-main">
+        <div class="left-stack">
+          <div class="panel">
+            <div class="panel-head">1. 上傳與 API 設定</div>
+            <div class="panel-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>Worker Base URL</label>
+                  <input id="workerUrl" type="text" value="https://travelkeeper-saas-worker.fangwl591021.workers.dev" />
+                </div>
+                <div class="field">
+                  <label>tenantId</label>
+                  <input id="tenantId" type="text" />
+                </div>
+                <div class="field">
+                  <label>解析 Endpoint</label>
+                  <input id="parseEndpoint" type="text" value="/api/ai/upload-dm" />
+                </div>
+                <div class="field">
+                  <label>儲存 Endpoint</label>
+                  <input id="saveEndpoint" type="text" value="/api/admin/save-itinerary" />
+                </div>
+                <div class="field">
+                  <label>createdBy</label>
+                  <input id="createdBy" type="text" value="tony" />
+                </div>
+                <div class="field">
+                  <label>sourceType</label>
+                  <input id="sourceType" type="text" value="dm_image" />
+                </div>
+                <div class="field full">
+                  <label>海報圖片檔</label>
+                  <input id="posterFile" type="file" accept="image/*" />
                 </div>
               </div>
 
-              <div class="actions">
-                <button id="btnParse" class="btn btn-primary" type="button">開始解析</button>
-                <button id="btnUsePosterAsCover" class="btn" type="button">用海報當封面</button>
-              </div>
+              <div class="upload-box section-gap">
+                <div id="uploadZone" class="upload-zone">
+                  <div class="upload-hint">
+                    上傳旅行海報 / DM 後，系統會呼叫 AI 解析。<br>
+                    建議圖片內容包含：標題、價格、天數、地區、亮點、行程內容。
+                  </div>
+                </div>
 
-              <div class="notice-box">
-                目前這版直接對接：
-                <br>• <b>/api/ai/upload-dm</b>：AI 解析＋建立 draft
-                <br>• <b>/api/admin/save-itinerary</b>：正式儲存 itinerary
-                <br><br>
-                封面若暫時沒有雲端圖片網址，可先用海報預覽當封面做前台測試。
+                <div class="actions">
+                  <button id="btnParse" class="btn btn-primary" type="button">開始解析</button>
+                  <button id="btnUsePosterAsCover" class="btn" type="button">用海報當封面</button>
+                </div>
+
+                <div class="notice-box">
+                  目前 admin.html 流程：
+                  <br>• /api/ai/upload-dm：AI 解析＋建立 draft
+                  <br>• /api/admin/save-itinerary：正式儲存 itinerary
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="section-gap">
-              <div class="panel-head" style="margin:-16px -16px 0;border-bottom:1px solid var(--border);border-radius:0;">解析 / 儲存狀態</div>
-              <div style="padding-top:16px;">
-                <div id="statusBox" class="status-box">尚未開始</div>
+          <div class="panel">
+            <div class="panel-head">解析 / 儲存狀態</div>
+            <div class="panel-body">
+              <div id="statusBox" class="status-box">尚未開始</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">操作建議</div>
+            <div class="panel-body">
+              <div class="tag-list">
+                <span class="tag">先解析</span>
+                <span class="tag">再人工校正</span>
+                <span class="tag">最後儲存 itinerary</span>
+                <span class="tag">必要時先複製 JSON</span>
+              </div>
+
+              <div class="notice-box section-gap">
+                現在右側會先顯示預覽，再顯示欄位校正區，
+                所以操作順序會更接近實際上稿流程。
               </div>
             </div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <span>2. 行程預覽</span>
-            <span id="draftBadge" class="small-pill">draftId：--</span>
-          </div>
-          <div class="panel-body">
-            <div class="preview-card">
-              <img id="previewCover" class="preview-cover" src="https://picsum.photos/1000/600" alt="cover" />
-              <div class="preview-body">
-                <div id="previewTitle" class="preview-title">尚未解析</div>
-                <div id="previewMeta" class="preview-meta"></div>
-                <div id="previewPrice" class="preview-price">--</div>
-                <div class="tiny" id="previewDesc">請先上傳海報並解析，或手動輸入欄位。</div>
-                <div id="previewHighlights" class="tag-list"></div>
+        <div class="right-stack">
+          <div class="panel">
+            <div class="panel-head">
+              <span>2. 行程預覽</span>
+              <span id="draftBadge" class="small-pill">draftId：--</span>
+            </div>
+            <div class="panel-body">
+              <div class="preview-card">
+                <img id="previewCover" class="preview-cover" src="https://picsum.photos/1000/600" alt="cover" />
+                <div class="preview-body">
+                  <div id="previewTitle" class="preview-title">尚未解析</div>
+                  <div id="previewMeta" class="preview-meta"></div>
+                  <div id="previewPrice" class="preview-price">--</div>
+                  <div class="tiny" id="previewDesc">請先上傳海報並解析，或手動輸入欄位。</div>
+                  <div id="previewHighlights" class="tag-list"></div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="warn-box section-gap">
-              這裡是成交頁簡化預覽，用來快速檢查：
-              <br>• 標題是否正確
-              <br>• 價格、地區、天數是否正確
-              <br>• 亮點是否可讀
+          <div class="panel">
+            <div class="panel-head">3. 解析後欄位校正</div>
+            <div class="panel-body">
+              <div class="field-grid">
+                <div class="field">
+                  <label>itineraryId</label>
+                  <input id="itineraryId" type="text" />
+                </div>
+                <div class="field">
+                  <label>status</label>
+                  <select id="status">
+                    <option value="draft">draft</option>
+                    <option value="published">published</option>
+                    <option value="inactive">inactive</option>
+                  </select>
+                </div>
+
+                <div class="field full">
+                  <label>title</label>
+                  <input id="title" type="text" />
+                </div>
+
+                <div class="field full">
+                  <label>subtitle</label>
+                  <input id="subtitle" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>region</label>
+                  <input id="region" type="text" />
+                </div>
+                <div class="field">
+                  <label>productType</label>
+                  <input id="productType" type="text" value="group_tour" />
+                </div>
+
+                <div class="field">
+                  <label>country</label>
+                  <input id="country" type="text" />
+                </div>
+                <div class="field">
+                  <label>city</label>
+                  <input id="city" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>days</label>
+                  <input id="days" type="number" min="1" />
+                </div>
+                <div class="field">
+                  <label>nights</label>
+                  <input id="nights" type="number" min="0" />
+                </div>
+
+                <div class="field">
+                  <label>price</label>
+                  <input id="price" type="number" min="0" />
+                </div>
+                <div class="field">
+                  <label>currency</label>
+                  <input id="currency" type="text" value="TWD" />
+                </div>
+
+                <div class="field">
+                  <label>departureDate</label>
+                  <input id="departureDate" type="date" />
+                </div>
+                <div class="field">
+                  <label>returnDate</label>
+                  <input id="returnDate" type="date" />
+                </div>
+
+                <div class="field full">
+                  <label>coverImageUrl</label>
+                  <input id="coverImageUrl" type="text" />
+                </div>
+
+                <div class="field full">
+                  <label>description</label>
+                  <textarea id="description" rows="8"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>highlightsJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="highlightsInput" rows="5"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>dayByDayJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="dayByDayInput" rows="7"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>includesJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="includesInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>excludesJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="excludesInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>noticeJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="noticeInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>faqJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="faqInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>tagsJson（可貼 JSON 或每行一條）</label>
+                  <textarea id="tagsInput" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                  <label>galleryJson（JSON）</label>
+                  <textarea id="galleryInput" rows="4">[]</textarea>
+                </div>
+
+                <div class="field full">
+                  <label>promoConfigJson（JSON）</label>
+                  <textarea id="promoConfigInput" rows="4">{}</textarea>
+                </div>
+
+                <div class="field">
+                  <label>draftId</label>
+                  <input id="draftId" type="text" />
+                </div>
+                <div class="field">
+                  <label>updatedBy</label>
+                  <input id="updatedBy" type="text" value="tony" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="panel">
-        <div class="panel-head">3. 解析後欄位校正</div>
-        <div class="panel-body">
-          <div class="field-grid">
-            <div class="field">
-              <label>itineraryId</label>
-              <input id="itineraryId" type="text" />
-            </div>
-            <div class="field">
-              <label>status</label>
-              <select id="status">
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-                <option value="inactive">inactive</option>
-              </select>
-            </div>
-
-            <div class="field full">
-              <label>title</label>
-              <input id="title" type="text" />
-            </div>
-
-            <div class="field full">
-              <label>subtitle</label>
-              <input id="subtitle" type="text" />
-            </div>
-
-            <div class="field">
-              <label>region</label>
-              <input id="region" type="text" />
-            </div>
-            <div class="field">
-              <label>productType</label>
-              <input id="productType" type="text" value="group_tour" />
-            </div>
-
-            <div class="field">
-              <label>country</label>
-              <input id="country" type="text" />
-            </div>
-            <div class="field">
-              <label>city</label>
-              <input id="city" type="text" />
-            </div>
-
-            <div class="field">
-              <label>days</label>
-              <input id="days" type="number" min="1" />
-            </div>
-            <div class="field">
-              <label>nights</label>
-              <input id="nights" type="number" min="0" />
-            </div>
-
-            <div class="field">
-              <label>price</label>
-              <input id="price" type="number" min="0" />
-            </div>
-            <div class="field">
-              <label>currency</label>
-              <input id="currency" type="text" value="TWD" />
-            </div>
-
-            <div class="field">
-              <label>departureDate</label>
-              <input id="departureDate" type="date" />
-            </div>
-            <div class="field">
-              <label>returnDate</label>
-              <input id="returnDate" type="date" />
-            </div>
-
-            <div class="field full">
-              <label>coverImageUrl</label>
-              <input id="coverImageUrl" type="text" />
-            </div>
-
-            <div class="field full">
-              <label>description</label>
-              <textarea id="description" rows="8"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>highlightsJson（可貼 JSON 或每行一條）</label>
-              <textarea id="highlightsInput" rows="5" placeholder='["五星飯店","雙城巡禮"] 或每行一條'></textarea>
-            </div>
-
-            <div class="field full">
-              <label>dayByDayJson（可貼 JSON 或每行一條）</label>
-              <textarea id="dayByDayInput" rows="7" placeholder='["Day1 台北出發","Day2 東京市區"] 或每行一條'></textarea>
-            </div>
-
-            <div class="field full">
-              <label>includesJson（可貼 JSON 或每行一條）</label>
-              <textarea id="includesInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>excludesJson（可貼 JSON 或每行一條）</label>
-              <textarea id="excludesInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>noticeJson（可貼 JSON 或每行一條）</label>
-              <textarea id="noticeInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>faqJson（可貼 JSON 或每行一條）</label>
-              <textarea id="faqInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>tagsJson（可貼 JSON 或每行一條）</label>
-              <textarea id="tagsInput" rows="4"></textarea>
-            </div>
-
-            <div class="field full">
-              <label>galleryJson（JSON）</label>
-              <textarea id="galleryInput" rows="4">[]</textarea>
-            </div>
-
-            <div class="field full">
-              <label>promoConfigJson（JSON）</label>
-              <textarea id="promoConfigInput" rows="4">{}</textarea>
-            </div>
-
-            <div class="field">
-              <label>draftId</label>
-              <input id="draftId" type="text" />
-            </div>
-            <div class="field">
-              <label>updatedBy</label>
-              <input id="updatedBy" type="text" value="tony" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="panel">
-          <div class="panel-head">4. Payload 預覽</div>
-          <div class="panel-body">
-            <pre id="jsonPreview" class="json-box">{}</pre>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">5. 操作建議</div>
-          <div class="panel-body">
-            <div class="tag-list">
-              <span class="tag">先解析</span>
-              <span class="tag">再人工校正</span>
-              <span class="tag">最後儲存 itinerary</span>
-              <span class="tag">必要時先複製 JSON</span>
-            </div>
-
-            <div class="notice-box section-gap">
-              目前 admin.html 流程：
-              <br>1. 上傳海報
-              <br>2. Worker AI 解析
-              <br>3. GAS 建立 draft
-              <br>4. 人工校正
-              <br>5. 儲存正式 itinerary
-            </div>
-
-            <div class="tiny section-gap">
-              上架後可直接用「預覽目前行程」開啟：
-              <br><b>trip.html?tenantId=...&it=...</b>
+          <div class="panel">
+            <div class="panel-head">4. Payload 預覽</div>
+            <div class="panel-body">
+              <pre id="jsonPreview" class="json-box">{}</pre>
             </div>
           </div>
         </div>
@@ -744,6 +730,7 @@
       const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
       const line = stamp + " " + message;
       el.textContent = append ? (el.textContent + "\n" + line) : line;
+      el.scrollTop = el.scrollHeight;
     }
 
     function escapeHtml(str) {
