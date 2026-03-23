@@ -3,24 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travelman Trip</title>
+  <title>Travelman 行程頁</title>
   <style>
     :root {
       --primary: #06c755;
       --primary-dark: #05a847;
       --primary-soft: #e9fff2;
-      --bg: #f4f7fb;
+      --bg: #f5f6f8;
       --panel: #ffffff;
-      --border: #dfe3e8;
-      --text: #1f2937;
+      --border: #d9dee5;
+      --text: #222;
       --muted: #6b7280;
-      --dark: #111827;
-      --danger: #dc2626;
-      --warn: #d97706;
-      --info: #2563eb;
+      --dark: #1f2937;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
-      --header-bg: rgba(255,255,255,0.92);
+      --radius: 14px;
     }
 
     * { box-sizing: border-box; }
@@ -33,39 +29,37 @@
       color: var(--text);
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
+    button, input {
+      font: inherit;
     }
 
-    .app {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 16px 14px 120px;
     }
 
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: var(--header-bg);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-    }
-
-    .topbar-left {
-      min-width: 0;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow);
     }
 
     .brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      display: inline-block;
       background: var(--primary);
       color: #fff;
       padding: 5px 12px;
@@ -75,25 +69,24 @@
       margin-bottom: 8px;
     }
 
-    .topbar-title {
-      font-size: 22px;
+    .top-title {
+      font-size: 26px;
       font-weight: 800;
-      line-height: 1.3;
+      line-height: 1.25;
+      margin: 0;
       word-break: break-word;
     }
 
-    .topbar-sub {
-      font-size: 13px;
+    .top-sub {
       color: var(--muted);
+      font-size: 13px;
       margin-top: 4px;
     }
 
-    .topbar-right {
+    .top-actions {
       display: flex;
-      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .btn {
@@ -101,17 +94,14 @@
       background: #fff;
       color: var(--text);
       padding: 10px 14px;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 700;
-      transition: all 0.18s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
 
     .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      filter: brightness(0.98);
     }
 
     .btn-primary {
@@ -130,166 +120,91 @@
       color: #fff;
     }
 
-    .btn-ghost {
-      background: #f8fafc;
-    }
-
-    .wrap {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 18px 16px 110px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
+    .card {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 14px;
       overflow: hidden;
+      margin-bottom: 14px;
       box-shadow: var(--shadow);
     }
 
-    .panel-head {
-      padding: 14px 16px;
+    .card-head {
+      padding: 12px 14px;
       border-bottom: 1px solid var(--border);
       background: #fff;
       font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .panel-body {
-      padding: 16px;
+    .card-body {
+      padding: 14px;
     }
 
-    .summary-grid {
+    .hero {
       display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr 1fr;
-      gap: 12px;
-    }
-
-    .summary-box {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-
-    .summary-label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 8px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-    }
-
-    .summary-value {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.1;
-      word-break: break-word;
-    }
-
-    .hero-card {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 18px;
-      align-items: stretch;
-    }
-
-    .hero-image-wrap {
-      position: relative;
-      min-height: 320px;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
     }
 
     .hero-image {
       width: 100%;
-      height: 100%;
-      min-height: 320px;
+      height: 320px;
       object-fit: cover;
-      border-radius: 16px;
-      background: #ddd;
+      border-radius: 12px;
       border: 1px solid var(--border);
+      background: #e5e7eb;
       display: block;
     }
 
-    .hero-badge-row {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      z-index: 2;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      color: #fff;
-      background: rgba(17,24,39,0.72);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero-content {
-      display: flex;
-      flex-direction: column;
+    .hero-info {
+      display: grid;
       gap: 12px;
       min-width: 0;
     }
 
-    .title {
+    .trip-title {
       font-size: 32px;
       font-weight: 800;
-      margin: 0;
       line-height: 1.35;
+      margin: 0;
       word-break: break-word;
     }
 
-    .subtitle {
+    .trip-subtitle {
       color: var(--muted);
       font-size: 15px;
-      line-height: 1.7;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .meta-row {
+    .trip-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
 
-    .meta-item {
+    .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       background: #eef2ff;
       color: #334155;
-      font-size: 12px;
-      padding: 7px 11px;
+      padding: 6px 10px;
       border-radius: 999px;
+      font-size: 12px;
       font-weight: 700;
     }
 
-    .price {
+    .trip-price {
       font-size: 34px;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.1;
     }
 
-    .price-note {
+    .trip-note {
       color: var(--muted);
       font-size: 12px;
       line-height: 1.7;
@@ -297,49 +212,36 @@
 
     .hero-actions {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-top: auto;
+      margin-top: 4px;
     }
 
-    .info-grid {
+    .simple-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
     }
 
-    .status-box {
-      background: #0b1220;
-      color: #d1fae5;
-      border-radius: 14px;
+    .simple-box {
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 14px;
-      white-space: pre-wrap;
+      background: #fff;
+    }
+
+    .simple-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .simple-value {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.2;
       word-break: break-word;
-      font-size: 13px;
-      line-height: 1.75;
-      font-family: Consolas, Monaco, monospace;
-      min-height: 150px;
-    }
-
-    .ref-box {
-      background: #ecfeff;
-      color: #155e75;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 13px;
-      line-height: 1.75;
-      word-break: break-word;
-      border: 1px solid #bae6fd;
-    }
-
-    .notice-box {
-      background: #fff7ed;
-      color: #9a3412;
-      border-radius: 14px;
-      padding: 14px;
-      border: 1px solid #fed7aa;
-      font-size: 13px;
-      line-height: 1.75;
     }
 
     .rich-text {
@@ -353,87 +255,81 @@
     .tag-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .tag {
+    .tag-chip {
       background: #f3f4f6;
       color: #111827;
-      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      padding: 7px 11px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 700;
-      border: 1px solid #e5e7eb;
     }
 
     .timeline {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .timeline-item {
       display: grid;
       grid-template-columns: 90px 1fr;
       gap: 12px;
-      align-items: start;
-      padding: 14px;
+      padding: 12px;
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       background: #fff;
+      align-items: start;
     }
 
     .timeline-day {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 12px;
-      border-radius: 12px;
+      min-height: 42px;
+      border-radius: 10px;
       background: var(--primary-soft);
       color: var(--primary-dark);
+      border: 1px solid #c7f0d9;
       font-size: 13px;
       font-weight: 800;
-      border: 1px solid #c7f0d9;
-      min-height: 42px;
+      padding: 8px 10px;
     }
 
     .timeline-content {
       font-size: 14px;
-      line-height: 1.8;
+      line-height: 1.85;
       color: #334155;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-    }
-
-    .field label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .field input {
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid var(--border);
+    .ref-box {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
       border-radius: 12px;
-      background: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.18s ease;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.8;
+      word-break: break-word;
     }
 
-    .field input:focus {
-      border-color: var(--primary);
+    .status-box {
+      background: #111827;
+      color: #d1fae5;
+      border-radius: 10px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      line-height: 1.7;
+      font-family: Consolas, Monaco, monospace;
+      min-height: 90px;
+      max-height: 180px;
+      overflow: auto;
     }
 
     .sticky-cta {
@@ -441,21 +337,21 @@
       left: 0;
       right: 0;
       bottom: 0;
-      z-index: 25;
-      background: rgba(255,255,255,0.94);
+      z-index: 30;
+      background: rgba(255,255,255,.96);
       border-top: 1px solid var(--border);
       backdrop-filter: blur(10px);
-      padding: 12px 16px;
+      padding: 12px 14px;
     }
 
     .sticky-inner {
-      width: 100%;
-      max-width: 1400px;
+      max-width: 1080px;
       margin: 0 auto;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .sticky-left {
@@ -463,13 +359,13 @@
     }
 
     .sticky-title {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
       margin-bottom: 4px;
     }
 
     .sticky-price {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 800;
       color: var(--primary);
       line-height: 1.1;
@@ -480,249 +376,155 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .empty {
-      color: var(--muted);
       text-align: center;
-      padding: 16px;
-    }
-
-    .tiny {
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
+      padding: 16px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #fafbfc;
     }
 
-    .mono {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      word-break: break-all;
-    }
-
-    @media (max-width: 1200px) {
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .hero-card,
-      .info-grid,
-      .field-grid {
+    @media (max-width: 980px) {
+      .hero,
+      .simple-grid {
         grid-template-columns: 1fr;
-      }
-
-      .hero-image,
-      .hero-image-wrap {
-        min-height: 280px;
       }
     }
 
     @media (max-width: 768px) {
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .topbar-right {
+      .top-actions,
+      .hero-actions,
+      .sticky-actions {
         width: 100%;
-        justify-content: stretch;
       }
 
-      .topbar-right .btn {
-        flex: 1;
+      .top-actions .btn,
+      .hero-actions .btn,
+      .sticky-actions .btn {
+        flex: 1 1 100%;
       }
 
-      .summary-grid {
-        grid-template-columns: 1fr;
+      .trip-title {
+        font-size: 28px;
       }
 
-      .wrap {
-        padding: 14px 14px 120px;
-      }
-
-      .title {
-        font-size: 26px;
-      }
-
-      .price {
+      .trip-price,
+      .sticky-price {
         font-size: 30px;
       }
 
       .timeline-item {
         grid-template-columns: 1fr;
       }
-
-      .sticky-inner {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .sticky-actions {
-        width: 100%;
-      }
-
-      .sticky-actions .btn {
-        flex: 1;
-      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="page">
     <div class="topbar">
-      <div class="topbar-left">
-        <div>
-          <div id="brandName" class="brand-badge">TravelKeeper</div>
-          <div id="tripTitleTop" class="topbar-title">行程載入中...</div>
-          <div class="topbar-sub">LINE 登入後可直接綁定會員、追蹤來源並建立訂單</div>
-        </div>
+      <div>
+        <div id="brandBadge" class="brand-badge">TravelKeeper</div>
+        <h1 id="topTitle" class="top-title">行程載入中...</h1>
+        <div class="top-sub">簡單看行程、直接報名、綁定 LINE 會員</div>
       </div>
-      <div class="topbar-right">
-        <button id="btnLineLogin" class="btn btn-primary">LINE 登入 / 綁定</button>
-        <button id="btnOrderTop" class="btn btn-dark">立即報名</button>
+      <div class="top-actions">
+        <a id="btnHome" class="btn" href="./index.html">回首頁</a>
+        <button id="btnCopyPage" class="btn" type="button">複製此頁連結</button>
       </div>
     </div>
 
-    <div class="wrap">
-      <div class="summary-grid">
-        <div class="summary-box">
-          <div class="summary-label">品牌</div>
-          <div id="summaryBrand" class="summary-value">TravelKeeper</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-label">目的地</div>
-          <div id="summaryPlace" class="summary-value">--</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-label">天數</div>
-          <div id="summaryDays" class="summary-value">--</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-label">價格</div>
-          <div id="summaryPrice" class="summary-value">--</div>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-head">行程主資訊</div>
+      <div class="card-body">
+        <div class="hero">
+          <img id="coverImage" class="hero-image" src="https://picsum.photos/1200/800" alt="trip cover" />
 
-      <div class="panel">
-        <div class="panel-head">行程主資訊</div>
-        <div class="panel-body">
-          <div class="hero-card">
-            <div class="hero-image-wrap">
-              <div class="hero-badge-row" id="heroBadgeRow"></div>
-              <img id="coverImage" class="hero-image" src="https://picsum.photos/900/500" alt="trip cover" />
-            </div>
+          <div class="hero-info">
+            <h2 id="tripTitle" class="trip-title">行程載入中...</h2>
+            <div id="tripSubtitle" class="trip-subtitle">請稍候，系統正在讀取真實行程資料。</div>
+            <div id="tripMeta" class="trip-meta"></div>
+            <div id="tripPrice" class="trip-price">--</div>
+            <div class="trip-note">價格與資料以系統設定為準，送單後會寫入正式訂單。</div>
 
-            <div class="hero-content">
-              <h1 id="tripTitle" class="title">行程載入中...</h1>
-              <div id="tripSubtitle" class="subtitle">請稍候</div>
-              <div id="tripMeta" class="meta-row"></div>
-              <div id="tripPrice" class="price">--</div>
-              <div id="tripPriceNote" class="price-note">價格以系統設定為準，最終報名資料會寫入訂單。</div>
-
-              <div class="hero-actions">
-                <button id="btnOrderHero" class="btn btn-dark">立即報名</button>
-                <button id="btnBindHero" class="btn btn-primary">LINE 登入 / 綁定</button>
-                <button id="btnCopyPage" class="btn btn-ghost">複製此頁連結</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-grid">
-        <div class="panel">
-          <div class="panel-head">分銷 / 來源資訊</div>
-          <div class="panel-body">
-            <div id="refInfo" class="ref-box"></div>
-            <div class="tiny" style="margin-top:10px;">
-              客戶從分銷連結進站後，系統會先記錄 <b>tenant / ref / itinerary</b>，
-              後續 LINE 綁定與下單時自動帶入。
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">LINE 綁定狀態</div>
-          <div class="panel-body">
-            <div id="statusBox" class="status-box">尚未初始化</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">行程介紹</div>
-        <div class="panel-body">
-          <div id="tripDescription" class="rich-text">載入中...</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">行程亮點</div>
-        <div class="panel-body">
-          <div id="tripHighlights" class="tag-list"></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">每日行程</div>
-        <div class="panel-body">
-          <div id="tripDays" class="timeline">
-            <div class="empty">載入中...</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-grid">
-        <div class="panel">
-          <div class="panel-head">訂單寫入欄位預覽</div>
-          <div class="panel-body">
-            <div class="field-grid">
-              <div class="field">
-                <label>tenantId</label>
-                <input id="previewTenantId" type="text" readonly />
-              </div>
-              <div class="field">
-                <label>itineraryId</label>
-                <input id="previewItineraryId" type="text" readonly />
-              </div>
-              <div class="field">
-                <label>refUid</label>
-                <input id="previewRefUid" type="text" readonly />
-              </div>
-              <div class="field">
-                <label>LINE userId</label>
-                <input id="previewLineUid" type="text" readonly />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">提醒</div>
-          <div class="panel-body">
-            <div class="notice-box">
-              這頁目前是成交頁版本，主要流程是：
-              <br>1. 帶入 tenant / itinerary / ref
-              <br>2. 用戶 LINE 登入並註冊會員
-              <br>3. 建立訂單
-              <br>4. 跳轉 success.html
+            <div class="hero-actions">
+              <button id="btnLineLogin" class="btn btn-primary" type="button">LINE 登入 / 綁定</button>
+              <button id="btnOrderHero" class="btn btn-dark" type="button">立即報名</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="sticky-cta">
-      <div class="sticky-inner">
-        <div class="sticky-left">
-          <div class="sticky-title">目前行程</div>
-          <div id="stickyPrice" class="sticky-price">--</div>
+    <div class="card">
+      <div class="card-head">簡要資訊</div>
+      <div class="card-body">
+        <div class="simple-grid">
+          <div class="simple-box">
+            <div class="simple-label">品牌</div>
+            <div id="summaryBrand" class="simple-value">--</div>
+          </div>
+          <div class="simple-box">
+            <div class="simple-label">目的地</div>
+            <div id="summaryPlace" class="simple-value">--</div>
+          </div>
+          <div class="simple-box">
+            <div class="simple-label">天數</div>
+            <div id="summaryDays" class="simple-value">--</div>
+          </div>
+          <div class="simple-box">
+            <div class="simple-label">出發</div>
+            <div id="summaryStartDate" class="simple-value">--</div>
+          </div>
         </div>
-        <div class="sticky-actions">
-          <button id="btnLineLoginBottom" class="btn btn-primary">LINE 登入 / 綁定</button>
-          <button id="btnOrderBottom" class="btn btn-dark">立即報名</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">行程介紹</div>
+      <div class="card-body">
+        <div id="tripDescription" class="rich-text">載入中...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">行程亮點</div>
+      <div class="card-body">
+        <div id="tripHighlights" class="tag-list">
+          <div class="empty">載入中...</div>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">每日行程</div>
+      <div class="card-body">
+        <div id="tripDays" class="timeline">
+          <div class="empty">載入中...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">來源與綁定狀態</div>
+      <div class="card-body">
+        <div id="refInfo" class="ref-box" style="margin-bottom:12px;"></div>
+        <div id="statusBox" class="status-box">尚未初始化</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sticky-cta">
+    <div class="sticky-inner">
+      <div class="sticky-left">
+        <div class="sticky-title">目前行程</div>
+        <div id="stickyPrice" class="sticky-price">--</div>
+      </div>
+      <div class="sticky-actions">
+        <button id="btnLineLoginBottom" class="btn btn-primary" type="button">LINE 登入 / 綁定</button>
+        <button id="btnOrderBottom" class="btn btn-dark" type="button">立即報名</button>
       </div>
     </div>
   </div>
@@ -744,11 +546,12 @@
       return url.searchParams.get(name) || "";
     }
 
-    function setStatus(message, append = false) {
+    function logStatus(message, append = false) {
       const el = document.getElementById("statusBox");
       const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
       const line = stamp + " " + message;
-      el.textContent = append ? (el.textContent + "\n" + line) : line;
+      el.textContent = append ? (el.textContent + "\\n" + line) : line;
+      el.scrollTop = el.scrollHeight;
     }
 
     function saveTrackingParams() {
@@ -815,7 +618,7 @@
     }
 
     function formatDateText(value) {
-      if (!value) return "";
+      if (!value) return "--";
       return String(value).replace(/-/g, "/");
     }
 
@@ -831,17 +634,17 @@
         ta.select();
         try {
           document.execCommand("copy");
-          setStatus("已複製頁面連結", true);
+          logStatus("已複製頁面連結", true);
         } catch (e) {
-          setStatus("複製失敗：" + (e.message || String(e)), true);
+          logStatus("複製失敗：" + (e.message || String(e)), true);
         }
         document.body.removeChild(ta);
         return;
       }
 
       navigator.clipboard.writeText(text)
-        .then(() => setStatus("已複製頁面連結", true))
-        .catch(err => setStatus("複製失敗：" + (err.message || String(err)), true));
+        .then(() => logStatus("已複製頁面連結", true))
+        .catch(err => logStatus("複製失敗：" + (err.message || String(err)), true));
     }
 
     function normalizeHighlights(data) {
@@ -883,6 +686,32 @@
       });
     }
 
+    function mapToOldStyle(data) {
+      const highlights = normalizeHighlights(data.highlightsJson || data.highlights || []);
+      const days = normalizeDayByDay(data.dayByDayJson || data.dayByDay || []);
+
+      return {
+        title: data.title || "",
+        subtitle: data.subtitle || "",
+        region: data.region || data.country || "",
+        country: data.country || "",
+        city: data.city || "",
+        price: Number(data.price || 0),
+        currency: data.currency || "TWD",
+        days: Number(data.days || 0),
+        nights: Number(data.nights || 0),
+        startDate: data.departureDate || data.startDate || "",
+        endDate: data.returnDate || data.endDate || "",
+        image: data.coverImageUrl || data.image || "",
+        description: data.description || "",
+        notes: highlights.join(" / "),
+        highlights: highlights,
+        schedule: days,
+        itineraryId: data.itineraryId || "",
+        status: data.status || "draft"
+      };
+    }
+
     async function loadTenant() {
       const state = getTrackingState();
       const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(state.tenantId));
@@ -892,68 +721,50 @@
         const brand = tenantData.brandName || "TravelKeeper";
         const color = tenantData.primaryColor || "#06c755";
 
-        document.getElementById("brandName").textContent = brand;
+        document.getElementById("brandBadge").textContent = brand;
         document.getElementById("summaryBrand").textContent = brand;
         document.documentElement.style.setProperty("--primary", color);
         document.documentElement.style.setProperty("--primary-dark", color);
         document.documentElement.style.setProperty("--primary-soft", color + "1A");
       }
+
+      document.getElementById("btnHome").href = "./index.html?tenantId=" + encodeURIComponent(state.tenantId);
     }
 
-    function renderHeroBadges(data) {
-      const row = document.getElementById("heroBadgeRow");
-      const badges = [];
+    function renderTrip(oldData, rawData) {
+      document.getElementById("tripTitle").textContent = oldData.title || "未命名行程";
+      document.getElementById("topTitle").textContent = oldData.title || "未命名行程";
+      document.getElementById("tripSubtitle").textContent =
+        oldData.subtitle ||
+        oldData.description ||
+        ((oldData.country || "") + " " + (oldData.city || "")).trim() ||
+        "歡迎查看本行程";
 
-      if (data.status) badges.push(String(data.status));
-      if (data.country || data.city) badges.push(((data.country || "") + " " + (data.city || "")).trim());
-      if (data.days) badges.push(String(data.days) + " 天");
-      if (data.nights) badges.push(String(data.nights) + " 夜");
+      document.getElementById("tripPrice").textContent = formatCurrency(oldData.price || DEFAULT_ORDER_AMOUNT, oldData.currency || "TWD");
+      document.getElementById("stickyPrice").textContent = formatCurrency(oldData.price || DEFAULT_ORDER_AMOUNT, oldData.currency || "TWD");
+      document.getElementById("summaryPlace").textContent = ((oldData.country || "") + " " + (oldData.city || "")).trim() || "--";
+      document.getElementById("summaryDays").textContent = oldData.days ? (oldData.days + " 天") : "--";
+      document.getElementById("summaryStartDate").textContent = formatDateText(oldData.startDate);
 
-      row.innerHTML = badges.map(item => `<span class="hero-badge">${escapeHtml(item)}</span>`).join("");
-    }
-
-    function renderTrip(data) {
-      const title = data.title || "未命名行程";
-      const subtitle =
-        data.subtitle ||
-        data.shortDescription ||
-        ((data.country || "") + " " + (data.city || "")).trim() ||
-        "旅遊行程";
-
-      const currency = data.currency || "TWD";
-      const priceText = formatCurrency(data.price || DEFAULT_ORDER_AMOUNT, currency);
-      const placeText = ((data.country || "") + " " + (data.city || "")).trim() || "--";
-
-      document.getElementById("tripTitle").textContent = title;
-      document.getElementById("tripTitleTop").textContent = title;
-      document.getElementById("tripSubtitle").textContent = subtitle;
-      document.getElementById("tripPrice").textContent = priceText;
-      document.getElementById("stickyPrice").textContent = priceText;
-      document.getElementById("summaryPrice").textContent = priceText;
-      document.getElementById("summaryPlace").textContent = placeText;
-      document.getElementById("summaryDays").textContent = data.days ? (data.days + " 天") : "--";
-      document.getElementById("tripDescription").textContent = data.description || "暫無說明";
-      document.getElementById("coverImage").src = data.coverImageUrl || data.image || "https://picsum.photos/900/500";
+      document.getElementById("tripDescription").textContent = oldData.description || "暫無說明";
+      document.getElementById("coverImage").src = oldData.image || "https://picsum.photos/1200/800";
 
       const meta = [];
-      if (data.country) meta.push(`<span class="meta-item">🌍 ${escapeHtml(data.country)}</span>`);
-      if (data.city) meta.push(`<span class="meta-item">📍 ${escapeHtml(data.city)}</span>`);
-      if (data.days) meta.push(`<span class="meta-item">🗓️ ${escapeHtml(String(data.days))} 天</span>`);
-      if (data.nights) meta.push(`<span class="meta-item">🌙 ${escapeHtml(String(data.nights))} 夜</span>`);
-      if (data.departureDate) meta.push(`<span class="meta-item">✈️ ${escapeHtml(formatDateText(data.departureDate))}</span>`);
-      if (data.status) meta.push(`<span class="meta-item">📌 ${escapeHtml(String(data.status))}</span>`);
+      if (oldData.region) meta.push(`<span class="pill">🧭 ${escapeHtml(oldData.region)}</span>`);
+      if (oldData.country) meta.push(`<span class="pill">🌍 ${escapeHtml(oldData.country)}</span>`);
+      if (oldData.city) meta.push(`<span class="pill">📍 ${escapeHtml(oldData.city)}</span>`);
+      if (oldData.days) meta.push(`<span class="pill">🗓️ ${escapeHtml(String(oldData.days))} 天</span>`);
+      if (oldData.nights) meta.push(`<span class="pill">🌙 ${escapeHtml(String(oldData.nights))} 夜</span>`);
+      if (oldData.startDate) meta.push(`<span class="pill">✈️ ${escapeHtml(formatDateText(oldData.startDate))}</span>`);
+      if (rawData.status) meta.push(`<span class="pill">📌 ${escapeHtml(String(rawData.status))}</span>`);
       document.getElementById("tripMeta").innerHTML = meta.join("");
 
-      renderHeroBadges(data);
-
-      const highlights = normalizeHighlights(data.highlightsJson || data.highlights || []);
-      document.getElementById("tripHighlights").innerHTML = highlights.length
-        ? highlights.map(item => `<span class="tag">${escapeHtml(item)}</span>`).join("")
+      document.getElementById("tripHighlights").innerHTML = oldData.highlights.length
+        ? oldData.highlights.map(item => `<span class="tag-chip">${escapeHtml(item)}</span>`).join("")
         : `<div class="empty">目前尚未設定亮點</div>`;
 
-      const dayByDay = normalizeDayByDay(data.dayByDayJson || data.dayByDay || []);
-      document.getElementById("tripDays").innerHTML = dayByDay.length
-        ? dayByDay.map((item, idx) => `
+      document.getElementById("tripDays").innerHTML = oldData.schedule.length
+        ? oldData.schedule.map((item, idx) => `
             <div class="timeline-item">
               <div class="timeline-day">${escapeHtml(item.day || ("Day " + (idx + 1)))}</div>
               <div class="timeline-content">${escapeHtml(item.content || "")}</div>
@@ -965,13 +776,9 @@
     async function loadTrip() {
       const state = getTrackingState();
 
-      document.getElementById("previewTenantId").value = state.tenantId || "";
-      document.getElementById("previewItineraryId").value = state.itineraryId || "";
-      document.getElementById("previewRefUid").value = state.refUid || "direct";
-
       if (!state.itineraryId) {
         document.getElementById("tripTitle").textContent = "缺少 itineraryId";
-        document.getElementById("tripTitleTop").textContent = "缺少 itineraryId";
+        document.getElementById("topTitle").textContent = "缺少 itineraryId";
         document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 或 ?itineraryId=... 的連結進入";
         return;
       }
@@ -987,13 +794,14 @@
 
       if (!tripData) {
         document.getElementById("tripTitle").textContent = "找不到行程";
-        document.getElementById("tripTitleTop").textContent = "找不到行程";
+        document.getElementById("topTitle").textContent = "找不到行程";
         document.getElementById("tripDescription").textContent = "請確認 itineraryId 是否存在";
         return;
       }
 
-      renderTrip(tripData);
-      setStatus("行程載入完成：" + (tripData.title || state.itineraryId), true);
+      const oldData = mapToOldStyle(tripData);
+      renderTrip(oldData, tripData);
+      logStatus("行程載入完成：" + (oldData.title || state.itineraryId), true);
     }
 
     function renderReferralInfo() {
@@ -1003,29 +811,25 @@
         "tenantId：<b>" + escapeHtml(state.tenantId || "-") + "</b><br>" +
         "itineraryId：<b>" + escapeHtml(state.itineraryId || "-") + "</b><br>" +
         "refUid：<b>" + escapeHtml(state.refUid || "direct") + "</b><br><br>" +
-        "目前來源會在：<br>" +
-        "• LINE 綁定時寫入會員資料<br>" +
-        "• 建立訂單時寫入 distributorUid / refUid / attributionSource";
+        "用戶從這個行程頁進站後，系統會記錄來源，後續綁定 LINE 與下單時自動帶入。";
     }
 
     async function initLiffOnly() {
-      setStatus("初始化 LIFF 中...");
+      logStatus("初始化 LIFF 中...");
       await liff.init({ liffId: LIFF_ID });
 
       if (!liff.isLoggedIn()) {
-        document.getElementById("previewLineUid").value = "";
-        setStatus("尚未登入 LINE，請點擊上方或下方的 LINE 登入按鈕");
+        logStatus("尚未登入 LINE，請點擊下方或頁面中的 LINE 登入按鈕");
         return { loggedIn: false };
       }
 
       const profile = await liff.getProfile();
       currentProfile = profile;
       currentLineUserId = profile.userId || "";
-      document.getElementById("previewLineUid").value = currentLineUserId;
 
-      setStatus(
-        "LINE 已登入\n" +
-        "userId：" + (profile.userId || "") + "\n" +
+      logStatus(
+        "LINE 已登入\\n" +
+        "userId：" + (profile.userId || "") + "\\n" +
         "displayName：" + (profile.displayName || "")
       );
 
@@ -1043,7 +847,7 @@
       const profile = initResult.profile;
       const state = getTrackingState();
 
-      setStatus("LINE 已登入，開始寫入會員資料...", true);
+      logStatus("LINE 已登入，開始寫入會員資料...", true);
 
       const res = await apiPost("/api/member/register", {
         tenantId: state.tenantId,
@@ -1059,7 +863,7 @@
         notes: state.itineraryId ? ("from_itinerary:" + state.itineraryId) : ""
       });
 
-      setStatus("會員綁定結果：\n" + JSON.stringify(res, null, 2), true);
+      logStatus("會員綁定結果：\\n" + JSON.stringify(res, null, 2), true);
       return res;
     }
 
@@ -1099,10 +903,10 @@
         distributorUid: state.refUid,
         refUid: state.refUid,
         sourcePage: window.location.href,
-        notes: "trip.html 正式成交頁版本測試下單"
+        notes: "trip.html 舊模型融合版下單"
       });
 
-      setStatus("訂單建立結果：\n" + JSON.stringify(res, null, 2), true);
+      logStatus("訂單建立結果：\\n" + JSON.stringify(res, null, 2), true);
 
       if (res && res.success) {
         const orderId = (res.data && res.data.orderId) || res.orderId || "";
@@ -1119,11 +923,15 @@
     }
 
     function bindEvents() {
+      document.getElementById("btnCopyPage").addEventListener("click", function() {
+        copyText(window.location.href);
+      });
+
       document.getElementById("btnLineLogin").addEventListener("click", async function() {
         try {
           await registerLineMember();
         } catch (err) {
-          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+          logStatus("LINE 綁定失敗：\\n" + (err.message || String(err)), true);
         }
       });
 
@@ -1131,31 +939,7 @@
         try {
           await registerLineMember();
         } catch (err) {
-          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnBindHero").addEventListener("click", async function() {
-        try {
-          await registerLineMember();
-        } catch (err) {
-          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnOrderTop").addEventListener("click", async function() {
-        try {
-          await submitOrder();
-        } catch (err) {
-          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
-        }
-      });
-
-      document.getElementById("btnOrderBottom").addEventListener("click", async function() {
-        try {
-          await submitOrder();
-        } catch (err) {
-          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+          logStatus("LINE 綁定失敗：\\n" + (err.message || String(err)), true);
         }
       });
 
@@ -1163,12 +947,16 @@
         try {
           await submitOrder();
         } catch (err) {
-          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+          logStatus("建立訂單失敗：\\n" + (err.message || String(err)), true);
         }
       });
 
-      document.getElementById("btnCopyPage").addEventListener("click", function() {
-        copyText(window.location.href);
+      document.getElementById("btnOrderBottom").addEventListener("click", async function() {
+        try {
+          await submitOrder();
+        } catch (err) {
+          logStatus("建立訂單失敗：\\n" + (err.message || String(err)), true);
+        }
       });
     }
 
@@ -1181,7 +969,7 @@
         await loadTrip();
         await initLiffOnly();
       } catch (err) {
-        setStatus("初始化失敗：\n" + (err.message || String(err)));
+        logStatus("初始化失敗：\\n" + (err.message || String(err)));
       }
     }
 
