@@ -18,6 +18,8 @@
       --header: #ffffff;
       --table-head: #f7f9fb;
       --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
     }
 
     * {
@@ -158,6 +160,12 @@
       background: #111827;
       color: #fff;
       border-color: #111827;
+    }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 6px;
     }
 
     .content {
@@ -323,6 +331,47 @@
       text-align: center;
     }
 
+    .status-pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .status-paid {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-unpaid {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-processing {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .order-select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      background: #fff;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
     @media (max-width: 1024px) {
       .app {
         grid-template-columns: 1fr;
@@ -362,7 +411,7 @@
       <div class="nav-group">
         <div class="nav-title">說明</div>
         <div class="small">
-          這版為 LINE OA 風格工作台，重點是資訊密度與操作效率，不走置中展示型版面。
+          這版已補訂單狀態更新、付款狀態、撥款狀態、佣金狀態與佣金明細。
         </div>
       </div>
     </aside>
@@ -445,7 +494,7 @@
         </div>
 
         <div class="panel">
-          <div class="panel-head">我的訂單</div>
+          <div class="panel-head">我的訂單（含狀態與撥款管理）</div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -455,13 +504,15 @@
                   <th>金額</th>
                   <th>佣金比例</th>
                   <th>佣金金額</th>
-                  <th>歸因來源</th>
-                  <th>行程 ID</th>
-                  <th>時間</th>
+                  <th>訂單狀態</th>
+                  <th>付款狀態</th>
+                  <th>佣金狀態</th>
+                  <th>撥款狀態</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody id="orderTable">
-                <tr><td colspan="8" class="empty">載入中...</td></tr>
+                <tr><td colspan="10" class="empty">載入中...</td></tr>
               </tbody>
             </table>
           </div>
@@ -528,6 +579,23 @@
       } catch (err) {
         setStatus("複製失敗，請手動複製：\n" + text, true);
       }
+    }
+
+    function statusPill(text, type) {
+      const cls = type ? ("status-pill " + type) : "status-pill";
+      return `<span class="${cls}">${escapeHtml(text)}</span>`;
+    }
+
+    function payoutPill(val) {
+      if (val === "paid") return statusPill("已撥款", "status-paid");
+      if (val === "processing") return statusPill("撥款中", "status-processing");
+      return statusPill("未撥款", "status-unpaid");
+    }
+
+    function paymentPill(val) {
+      if (val === "paid") return statusPill("已付款", "status-paid");
+      if (val === "refunded") return statusPill("已退款", "status-processing");
+      return statusPill("未付款", "status-unpaid");
     }
 
     async function loadTenant() {
@@ -609,6 +677,26 @@
       }
     }
 
+    async function updateOrder(orderId) {
+      const status = document.getElementById("status_" + orderId).value;
+      const paymentStatus = document.getElementById("payment_" + orderId).value;
+      const commissionStatus = document.getElementById("commission_" + orderId).value;
+      const payoutStatus = document.getElementById("payout_" + orderId).value;
+
+      const res = await apiPost("/api/admin/update-order", {
+        tenantId: TENANT,
+        orderId: orderId,
+        status: status,
+        paymentStatus: paymentStatus,
+        commissionStatus: commissionStatus,
+        payoutStatus: payoutStatus,
+        updatedBy: currentUid || "dashboard_admin"
+      });
+
+      setStatus("訂單更新結果：\n" + JSON.stringify(res, null, 2));
+      await loadDashboard();
+    }
+
     async function loadDashboard() {
       if (!currentUid) {
         document.getElementById("promoInfo").textContent = "尚未登入，暫無推廣資訊。";
@@ -616,7 +704,7 @@
         document.getElementById("kpiRevenue").textContent = "0";
         document.getElementById("kpiCommission").textContent = "0";
         document.getElementById("kpiUsers").textContent = "0";
-        document.getElementById("orderTable").innerHTML = "<tr><td colspan='8' class='empty'>尚未登入</td></tr>";
+        document.getElementById("orderTable").innerHTML = "<tr><td colspan='10' class='empty'>尚未登入</td></tr>";
         return;
       }
 
@@ -643,12 +731,59 @@
             <td>${formatNumber(o.totalAmount || 0)}</td>
             <td>${escapeHtml(o.commissionRate || 0)}%</td>
             <td>${formatNumber(o.commissionAmount || 0)}</td>
-            <td>${escapeHtml(o.attributionSource || "-")}</td>
-            <td>${escapeHtml(o.itineraryId || "")}</td>
-            <td>${escapeHtml(o.createdAt || o.orderDate || "")}</td>
+            <td>
+              <div>${statusPill(o.status || "pending")}</div>
+              <div style="margin-top:6px;">
+                <select id="status_${escapeHtml(o.orderId)}" class="order-select">
+                  <option value="pending" ${o.status === "pending" ? "selected" : ""}>pending</option>
+                  <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>confirmed</option>
+                  <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>cancelled</option>
+                  <option value="completed" ${o.status === "completed" ? "selected" : ""}>completed</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div>${paymentPill(o.paymentStatus || "unpaid")}</div>
+              <div style="margin-top:6px;">
+                <select id="payment_${escapeHtml(o.orderId)}" class="order-select">
+                  <option value="unpaid" ${o.paymentStatus === "unpaid" ? "selected" : ""}>unpaid</option>
+                  <option value="paid" ${o.paymentStatus === "paid" ? "selected" : ""}>paid</option>
+                  <option value="refunded" ${o.paymentStatus === "refunded" ? "selected" : ""}>refunded</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div>${statusPill(o.commissionStatus || "not_ready")}</div>
+              <div style="margin-top:6px;">
+                <select id="commission_${escapeHtml(o.orderId)}" class="order-select">
+                  <option value="not_ready" ${o.commissionStatus === "not_ready" ? "selected" : ""}>not_ready</option>
+                  <option value="pending" ${o.commissionStatus === "pending" ? "selected" : ""}>pending</option>
+                  <option value="approved" ${o.commissionStatus === "approved" ? "selected" : ""}>approved</option>
+                  <option value="paid" ${o.commissionStatus === "paid" ? "selected" : ""}>paid</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div>${payoutPill(o.payoutStatus || "unpaid")}</div>
+              <div style="margin-top:6px;">
+                <select id="payout_${escapeHtml(o.orderId)}" class="order-select">
+                  <option value="unpaid" ${o.payoutStatus === "unpaid" ? "selected" : ""}>unpaid</option>
+                  <option value="processing" ${o.payoutStatus === "processing" ? "selected" : ""}>processing</option>
+                  <option value="paid" ${o.payoutStatus === "paid" ? "selected" : ""}>paid</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="small">${escapeHtml(o.attributionSource || "-")}</div>
+              <div class="small">行程：${escapeHtml(o.itineraryId || "")}</div>
+              <div class="small">${escapeHtml(o.createdAt || o.orderDate || "")}</div>
+              <div class="order-actions">
+                <button class="btn btn-primary btn-small" onclick="updateOrder('${escapeHtml(o.orderId)}')">更新</button>
+              </div>
+            </td>
           </tr>
         `).join("")
-        : "<tr><td colspan='8' class='empty'>目前尚無訂單</td></tr>";
+        : "<tr><td colspan='10' class='empty'>目前尚無訂單</td></tr>";
 
       document.getElementById("orderTable").innerHTML = orderHtml;
     }
