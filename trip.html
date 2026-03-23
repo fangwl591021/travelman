@@ -3,169 +3,236 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TravelKeeper Trip</title>
+  <title>TravelKeeper Trip - LINE OA Style</title>
   <style>
     :root {
-      --primary: #0A84FF;
-      --bg: #f5f7fb;
+      --primary: #06c755;
+      --primary-dark: #05a847;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --border: #dfe3e8;
       --text: #1f2937;
       --muted: #6b7280;
-      --card: #ffffff;
-      --border: #e5e7eb;
+      --head: #ffffff;
+      --table-head: #f7f9fb;
+      --dark: #111827;
+      --status-bg: #0b1220;
+      --status-text: #d1fae5;
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       font-family: Arial, "Noto Sans TC", sans-serif;
       background: var(--bg);
       color: var(--text);
     }
 
-    .wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 16px;
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    .hero {
-      background: var(--card);
-      border-radius: 16px;
+    .topbar {
+      background: var(--head);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar-left {
+      min-width: 0;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .topbar-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .topbar-right {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-dark {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: #fff;
+    }
+
+    .wrap {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 18px rgba(0,0,0,.06);
-      margin-bottom: 16px;
+    }
+
+    .panel-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .summary-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 16px;
     }
 
     .hero-image {
       width: 100%;
-      height: 240px;
+      height: 220px;
       object-fit: cover;
-      display: block;
+      border-radius: 8px;
       background: #ddd;
-    }
-
-    .hero-body {
-      padding: 16px;
-    }
-
-    .brand {
-      display: inline-block;
-      font-size: 12px;
-      color: white;
-      background: var(--primary);
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-bottom: 10px;
+      border: 1px solid var(--border);
     }
 
     .title {
       font-size: 26px;
       font-weight: 700;
       margin: 0 0 8px;
-      line-height: 1.3;
+      line-height: 1.35;
     }
 
     .subtitle {
       color: var(--muted);
       margin-bottom: 12px;
+      font-size: 14px;
     }
 
-    .meta {
+    .meta-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 12px;
     }
 
-    .meta span {
-      font-size: 13px;
-      padding: 6px 10px;
+    .meta-item {
       background: #eef2ff;
+      color: #374151;
+      font-size: 12px;
+      padding: 6px 10px;
       border-radius: 999px;
     }
 
     .price {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 700;
       color: var(--primary);
-      margin: 8px 0 0;
+      margin-top: 6px;
     }
 
-    .section {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.06);
-      margin-bottom: 16px;
-    }
-
-    .section h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
-    }
-
-    .day-item {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 8px;
-      background: #fafafa;
-    }
-
-    .cta-bar {
-      position: sticky;
-      bottom: 0;
-      background: rgba(255,255,255,.96);
-      border-top: 1px solid var(--border);
-      padding: 12px;
-      backdrop-filter: blur(8px);
-    }
-
-    .cta-grid {
-      max-width: 720px;
-      margin: 0 auto;
+    .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background: #111827;
-      color: #fff;
+      gap: 14px;
     }
 
     .status-box {
+      background: var(--status-bg);
+      color: var(--status-text);
+      border-radius: 8px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
       font-size: 13px;
       line-height: 1.7;
-      white-space: pre-wrap;
-      background: #0b1220;
-      color: #d1fae5;
-      padding: 12px;
-      border-radius: 12px;
     }
 
-    .tag {
-      display: inline-block;
-      padding: 5px 10px;
-      font-size: 12px;
-      border-radius: 999px;
-      background: #f3f4f6;
-      margin: 0 6px 6px 0;
+    .ref-box {
+      background: #ecfeff;
+      color: #155e75;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.7;
+      word-break: break-word;
     }
 
     .muted {
@@ -173,62 +240,218 @@
       font-size: 13px;
     }
 
-    .ref-box {
-      font-size: 13px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: #ecfeff;
-      color: #155e75;
-      line-height: 1.6;
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: #f3f4f6;
+      color: #111827;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    th {
+      background: var(--table-head);
+      font-weight: 700;
+    }
+
+    .day-table th:nth-child(1) { width: 90px; }
+    .day-table th:nth-child(2) { width: auto; }
+
+    .sticky-cta {
+      position: sticky;
+      bottom: 0;
+      z-index: 15;
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .sticky-left {
+      min-width: 0;
+    }
+
+    .sticky-title {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .sticky-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .sticky-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 900px) {
+      .summary-grid,
+      .hero-grid,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-cta {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sticky-actions {
+        width: 100%;
+      }
+
+      .sticky-actions .btn {
+        flex: 1;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <img id="coverImage" class="hero-image" src="https://picsum.photos/900/500" alt="trip cover" />
-      <div class="hero-body">
-        <div id="brandName" class="brand">TravelKeeper</div>
-        <h1 id="tripTitle" class="title">行程載入中...</h1>
-        <div id="tripSubtitle" class="subtitle">請稍候</div>
-        <div id="tripMeta" class="meta"></div>
-        <div id="tripPrice" class="price">--</div>
+  <div class="app">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div id="brandName" class="brand-badge">TravelKeeper</div>
+        <div id="tripTitleTop" class="topbar-title">行程載入中...</div>
+        <div class="topbar-sub">LINE 登入後可直接綁定會員與分銷來源</div>
+      </div>
+      <div class="topbar-right">
+        <button id="btnLineLogin" class="btn btn-primary">LINE 登入 / 綁定</button>
+        <button id="btnOrderTop" class="btn btn-dark">立即報名</button>
       </div>
     </div>
 
-    <div class="section">
-      <h2>行程介紹</h2>
-      <div id="tripDescription">載入中...</div>
-    </div>
+    <div class="wrap">
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="summary-label">品牌</div>
+          <div id="summaryBrand" class="summary-value">TravelKeeper</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">目的地</div>
+          <div id="summaryPlace" class="summary-value">--</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">天數</div>
+          <div id="summaryDays" class="summary-value">--</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-label">價格</div>
+          <div id="summaryPrice" class="summary-value">--</div>
+        </div>
+      </div>
 
-    <div class="section">
-      <h2>行程亮點</h2>
-      <div id="tripHighlights"></div>
-    </div>
+      <div class="panel">
+        <div class="panel-head">行程主資訊</div>
+        <div class="panel-body">
+          <div class="hero-grid">
+            <div>
+              <img id="coverImage" class="hero-image" src="https://picsum.photos/900/500" alt="trip cover" />
+            </div>
+            <div>
+              <h1 id="tripTitle" class="title">行程載入中...</h1>
+              <div id="tripSubtitle" class="subtitle">請稍候</div>
+              <div id="tripMeta" class="meta-row"></div>
+              <div id="tripPrice" class="price">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="section">
-      <h2>每日行程</h2>
-      <div id="tripDays"></div>
-    </div>
+      <div class="info-grid">
+        <div class="panel">
+          <div class="panel-head">分銷 / 來源資訊</div>
+          <div class="panel-body">
+            <div id="refInfo" class="ref-box"></div>
+            <div class="muted" style="margin-top:10px;">
+              客戶從分銷連結進站後，系統會先記錄 ref 與 itinerary，再於 LINE 綁定與下單時自動帶入。
+            </div>
+          </div>
+        </div>
 
-    <div class="section">
-      <h2>報名資訊</h2>
-      <div id="refInfo" class="ref-box"></div>
-      <div class="muted" style="margin-top:10px;">
-        進站後會記錄推薦來源，完成 LINE 登入後即可綁定會員與分銷來源。
+        <div class="panel">
+          <div class="panel-head">LINE 綁定狀態</div>
+          <div class="panel-body">
+            <div id="statusBox" class="status-box">尚未初始化</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">行程介紹</div>
+        <div class="panel-body">
+          <div id="tripDescription">載入中...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">行程亮點</div>
+        <div class="panel-body">
+          <div id="tripHighlights" class="tag-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">每日行程</div>
+        <div class="table-wrap">
+          <table class="day-table">
+            <thead>
+              <tr>
+                <th>天數</th>
+                <th>內容</th>
+              </tr>
+            </thead>
+            <tbody id="tripDays">
+              <tr><td colspan="2">載入中...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="section">
-      <h2>LINE 綁定狀態</h2>
-      <div id="statusBox" class="status-box">尚未初始化</div>
-    </div>
-  </div>
-
-  <div class="cta-bar">
-    <div class="cta-grid">
-      <button id="btnLineLogin" class="btn-primary">LINE 登入 / 綁定</button>
-      <button id="btnOrder" class="btn-secondary">立即報名</button>
+    <div class="sticky-cta">
+      <div class="sticky-left">
+        <div class="sticky-title">目前行程</div>
+        <div id="stickyPrice" class="sticky-price">--</div>
+      </div>
+      <div class="sticky-actions">
+        <button id="btnLineLoginBottom" class="btn btn-primary">LINE 登入 / 綁定</button>
+        <button id="btnOrderBottom" class="btn btn-dark">立即報名</button>
+      </div>
     </div>
   </div>
 
@@ -291,19 +514,6 @@
       return await res.json();
     }
 
-    async function loadTenant() {
-      const tenantId = getTrackingState().tenantId;
-      const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(tenantId));
-      tenantData = res && res.data ? res.data.data : null;
-
-      if (tenantData) {
-        document.getElementById("brandName").textContent = tenantData.brandName || "TravelKeeper";
-        if (tenantData.primaryColor) {
-          document.documentElement.style.setProperty("--primary", tenantData.primaryColor);
-        }
-      }
-    }
-
     function parseMaybeJson(value, fallback) {
       try {
         if (!value) return fallback;
@@ -324,64 +534,87 @@
         .replace(/'/g, "&#039;");
     }
 
+    async function loadTenant() {
+      const tenantId = getTrackingState().tenantId;
+      const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(tenantId));
+      tenantData = res && res.data ? res.data.data : null;
+
+      if (tenantData) {
+        const brand = tenantData.brandName || "TravelKeeper";
+        document.getElementById("brandName").textContent = brand;
+        document.getElementById("summaryBrand").textContent = brand;
+        if (tenantData.primaryColor) {
+          document.documentElement.style.setProperty("--primary", tenantData.primaryColor);
+          document.documentElement.style.setProperty("--primary-dark", tenantData.primaryColor);
+        }
+      }
+    }
+
     function renderTrip(data) {
-      document.getElementById("tripTitle").textContent = data.title || "未命名行程";
-      document.getElementById("tripSubtitle").textContent =
-        data.subtitle || ((data.country || "") + " " + (data.city || "")).trim() || "旅遊行程";
-      document.getElementById("tripPrice").textContent =
-        "NT$ " + Number(data.price || DEFAULT_ORDER_AMOUNT).toLocaleString();
+      const title = data.title || "未命名行程";
+      const subtitle = data.subtitle || ((data.country || "") + " " + (data.city || "")).trim() || "旅遊行程";
+      const amount = Number(data.price || DEFAULT_ORDER_AMOUNT).toLocaleString();
+
+      document.getElementById("tripTitle").textContent = title;
+      document.getElementById("tripTitleTop").textContent = title;
+      document.getElementById("tripSubtitle").textContent = subtitle;
+      document.getElementById("tripPrice").textContent = "NT$ " + amount;
+      document.getElementById("stickyPrice").textContent = "NT$ " + amount;
+      document.getElementById("summaryPrice").textContent = "NT$ " + amount;
+      document.getElementById("summaryPlace").textContent = ((data.country || "") + " " + (data.city || "")).trim() || "--";
+      document.getElementById("summaryDays").textContent = data.days ? (data.days + " 天") : "--";
       document.getElementById("tripDescription").textContent = data.description || "暫無說明";
       document.getElementById("coverImage").src = data.coverImageUrl || "https://picsum.photos/900/500";
 
       const meta = [];
-      if (data.country) meta.push("<span>" + escapeHtml(data.country) + "</span>");
-      if (data.city) meta.push("<span>" + escapeHtml(data.city) + "</span>");
-      if (data.days) meta.push("<span>" + escapeHtml(String(data.days)) + " 天</span>");
-      if (data.nights) meta.push("<span>" + escapeHtml(String(data.nights)) + " 夜</span>");
-      if (data.status) meta.push("<span>" + escapeHtml(data.status) + "</span>");
+      if (data.country) meta.push('<span class="meta-item">' + escapeHtml(data.country) + '</span>');
+      if (data.city) meta.push('<span class="meta-item">' + escapeHtml(data.city) + '</span>');
+      if (data.days) meta.push('<span class="meta-item">' + escapeHtml(String(data.days)) + ' 天</span>');
+      if (data.nights) meta.push('<span class="meta-item">' + escapeHtml(String(data.nights)) + ' 夜</span>');
+      if (data.status) meta.push('<span class="meta-item">' + escapeHtml(data.status) + '</span>');
       document.getElementById("tripMeta").innerHTML = meta.join("");
 
       const highlights = parseMaybeJson(data.highlightsJson, []);
       if (highlights.length) {
         document.getElementById("tripHighlights").innerHTML = highlights.map(function(item) {
-          return '<span class="tag">' + escapeHtml(String(item)) + "</span>";
+          return '<span class="tag">' + escapeHtml(String(item)) + '</span>';
         }).join("");
       } else {
-        document.getElementById("tripHighlights").innerHTML = '<div class="muted">目前尚未設定亮點</div>';
+        document.getElementById("tripHighlights").innerHTML = '<span class="muted">目前尚未設定亮點</span>';
       }
 
       const dayByDay = parseMaybeJson(data.dayByDayJson, []);
       if (dayByDay.length) {
         document.getElementById("tripDays").innerHTML = dayByDay.map(function(item, idx) {
-          return '<div class="day-item"><b>Day ' + (idx + 1) + "</b>｜" + escapeHtml(String(item)) + "</div>";
+          return '<tr><td>Day ' + (idx + 1) + '</td><td>' + escapeHtml(String(item)) + '</td></tr>';
         }).join("");
       } else {
-        document.getElementById("tripDays").innerHTML = '<div class="muted">目前尚未設定每日行程</div>';
+        document.getElementById("tripDays").innerHTML = '<tr><td colspan="2">目前尚未設定每日行程</td></tr>';
       }
     }
 
     async function loadTrip() {
       const state = getTrackingState();
-      const itineraryId = state.itineraryId;
-      const tenantId = state.tenantId;
 
-      if (!itineraryId) {
+      if (!state.itineraryId) {
         document.getElementById("tripTitle").textContent = "缺少 itineraryId";
+        document.getElementById("tripTitleTop").textContent = "缺少 itineraryId";
         document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 的連結進入";
         return;
       }
 
       const res = await apiGet(
         "/api/public/itinerary?tenantId=" +
-        encodeURIComponent(tenantId) +
+        encodeURIComponent(state.tenantId) +
         "&itineraryId=" +
-        encodeURIComponent(itineraryId)
+        encodeURIComponent(state.itineraryId)
       );
 
       tripData = res && res.data ? res.data.data : null;
 
       if (!tripData) {
         document.getElementById("tripTitle").textContent = "找不到行程";
+        document.getElementById("tripTitleTop").textContent = "找不到行程";
         document.getElementById("tripDescription").textContent = "請確認 itineraryId 是否存在";
         return;
       }
@@ -402,7 +635,7 @@
       await liff.init({ liffId: LIFF_ID });
 
       if (!liff.isLoggedIn()) {
-        setStatus("尚未登入 LINE，請點下方按鈕進行登入綁定");
+        setStatus("尚未登入 LINE，請點擊上方或下方的 LINE 登入按鈕");
         return { loggedIn: false };
       }
 
@@ -486,7 +719,7 @@
         distributorUid: state.refUid,
         refUid: state.refUid,
         sourcePage: window.location.href,
-        notes: "trip.html 正式版測試下單"
+        notes: "trip.html LINE OA 風格版測試下單"
       });
 
       setStatus("訂單建立結果：\n" + JSON.stringify(res, null, 2), true);
@@ -506,7 +739,23 @@
       }
     });
 
-    document.getElementById("btnOrder").addEventListener("click", async function() {
+    document.getElementById("btnLineLoginBottom").addEventListener("click", async function() {
+      try {
+        await registerLineMember();
+      } catch (err) {
+        setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+      }
+    });
+
+    document.getElementById("btnOrderTop").addEventListener("click", async function() {
+      try {
+        await submitOrder();
+      } catch (err) {
+        setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+      }
+    });
+
+    document.getElementById("btnOrderBottom").addEventListener("click", async function() {
       try {
         await submitOrder();
       } catch (err) {
