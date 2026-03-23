@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TravelKeeper Trip - LINE OA Style</title>
+  <title>Travelman Trip</title>
   <style>
     :root {
       --primary: #06c755;
       --primary-dark: #05a847;
-      --bg: #f4f6f8;
+      --primary-soft: #e9fff2;
+      --bg: #f4f7fb;
       --panel: #ffffff;
       --border: #dfe3e8;
       --text: #1f2937;
       --muted: #6b7280;
-      --head: #ffffff;
-      --table-head: #f7f9fb;
       --dark: #111827;
-      --status-bg: #0b1220;
-      --status-text: #d1fae5;
+      --danger: #dc2626;
+      --warn: #d97706;
+      --info: #2563eb;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+      --header-bg: rgba(255,255,255,0.92);
     }
 
     * { box-sizing: border-box; }
@@ -30,6 +33,11 @@
       color: var(--text);
     }
 
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
     .app {
       min-height: 100vh;
       display: flex;
@@ -37,16 +45,17 @@
     }
 
     .topbar {
-      background: var(--head);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 20;
     }
 
     .topbar-left {
@@ -54,32 +63,37 @@
     }
 
     .brand-badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: var(--primary);
       color: #fff;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 999px;
       font-size: 12px;
-      margin-bottom: 6px;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
     .topbar-title {
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
       line-height: 1.3;
+      word-break: break-word;
     }
 
     .topbar-sub {
       font-size: 13px;
       color: var(--muted);
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     .topbar-right {
       display: flex;
+      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      align-items: center;
+      justify-content: flex-end;
     }
 
     .btn {
@@ -87,10 +101,17 @@
       background: #fff;
       color: var(--text);
       padding: 10px 14px;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 700;
+      transition: all 0.18s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
     }
 
     .btn-primary {
@@ -109,192 +130,332 @@
       color: #fff;
     }
 
+    .btn-ghost {
+      background: #f8fafc;
+    }
+
     .wrap {
-      padding: 16px;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px 16px 110px;
       display: grid;
-      gap: 14px;
+      gap: 16px;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius);
       overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
     .panel-head {
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       background: #fff;
-      font-weight: 700;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .panel-body {
-      padding: 14px;
+      padding: 16px;
     }
 
     .summary-grid {
       display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1.3fr 1fr 1fr 1fr;
+      gap: 12px;
     }
 
     .summary-box {
       background: #fff;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-width: 0;
     }
 
     .summary-label {
       color: var(--muted);
       font-size: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
     }
 
     .summary-value {
-      font-size: 24px;
-      font-weight: 700;
-      line-height: 1.2;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+      word-break: break-word;
     }
 
-    .hero-grid {
+    .hero-card {
       display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 16px;
+      grid-template-columns: 460px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-image-wrap {
+      position: relative;
+      min-height: 320px;
     }
 
     .hero-image {
       width: 100%;
-      height: 220px;
+      height: 100%;
+      min-height: 320px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 16px;
       background: #ddd;
       border: 1px solid var(--border);
+      display: block;
+    }
+
+    .hero-badge-row {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(17,24,39,0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
     }
 
     .title {
-      font-size: 26px;
-      font-weight: 700;
-      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
       line-height: 1.35;
+      word-break: break-word;
     }
 
     .subtitle {
       color: var(--muted);
-      margin-bottom: 12px;
-      font-size: 14px;
+      font-size: 15px;
+      line-height: 1.7;
     }
 
     .meta-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 12px;
     }
 
     .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       background: #eef2ff;
-      color: #374151;
+      color: #334155;
       font-size: 12px;
-      padding: 6px 10px;
+      padding: 7px 11px;
       border-radius: 999px;
+      font-weight: 700;
     }
 
     .price {
-      font-size: 30px;
-      font-weight: 700;
+      font-size: 34px;
+      font-weight: 800;
       color: var(--primary);
-      margin-top: 6px;
+      line-height: 1.1;
+    }
+
+    .price-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: auto;
     }
 
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 16px;
     }
 
     .status-box {
-      background: var(--status-bg);
-      color: var(--status-text);
-      border-radius: 8px;
-      padding: 12px;
+      background: #0b1220;
+      color: #d1fae5;
+      border-radius: 14px;
+      padding: 14px;
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 13px;
-      line-height: 1.7;
+      line-height: 1.75;
+      font-family: Consolas, Monaco, monospace;
+      min-height: 150px;
     }
 
     .ref-box {
       background: #ecfeff;
       color: #155e75;
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 14px;
+      padding: 14px;
       font-size: 13px;
-      line-height: 1.7;
+      line-height: 1.75;
       word-break: break-word;
+      border: 1px solid #bae6fd;
     }
 
-    .muted {
-      color: var(--muted);
+    .notice-box {
+      background: #fff7ed;
+      color: #9a3412;
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid #fed7aa;
       font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .rich-text {
+      font-size: 15px;
+      line-height: 1.95;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .tag-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     .tag {
       background: #f3f4f6;
       color: #111827;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid #e5e7eb;
     }
 
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
+    .timeline {
+      display: grid;
+      gap: 12px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
       background: #fff;
-      table-layout: fixed;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      vertical-align: top;
+    .timeline-day {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid #c7f0d9;
+      min-height: 42px;
+    }
+
+    .timeline-content {
       font-size: 14px;
+      line-height: 1.8;
+      color: #334155;
+      white-space: pre-wrap;
       word-break: break-word;
     }
 
-    th {
-      background: var(--table-head);
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
       font-weight: 700;
     }
 
-    .day-table th:nth-child(1) { width: 90px; }
-    .day-table th:nth-child(2) { width: auto; }
+    .field input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.18s ease;
+    }
+
+    .field input:focus {
+      border-color: var(--primary);
+    }
 
     .sticky-cta {
-      position: sticky;
+      position: fixed;
+      left: 0;
+      right: 0;
       bottom: 0;
-      z-index: 15;
-      background: rgba(255,255,255,.96);
+      z-index: 25;
+      background: rgba(255,255,255,0.94);
       border-top: 1px solid var(--border);
+      backdrop-filter: blur(10px);
       padding: 12px 16px;
+    }
+
+    .sticky-inner {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      backdrop-filter: blur(8px);
     }
 
     .sticky-left {
@@ -302,14 +463,17 @@
     }
 
     .sticky-title {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--muted);
+      margin-bottom: 4px;
     }
 
     .sticky-price {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: 800;
       color: var(--primary);
+      line-height: 1.1;
+      word-break: break-word;
     }
 
     .sticky-actions {
@@ -319,14 +483,77 @@
       justify-content: flex-end;
     }
 
-    @media (max-width: 900px) {
-      .summary-grid,
-      .hero-grid,
-      .info-grid {
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 16px;
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    @media (max-width: 1200px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero-card,
+      .info-grid,
+      .field-grid {
         grid-template-columns: 1fr;
       }
 
-      .sticky-cta {
+      .hero-image,
+      .hero-image-wrap {
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .topbar-right {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .topbar-right .btn {
+        flex: 1;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        padding: 14px 14px 120px;
+      }
+
+      .title {
+        font-size: 26px;
+      }
+
+      .price {
+        font-size: 30px;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-inner {
         flex-direction: column;
         align-items: stretch;
       }
@@ -345,9 +572,11 @@
   <div class="app">
     <div class="topbar">
       <div class="topbar-left">
-        <div id="brandName" class="brand-badge">TravelKeeper</div>
-        <div id="tripTitleTop" class="topbar-title">行程載入中...</div>
-        <div class="topbar-sub">LINE 登入後可直接綁定會員與分銷來源</div>
+        <div>
+          <div id="brandName" class="brand-badge">TravelKeeper</div>
+          <div id="tripTitleTop" class="topbar-title">行程載入中...</div>
+          <div class="topbar-sub">LINE 登入後可直接綁定會員、追蹤來源並建立訂單</div>
+        </div>
       </div>
       <div class="topbar-right">
         <button id="btnLineLogin" class="btn btn-primary">LINE 登入 / 綁定</button>
@@ -378,15 +607,24 @@
       <div class="panel">
         <div class="panel-head">行程主資訊</div>
         <div class="panel-body">
-          <div class="hero-grid">
-            <div>
+          <div class="hero-card">
+            <div class="hero-image-wrap">
+              <div class="hero-badge-row" id="heroBadgeRow"></div>
               <img id="coverImage" class="hero-image" src="https://picsum.photos/900/500" alt="trip cover" />
             </div>
-            <div>
+
+            <div class="hero-content">
               <h1 id="tripTitle" class="title">行程載入中...</h1>
               <div id="tripSubtitle" class="subtitle">請稍候</div>
               <div id="tripMeta" class="meta-row"></div>
               <div id="tripPrice" class="price">--</div>
+              <div id="tripPriceNote" class="price-note">價格以系統設定為準，最終報名資料會寫入訂單。</div>
+
+              <div class="hero-actions">
+                <button id="btnOrderHero" class="btn btn-dark">立即報名</button>
+                <button id="btnBindHero" class="btn btn-primary">LINE 登入 / 綁定</button>
+                <button id="btnCopyPage" class="btn btn-ghost">複製此頁連結</button>
+              </div>
             </div>
           </div>
         </div>
@@ -397,8 +635,9 @@
           <div class="panel-head">分銷 / 來源資訊</div>
           <div class="panel-body">
             <div id="refInfo" class="ref-box"></div>
-            <div class="muted" style="margin-top:10px;">
-              客戶從分銷連結進站後，系統會先記錄 ref 與 itinerary，再於 LINE 綁定與下單時自動帶入。
+            <div class="tiny" style="margin-top:10px;">
+              客戶從分銷連結進站後，系統會先記錄 <b>tenant / ref / itinerary</b>，
+              後續 LINE 綁定與下單時自動帶入。
             </div>
           </div>
         </div>
@@ -414,7 +653,7 @@
       <div class="panel">
         <div class="panel-head">行程介紹</div>
         <div class="panel-body">
-          <div id="tripDescription">載入中...</div>
+          <div id="tripDescription" class="rich-text">載入中...</div>
         </div>
       </div>
 
@@ -427,30 +666,63 @@
 
       <div class="panel">
         <div class="panel-head">每日行程</div>
-        <div class="table-wrap">
-          <table class="day-table">
-            <thead>
-              <tr>
-                <th>天數</th>
-                <th>內容</th>
-              </tr>
-            </thead>
-            <tbody id="tripDays">
-              <tr><td colspan="2">載入中...</td></tr>
-            </tbody>
-          </table>
+        <div class="panel-body">
+          <div id="tripDays" class="timeline">
+            <div class="empty">載入中...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="panel">
+          <div class="panel-head">訂單寫入欄位預覽</div>
+          <div class="panel-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>tenantId</label>
+                <input id="previewTenantId" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>itineraryId</label>
+                <input id="previewItineraryId" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>refUid</label>
+                <input id="previewRefUid" type="text" readonly />
+              </div>
+              <div class="field">
+                <label>LINE userId</label>
+                <input id="previewLineUid" type="text" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">提醒</div>
+          <div class="panel-body">
+            <div class="notice-box">
+              這頁目前是成交頁版本，主要流程是：
+              <br>1. 帶入 tenant / itinerary / ref
+              <br>2. 用戶 LINE 登入並註冊會員
+              <br>3. 建立訂單
+              <br>4. 跳轉 success.html
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="sticky-cta">
-      <div class="sticky-left">
-        <div class="sticky-title">目前行程</div>
-        <div id="stickyPrice" class="sticky-price">--</div>
-      </div>
-      <div class="sticky-actions">
-        <button id="btnLineLoginBottom" class="btn btn-primary">LINE 登入 / 綁定</button>
-        <button id="btnOrderBottom" class="btn btn-dark">立即報名</button>
+      <div class="sticky-inner">
+        <div class="sticky-left">
+          <div class="sticky-title">目前行程</div>
+          <div id="stickyPrice" class="sticky-price">--</div>
+        </div>
+        <div class="sticky-actions">
+          <button id="btnLineLoginBottom" class="btn btn-primary">LINE 登入 / 綁定</button>
+          <button id="btnOrderBottom" class="btn btn-dark">立即報名</button>
+        </div>
       </div>
     </div>
   </div>
@@ -458,13 +730,14 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
-    const TENANT_ID = "t001";
+    const DEFAULT_TENANT = "t001";
     const LIFF_ID = "2009367829-Ewwp8jfA";
     const DEFAULT_ORDER_AMOUNT = 29900;
 
     let tenantData = null;
     let tripData = null;
     let currentProfile = null;
+    let currentLineUserId = "";
 
     function qs(name) {
       const url = new URL(window.location.href);
@@ -473,45 +746,48 @@
 
     function setStatus(message, append = false) {
       const el = document.getElementById("statusBox");
-      if (append) {
-        el.textContent += "\n" + message;
-      } else {
-        el.textContent = message;
-      }
+      const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
+      const line = stamp + " " + message;
+      el.textContent = append ? (el.textContent + "\n" + line) : line;
     }
 
     function saveTrackingParams() {
       const ref = qs("ref");
       const itineraryId = qs("it") || qs("itineraryId");
-      const tenantId = qs("tenantId") || TENANT_ID;
+      const tenantId = qs("tenantId") || localStorage.getItem("travelman_tenant_id") || DEFAULT_TENANT;
 
       if (ref) localStorage.setItem("tk_ref_uid", ref);
       if (itineraryId) localStorage.setItem("tk_itinerary_id", itineraryId);
-      if (tenantId) localStorage.setItem("tk_tenant_id", tenantId);
+      if (tenantId) {
+        localStorage.setItem("tk_tenant_id", tenantId);
+        localStorage.setItem("travelman_tenant_id", tenantId);
+      }
+
+      const url = new URL(window.location.href);
+      if (!url.searchParams.get("tenantId")) {
+        url.searchParams.set("tenantId", tenantId);
+        history.replaceState({}, "", url.toString());
+      }
     }
 
     function getTrackingState() {
       return {
-        tenantId: localStorage.getItem("tk_tenant_id") || TENANT_ID,
-        refUid: localStorage.getItem("tk_ref_uid") || "",
-        itineraryId: localStorage.getItem("tk_itinerary_id") || ""
+        tenantId: qs("tenantId") || localStorage.getItem("tk_tenant_id") || localStorage.getItem("travelman_tenant_id") || DEFAULT_TENANT,
+        refUid: qs("ref") || localStorage.getItem("tk_ref_uid") || "",
+        itineraryId: qs("it") || qs("itineraryId") || localStorage.getItem("tk_itinerary_id") || ""
       };
     }
 
-    async function apiGet(path) {
-      const res = await fetch(WORKER_URL + path);
-      return await res.json();
+    function apiGet(path) {
+      return fetch(WORKER_URL + path).then(res => res.json());
     }
 
-    async function apiPost(path, body) {
-      const res = await fetch(WORKER_URL + path, {
+    function apiPost(path, body) {
+      return fetch(WORKER_URL + path, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
-      });
-      return await res.json();
+      }).then(res => res.json());
     }
 
     function parseMaybeJson(value, fallback) {
@@ -526,7 +802,7 @@
     }
 
     function escapeHtml(str) {
-      return String(str)
+      return String(str || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -534,72 +810,169 @@
         .replace(/'/g, "&#039;");
     }
 
+    function formatCurrency(value, currency = "TWD") {
+      return currency + " " + Number(value || 0).toLocaleString();
+    }
+
+    function formatDateText(value) {
+      if (!value) return "";
+      return String(value).replace(/-/g, "/");
+    }
+
+    function copyText(text) {
+      if (!navigator.clipboard) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "0";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          setStatus("已複製頁面連結", true);
+        } catch (e) {
+          setStatus("複製失敗：" + (e.message || String(e)), true);
+        }
+        document.body.removeChild(ta);
+        return;
+      }
+
+      navigator.clipboard.writeText(text)
+        .then(() => setStatus("已複製頁面連結", true))
+        .catch(err => setStatus("複製失敗：" + (err.message || String(err)), true));
+    }
+
+    function normalizeHighlights(data) {
+      if (!data) return [];
+      const arr = parseMaybeJson(data, []);
+      if (!Array.isArray(arr)) return [];
+      return arr
+        .map(item => {
+          if (typeof item === "string") return item.trim();
+          if (item && typeof item === "object") return String(item.title || item.name || item.label || "").trim();
+          return "";
+        })
+        .filter(Boolean);
+    }
+
+    function normalizeDayByDay(data) {
+      const arr = parseMaybeJson(data, []);
+      if (!Array.isArray(arr) || !arr.length) return [];
+
+      return arr.map((item, idx) => {
+        if (typeof item === "string") {
+          return {
+            day: "Day " + (idx + 1),
+            content: item
+          };
+        }
+
+        if (item && typeof item === "object") {
+          return {
+            day: item.day || item.title || ("Day " + (idx + 1)),
+            content: item.content || item.description || item.text || JSON.stringify(item)
+          };
+        }
+
+        return {
+          day: "Day " + (idx + 1),
+          content: String(item || "")
+        };
+      });
+    }
+
     async function loadTenant() {
-      const tenantId = getTrackingState().tenantId;
-      const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(tenantId));
+      const state = getTrackingState();
+      const res = await apiGet("/api/public/tenant?tenantId=" + encodeURIComponent(state.tenantId));
       tenantData = res && res.data ? res.data.data : null;
 
       if (tenantData) {
         const brand = tenantData.brandName || "TravelKeeper";
+        const color = tenantData.primaryColor || "#06c755";
+
         document.getElementById("brandName").textContent = brand;
         document.getElementById("summaryBrand").textContent = brand;
-        if (tenantData.primaryColor) {
-          document.documentElement.style.setProperty("--primary", tenantData.primaryColor);
-          document.documentElement.style.setProperty("--primary-dark", tenantData.primaryColor);
-        }
+        document.documentElement.style.setProperty("--primary", color);
+        document.documentElement.style.setProperty("--primary-dark", color);
+        document.documentElement.style.setProperty("--primary-soft", color + "1A");
       }
+    }
+
+    function renderHeroBadges(data) {
+      const row = document.getElementById("heroBadgeRow");
+      const badges = [];
+
+      if (data.status) badges.push(String(data.status));
+      if (data.country || data.city) badges.push(((data.country || "") + " " + (data.city || "")).trim());
+      if (data.days) badges.push(String(data.days) + " 天");
+      if (data.nights) badges.push(String(data.nights) + " 夜");
+
+      row.innerHTML = badges.map(item => `<span class="hero-badge">${escapeHtml(item)}</span>`).join("");
     }
 
     function renderTrip(data) {
       const title = data.title || "未命名行程";
-      const subtitle = data.subtitle || ((data.country || "") + " " + (data.city || "")).trim() || "旅遊行程";
-      const amount = Number(data.price || DEFAULT_ORDER_AMOUNT).toLocaleString();
+      const subtitle =
+        data.subtitle ||
+        data.shortDescription ||
+        ((data.country || "") + " " + (data.city || "")).trim() ||
+        "旅遊行程";
+
+      const currency = data.currency || "TWD";
+      const priceText = formatCurrency(data.price || DEFAULT_ORDER_AMOUNT, currency);
+      const placeText = ((data.country || "") + " " + (data.city || "")).trim() || "--";
 
       document.getElementById("tripTitle").textContent = title;
       document.getElementById("tripTitleTop").textContent = title;
       document.getElementById("tripSubtitle").textContent = subtitle;
-      document.getElementById("tripPrice").textContent = "NT$ " + amount;
-      document.getElementById("stickyPrice").textContent = "NT$ " + amount;
-      document.getElementById("summaryPrice").textContent = "NT$ " + amount;
-      document.getElementById("summaryPlace").textContent = ((data.country || "") + " " + (data.city || "")).trim() || "--";
+      document.getElementById("tripPrice").textContent = priceText;
+      document.getElementById("stickyPrice").textContent = priceText;
+      document.getElementById("summaryPrice").textContent = priceText;
+      document.getElementById("summaryPlace").textContent = placeText;
       document.getElementById("summaryDays").textContent = data.days ? (data.days + " 天") : "--";
       document.getElementById("tripDescription").textContent = data.description || "暫無說明";
-      document.getElementById("coverImage").src = data.coverImageUrl || "https://picsum.photos/900/500";
+      document.getElementById("coverImage").src = data.coverImageUrl || data.image || "https://picsum.photos/900/500";
 
       const meta = [];
-      if (data.country) meta.push('<span class="meta-item">' + escapeHtml(data.country) + '</span>');
-      if (data.city) meta.push('<span class="meta-item">' + escapeHtml(data.city) + '</span>');
-      if (data.days) meta.push('<span class="meta-item">' + escapeHtml(String(data.days)) + ' 天</span>');
-      if (data.nights) meta.push('<span class="meta-item">' + escapeHtml(String(data.nights)) + ' 夜</span>');
-      if (data.status) meta.push('<span class="meta-item">' + escapeHtml(data.status) + '</span>');
+      if (data.country) meta.push(`<span class="meta-item">🌍 ${escapeHtml(data.country)}</span>`);
+      if (data.city) meta.push(`<span class="meta-item">📍 ${escapeHtml(data.city)}</span>`);
+      if (data.days) meta.push(`<span class="meta-item">🗓️ ${escapeHtml(String(data.days))} 天</span>`);
+      if (data.nights) meta.push(`<span class="meta-item">🌙 ${escapeHtml(String(data.nights))} 夜</span>`);
+      if (data.departureDate) meta.push(`<span class="meta-item">✈️ ${escapeHtml(formatDateText(data.departureDate))}</span>`);
+      if (data.status) meta.push(`<span class="meta-item">📌 ${escapeHtml(String(data.status))}</span>`);
       document.getElementById("tripMeta").innerHTML = meta.join("");
 
-      const highlights = parseMaybeJson(data.highlightsJson, []);
-      if (highlights.length) {
-        document.getElementById("tripHighlights").innerHTML = highlights.map(function(item) {
-          return '<span class="tag">' + escapeHtml(String(item)) + '</span>';
-        }).join("");
-      } else {
-        document.getElementById("tripHighlights").innerHTML = '<span class="muted">目前尚未設定亮點</span>';
-      }
+      renderHeroBadges(data);
 
-      const dayByDay = parseMaybeJson(data.dayByDayJson, []);
-      if (dayByDay.length) {
-        document.getElementById("tripDays").innerHTML = dayByDay.map(function(item, idx) {
-          return '<tr><td>Day ' + (idx + 1) + '</td><td>' + escapeHtml(String(item)) + '</td></tr>';
-        }).join("");
-      } else {
-        document.getElementById("tripDays").innerHTML = '<tr><td colspan="2">目前尚未設定每日行程</td></tr>';
-      }
+      const highlights = normalizeHighlights(data.highlightsJson || data.highlights || []);
+      document.getElementById("tripHighlights").innerHTML = highlights.length
+        ? highlights.map(item => `<span class="tag">${escapeHtml(item)}</span>`).join("")
+        : `<div class="empty">目前尚未設定亮點</div>`;
+
+      const dayByDay = normalizeDayByDay(data.dayByDayJson || data.dayByDay || []);
+      document.getElementById("tripDays").innerHTML = dayByDay.length
+        ? dayByDay.map((item, idx) => `
+            <div class="timeline-item">
+              <div class="timeline-day">${escapeHtml(item.day || ("Day " + (idx + 1)))}</div>
+              <div class="timeline-content">${escapeHtml(item.content || "")}</div>
+            </div>
+          `).join("")
+        : `<div class="empty">目前尚未設定每日行程</div>`;
     }
 
     async function loadTrip() {
       const state = getTrackingState();
 
+      document.getElementById("previewTenantId").value = state.tenantId || "";
+      document.getElementById("previewItineraryId").value = state.itineraryId || "";
+      document.getElementById("previewRefUid").value = state.refUid || "direct";
+
       if (!state.itineraryId) {
         document.getElementById("tripTitle").textContent = "缺少 itineraryId";
         document.getElementById("tripTitleTop").textContent = "缺少 itineraryId";
-        document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 的連結進入";
+        document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 或 ?itineraryId=... 的連結進入";
         return;
       }
 
@@ -620,14 +993,19 @@
       }
 
       renderTrip(tripData);
+      setStatus("行程載入完成：" + (tripData.title || state.itineraryId), true);
     }
 
     function renderReferralInfo() {
       const state = getTrackingState();
+
       document.getElementById("refInfo").innerHTML =
         "tenantId：<b>" + escapeHtml(state.tenantId || "-") + "</b><br>" +
         "itineraryId：<b>" + escapeHtml(state.itineraryId || "-") + "</b><br>" +
-        "refUid：<b>" + escapeHtml(state.refUid || "direct") + "</b>";
+        "refUid：<b>" + escapeHtml(state.refUid || "direct") + "</b><br><br>" +
+        "目前來源會在：<br>" +
+        "• LINE 綁定時寫入會員資料<br>" +
+        "• 建立訂單時寫入 distributorUid / refUid / attributionSource";
     }
 
     async function initLiffOnly() {
@@ -635,17 +1013,19 @@
       await liff.init({ liffId: LIFF_ID });
 
       if (!liff.isLoggedIn()) {
+        document.getElementById("previewLineUid").value = "";
         setStatus("尚未登入 LINE，請點擊上方或下方的 LINE 登入按鈕");
         return { loggedIn: false };
       }
 
       const profile = await liff.getProfile();
       currentProfile = profile;
-      window.currentLineUserId = profile.userId;
+      currentLineUserId = profile.userId || "";
+      document.getElementById("previewLineUid").value = currentLineUserId;
 
       setStatus(
         "LINE 已登入\n" +
-        "userId：" + profile.userId + "\n" +
+        "userId：" + (profile.userId || "") + "\n" +
         "displayName：" + (profile.displayName || "")
       );
 
@@ -709,7 +1089,7 @@
         customerName: currentProfile.displayName || "LINE會員",
         customerPhone: "",
         customerEmail: "",
-        travelDate: (tripData && tripData.departureDate) || "",
+        travelDate: (tripData && (tripData.departureDate || tripData.travelDate)) || "",
         qty: 1,
         totalAmount: amount,
         currency: (tripData && tripData.currency) || "TWD",
@@ -719,7 +1099,7 @@
         distributorUid: state.refUid,
         refUid: state.refUid,
         sourcePage: window.location.href,
-        notes: "trip.html LINE OA 風格版測試下單"
+        notes: "trip.html 正式成交頁版本測試下單"
       });
 
       setStatus("訂單建立結果：\n" + JSON.stringify(res, null, 2), true);
@@ -734,45 +1114,68 @@
           (state.refUid ? "&ref=" + encodeURIComponent(state.refUid) : "");
         window.location.href = successUrl;
       } else {
-        alert("訂單送出失敗，請看狀態區");
+        alert("訂單送出失敗，請查看狀態區");
       }
     }
 
-    document.getElementById("btnLineLogin").addEventListener("click", async function() {
-      try {
-        await registerLineMember();
-      } catch (err) {
-        setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
-      }
-    });
+    function bindEvents() {
+      document.getElementById("btnLineLogin").addEventListener("click", async function() {
+        try {
+          await registerLineMember();
+        } catch (err) {
+          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+        }
+      });
 
-    document.getElementById("btnLineLoginBottom").addEventListener("click", async function() {
-      try {
-        await registerLineMember();
-      } catch (err) {
-        setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
-      }
-    });
+      document.getElementById("btnLineLoginBottom").addEventListener("click", async function() {
+        try {
+          await registerLineMember();
+        } catch (err) {
+          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+        }
+      });
 
-    document.getElementById("btnOrderTop").addEventListener("click", async function() {
-      try {
-        await submitOrder();
-      } catch (err) {
-        setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
-      }
-    });
+      document.getElementById("btnBindHero").addEventListener("click", async function() {
+        try {
+          await registerLineMember();
+        } catch (err) {
+          setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+        }
+      });
 
-    document.getElementById("btnOrderBottom").addEventListener("click", async function() {
-      try {
-        await submitOrder();
-      } catch (err) {
-        setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
-      }
-    });
+      document.getElementById("btnOrderTop").addEventListener("click", async function() {
+        try {
+          await submitOrder();
+        } catch (err) {
+          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+        }
+      });
 
-    (async function boot() {
+      document.getElementById("btnOrderBottom").addEventListener("click", async function() {
+        try {
+          await submitOrder();
+        } catch (err) {
+          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+        }
+      });
+
+      document.getElementById("btnOrderHero").addEventListener("click", async function() {
+        try {
+          await submitOrder();
+        } catch (err) {
+          setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+        }
+      });
+
+      document.getElementById("btnCopyPage").addEventListener("click", function() {
+        copyText(window.location.href);
+      });
+    }
+
+    async function boot() {
       try {
         saveTrackingParams();
+        bindEvents();
         renderReferralInfo();
         await loadTenant();
         await loadTrip();
@@ -780,7 +1183,9 @@
       } catch (err) {
         setStatus("初始化失敗：\n" + (err.message || String(err)));
       }
-    })();
+    }
+
+    boot();
   </script>
 </body>
 </html>
