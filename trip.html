@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>TravelKeeper Trip</title>
+</head>
+<body>
+  <h1 id="title">行程載入中...</h1>
+  <p id="price"></p>
+  <button onclick="initLiffLogin()">LINE 登入</button>
+  <button onclick="submitOrder()">立即報名</button>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+    const TENANT_ID = "t001";
+    const LIFF_ID = "你的LIFF_ID";
+    let currentUserId = "";
+
+    (function saveRef() {
+      const url = new URL(location.href);
+      const ref = url.searchParams.get("ref");
+      const it = url.searchParams.get("it");
+      if (ref) localStorage.setItem("tk_ref_uid", ref);
+      if (it) localStorage.setItem("tk_itinerary_id", it);
+    })();
+
+    async function loadTrip() {
+      const url = new URL(location.href);
+      const itineraryId = url.searchParams.get("it") || localStorage.getItem("tk_itinerary_id") || "";
+      const res = await fetch(`${WORKER_URL}/api/public/itinerary?tenantId=${TENANT_ID}&itineraryId=${itineraryId}`);
+      const json = await res.json();
+      const trip = json?.data?.data || {};
+      document.getElementById("title").innerText = trip.title || "找不到行程";
+      document.getElementById("price").innerText = trip.price ? `NT$ ${trip.price}` : "";
+    }
+
+    async function initLiffLogin() {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: location.href });
+        return;
+      }
+      const profile = await liff.getProfile();
+      currentUserId = profile.userId;
+
+      await fetch(`${WORKER_URL}/api/member/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: TENANT_ID,
+          uid: profile.userId,
+          name: profile.displayName || "",
+          avatarUrl: profile.pictureUrl || "",
+          lineDisplayName: profile.displayName || "",
+          linePictureUrl: profile.pictureUrl || "",
+          sourceChannel: "line_liff",
+          refDistributorUid: localStorage.getItem("tk_ref_uid") || ""
+        })
+      });
+      alert("LINE 會員已綁定");
+    }
+
+    async function submitOrder() {
+      const itineraryId = localStorage.getItem("tk_itinerary_id") || "";
+      const refUid = localStorage.getItem("tk_ref_uid") || "";
+
+      const res = await fetch(`${WORKER_URL}/api/admin/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: TENANT_ID,
+          itineraryId,
+          uid: currentUserId || "",
+          customerName: "LINE會員",
+          totalAmount: 29900,
+          distributorUid: refUid,
+          refUid,
+          attributionSource: "line_referral",
+          sourcePage: location.href
+        })
+      });
+
+      const json = await res.json();
+      alert(JSON.stringify(json));
+    }
+
+    loadTrip();
+  </script>
+</body>
+</html>
