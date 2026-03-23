@@ -151,12 +151,19 @@
       gap: 16px;
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 16px;
-      align-items: start;
-    }
+    .grid-main {
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.left-stack,
+.right-stack {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
 
     .panel {
       background: var(--panel);
