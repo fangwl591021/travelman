@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>TravelKeeper SaaS Admin 測試</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      background: #0A84FF;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    button:hover {
+      opacity: 0.8;
+    }
+    pre {
+      background: #000;
+      color: #0f0;
+      padding: 10px;
+      height: 250px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🚀 TravelKeeper SaaS Admin 測試頁</h1>
+
+<h2>📦 行程</h2>
+<button onclick="saveItinerary()">建立行程</button>
+<button onclick="listItineraries()">查詢行程</button>
+
+<h2>👤 會員</h2>
+<button onclick="registerMember()">建立會員</button>
+<button onclick="getMemberOrders()">查會員訂單</button>
+
+<h2>🤝 分銷商</h2>
+<button onclick="registerDistributor()">建立分銷商</button>
+<button onclick="getDistributorDashboard()">查分銷 Dashboard</button>
+
+<h2>💰 訂單</h2>
+<button onclick="createOrder()">建立訂單</button>
+
+<h2>📊 回應結果</h2>
+<pre id="result"></pre>
+
+<script>
+const BASE_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+const TENANT_ID = "t001";
+
+function show(res) {
+  document.getElementById("result").textContent =
+    JSON.stringify(res, null, 2);
+}
+
+async function post(path, data) {
+  const res = await fetch(BASE_URL + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  return await res.json();
+}
+
+async function get(path) {
+  const res = await fetch(BASE_URL + path);
+  return await res.json();
+}
+
+// ===== 行程 =====
+async function saveItinerary() {
+  const res = await post("/api/admin/save-itinerary", {
+    tenantId: TENANT_ID,
+    itineraryId: "it_001",
+    title: "東京賞櫻五日遊",
+    price: 29900,
+    status: "published",
+    country: "日本",
+    city: "東京",
+    days: 5,
+    coverImageUrl: "https://picsum.photos/400/300"
+  });
+  show(res);
+}
+
+async function listItineraries() {
+  const res = await get(`/api/public/itineraries?tenantId=${TENANT_ID}`);
+  show(res);
+}
+
+// ===== 會員 =====
+async function registerMember() {
+  const res = await post("/api/member/register", {
+    tenantId: TENANT_ID,
+    uid: "U_MEMBER_001",
+    name: "王小明",
+    phone: "0912345678",
+    email: "test@example.com"
+  });
+  show(res);
+}
+
+async function getMemberOrders() {
+  const res = await get(`/api/member/orders?tenantId=${TENANT_ID}&uid=U_MEMBER_001`);
+  show(res);
+}
+
+// ===== 分銷 =====
+async function registerDistributor() {
+  const res = await post("/api/distributor/register", {
+    tenantId: TENANT_ID,
+    uid: "U_DIST_001",
+    name: "陳顧問",
+    commissionRate: 10
+  });
+  show(res);
+}
+
+async function getDistributorDashboard() {
+  const res = await get(`/api/distributor/dashboard?tenantId=${TENANT_ID}&uid=U_DIST_001`);
+  show(res);
+}
+
+// ===== 訂單 =====
+async function createOrder() {
+  const res = await post("/api/admin/create-order", {
+    tenantId: TENANT_ID,
+    itineraryId: "it_001",
+    uid: "U_MEMBER_001",
+    customerName: "王小明",
+    totalAmount: 29900,
+    distributorUid: "U_DIST_001"
+  });
+  show(res);
+}
+</script>
+
+</body>
+</html>
