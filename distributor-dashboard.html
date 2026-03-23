@@ -715,136 +715,112 @@
         document.getElementById("kpiUsers").textContent = "0";
         document.getElementById("orderTable").innerHTML = "<tr><td colspan='10' class='empty'>尚未登入</td></tr>";
         return;
-      }
+async function loadDashboard() {
+  if (!currentUid) {
+    document.getElementById("promoInfo").textContent = "尚未登入，暫無推廣資訊。";
+    document.getElementById("kpiOrders").textContent = "0";
+    document.getElementById("kpiRevenue").textContent = "0";
+    document.getElementById("kpiCommission").textContent = "0";
+    document.getElementById("kpiPaidOut").textContent = "0";
+    document.getElementById("kpiUnpaidOut").textContent = "0";
+    document.getElementById("kpiUsers").textContent = "0";
+    document.getElementById("orderTable").innerHTML = "<tr><td colspan='10' class='empty'>尚未登入</td></tr>";
+    return;
+  }
 
-      const res = await apiGet(`/api/distributor/dashboard?tenantId=${TENANT}&uid=${encodeURIComponent(currentUid)}`);
-      const summary = res && res.data ? (res.data.summary || {}) : {};
-      const orders = res && res.data ? (res.data.orders || []) : [];
-      const users = res && res.data ? (res.data.users || []) : [];
+  const res = await apiGet(`/api/distributor/dashboard?tenantId=${TENANT}&uid=${encodeURIComponent(currentUid)}`);
+  const summary = res && res.data ? (res.data.summary || {}) : {};
+  const orders = res && res.data ? (res.data.orders || []) : [];
+  const users = res && res.data ? (res.data.users || []) : [];
 
-      document.getElementById("kpiOrders").textContent = formatNumber(summary.orderCount || 0);
-      document.getElementById("kpiRevenue").textContent = formatNumber(summary.totalRevenue || 0);
-      document.getElementById("kpiCommission").textContent = formatNumber(summary.totalCommission || 0);
-      document.getElementById("kpiUsers").textContent = formatNumber(summary.referredUsers || users.length || 0);
+  let paidOut = 0;
+  let unpaidOut = 0;
 
-      document.getElementById("promoInfo").textContent =
-        "分銷商 UID： " + currentUid + "\n" +
-        "推廣方式： 複製下方各行程連結分享給客戶\n" +
-        "訂單歸因： 客戶從你的連結進站並下單後，會回寫到你的 Dashboard";
-
-      const orderHtml = orders.length
-        ? orders.map(o => `
-          <tr>
-            <td>${escapeHtml(o.orderId)}</td>
-            <td>${escapeHtml(o.customerName || "")}</td>
-            <td>${formatNumber(o.totalAmount || 0)}</td>
-            <td>${escapeHtml(o.commissionRate || 0)}%</td>
-            <td>${formatNumber(o.commissionAmount || 0)}</td>
-            <td>
-              <div>${statusPill(o.status || "pending")}</div>
-              <div style="margin-top:6px;">
-                <select id="status_${escapeHtml(o.orderId)}" class="order-select">
-                  <option value="pending" ${o.status === "pending" ? "selected" : ""}>pending</option>
-                  <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>confirmed</option>
-                  <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>cancelled</option>
-                  <option value="completed" ${o.status === "completed" ? "selected" : ""}>completed</option>
-                </select>
-              </div>
-            </td>
-            <td>
-              <div>${paymentPill(o.paymentStatus || "unpaid")}</div>
-              <div style="margin-top:6px;">
-                <select id="payment_${escapeHtml(o.orderId)}" class="order-select">
-                  <option value="unpaid" ${o.paymentStatus === "unpaid" ? "selected" : ""}>unpaid</option>
-                  <option value="paid" ${o.paymentStatus === "paid" ? "selected" : ""}>paid</option>
-                  <option value="refunded" ${o.paymentStatus === "refunded" ? "selected" : ""}>refunded</option>
-                </select>
-              </div>
-            </td>
-            <td>
-              <div>${statusPill(o.commissionStatus || "not_ready")}</div>
-              <div style="margin-top:6px;">
-                <select id="commission_${escapeHtml(o.orderId)}" class="order-select">
-                  <option value="not_ready" ${o.commissionStatus === "not_ready" ? "selected" : ""}>not_ready</option>
-                  <option value="pending" ${o.commissionStatus === "pending" ? "selected" : ""}>pending</option>
-                  <option value="approved" ${o.commissionStatus === "approved" ? "selected" : ""}>approved</option>
-                  <option value="paid" ${o.commissionStatus === "paid" ? "selected" : ""}>paid</option>
-                </select>
-              </div>
-            </td>
-            <td>
-              <div>${payoutPill(o.payoutStatus || "unpaid")}</div>
-              <div style="margin-top:6px;">
-                <select id="payout_${escapeHtml(o.orderId)}" class="order-select">
-                  <option value="unpaid" ${o.payoutStatus === "unpaid" ? "selected" : ""}>unpaid</option>
-                  <option value="processing" ${o.payoutStatus === "processing" ? "selected" : ""}>processing</option>
-                  <option value="paid" ${o.payoutStatus === "paid" ? "selected" : ""}>paid</option>
-                </select>
-              </div>
-            </td>
-            <td>
-              <div class="small">${escapeHtml(o.attributionSource || "-")}</div>
-              <div class="small">行程：${escapeHtml(o.itineraryId || "")}</div>
-              <div class="small">${escapeHtml(o.createdAt || o.orderDate || "")}</div>
-              <div class="order-actions">
-                <button class="btn btn-primary btn-small" onclick="updateOrder('${escapeHtml(o.orderId)}')">更新</button>
-              </div>
-            </td>
-          </tr>
-        `).join("")
-        : "<tr><td colspan='10' class='empty'>目前尚無訂單</td></tr>";
-
-      document.getElementById("orderTable").innerHTML = orderHtml;
+  orders.forEach(o => {
+    const commission = Number(o.commissionAmount || 0);
+    if ((o.payoutStatus || "unpaid") === "paid") {
+      paidOut += commission;
+    } else {
+      unpaidOut += commission;
     }
+  });
 
-    async function loadTrips() {
-      const res = await apiGet(`/api/public/itineraries?tenantId=${TENANT}`);
-      const list = res && res.data ? (res.data.items || []) : [];
+  document.getElementById("kpiOrders").textContent = formatNumber(summary.orderCount || 0);
+  document.getElementById("kpiRevenue").textContent = formatNumber(summary.totalRevenue || 0);
+  document.getElementById("kpiCommission").textContent = formatNumber(summary.totalCommission || 0);
+  document.getElementById("kpiPaidOut").textContent = formatNumber(paidOut);
+  document.getElementById("kpiUnpaidOut").textContent = formatNumber(unpaidOut);
+  document.getElementById("kpiUsers").textContent = formatNumber(summary.referredUsers || users.length || 0);
 
-      if (!list.length) {
-        document.getElementById("tripTableBody").innerHTML =
-          "<tr><td colspan='5' class='empty'>目前尚無可推廣行程</td></tr>";
-        return;
-      }
+  document.getElementById("promoInfo").textContent =
+    "分銷商 UID： " + currentUid + "\n" +
+    "推廣方式： 複製下方各行程連結分享給客戶\n" +
+    "訂單歸因： 客戶從你的連結進站並下單後，會回寫到你的 Dashboard";
 
-      const html = list.map(it => {
-        const link = currentUid ? buildPromoLink(it.itineraryId) : "";
-        return `
-          <tr>
-            <td>
-              <img class="thumb" src="${it.coverImageUrl || "https://picsum.photos/300/200"}" alt="trip">
-            </td>
-            <td>
-              <div><b>${escapeHtml(it.title || "未命名行程")}</b></div>
-              <div class="small">${escapeHtml(it.country || "")} ${escapeHtml(it.city || "")}</div>
-              <div class="small">ID：${escapeHtml(it.itineraryId || "")}</div>
-            </td>
-            <td>NT$ ${formatNumber(it.price || 0)}</td>
-            <td>
-              ${
-                currentUid
-                  ? `
-                    <div class="actions">
-                      <button class="mini-btn primary" onclick="copyText('${link.replace(/'/g, "\\'")}')">複製連結</button>
-                      <button class="mini-btn" onclick="window.open('${link.replace(/'/g, "\\'")}', '_blank')">開啟頁面</button>
-                    </div>
-                  `
-                  : `<span class="small">請先登入</span>`
-              }
-            </td>
-            <td class="link-cell">
-              ${
-                currentUid
-                  ? escapeHtml(link)
-                  : "登入後才會顯示個人專屬推廣連結"
-              }
-            </td>
-          </tr>
-        `;
-      }).join("");
+  const orderHtml = orders.length
+    ? orders.map(o => `
+      <tr>
+        <td>${escapeHtml(o.orderId)}</td>
+        <td>${escapeHtml(o.customerName || "")}</td>
+        <td>${formatNumber(o.totalAmount || 0)}</td>
+        <td>${escapeHtml(o.commissionRate || 0)}%</td>
+        <td>${formatNumber(o.commissionAmount || 0)}</td>
+        <td>
+          <div>${statusPill(o.status || "pending")}</div>
+          <div style="margin-top:6px;">
+            <select id="status_${escapeHtml(o.orderId)}" class="order-select">
+              <option value="pending" ${o.status === "pending" ? "selected" : ""}>pending</option>
+              <option value="confirmed" ${o.status === "confirmed" ? "selected" : ""}>confirmed</option>
+              <option value="cancelled" ${o.status === "cancelled" ? "selected" : ""}>cancelled</option>
+              <option value="completed" ${o.status === "completed" ? "selected" : ""}>completed</option>
+            </select>
+          </div>
+        </td>
+        <td>
+          <div>${paymentPill(o.paymentStatus || "unpaid")}</div>
+          <div style="margin-top:6px;">
+            <select id="payment_${escapeHtml(o.orderId)}" class="order-select">
+              <option value="unpaid" ${o.paymentStatus === "unpaid" ? "selected" : ""}>unpaid</option>
+              <option value="paid" ${o.paymentStatus === "paid" ? "selected" : ""}>paid</option>
+              <option value="refunded" ${o.paymentStatus === "refunded" ? "selected" : ""}>refunded</option>
+            </select>
+          </div>
+        </td>
+        <td>
+          <div>${statusPill(o.commissionStatus || "not_ready")}</div>
+          <div style="margin-top:6px;">
+            <select id="commission_${escapeHtml(o.orderId)}" class="order-select">
+              <option value="not_ready" ${o.commissionStatus === "not_ready" ? "selected" : ""}>not_ready</option>
+              <option value="pending" ${o.commissionStatus === "pending" ? "selected" : ""}>pending</option>
+              <option value="approved" ${o.commissionStatus === "approved" ? "selected" : ""}>approved</option>
+              <option value="paid" ${o.commissionStatus === "paid" ? "selected" : ""}>paid</option>
+            </select>
+          </div>
+        </td>
+        <td>
+          <div>${payoutPill(o.payoutStatus || "unpaid")}</div>
+          <div style="margin-top:6px;">
+            <select id="payout_${escapeHtml(o.orderId)}" class="order-select">
+              <option value="unpaid" ${o.payoutStatus === "unpaid" ? "selected" : ""}>unpaid</option>
+              <option value="processing" ${o.payoutStatus === "processing" ? "selected" : ""}>processing</option>
+              <option value="paid" ${o.payoutStatus === "paid" ? "selected" : ""}>paid</option>
+            </select>
+          </div>
+        </td>
+        <td>
+          <div class="small">${escapeHtml(o.attributionSource || "-")}</div>
+          <div class="small">行程：${escapeHtml(o.itineraryId || "")}</div>
+          <div class="small">${escapeHtml(o.createdAt || o.orderDate || "")}</div>
+          <div class="order-actions">
+            <button class="btn btn-primary btn-small" onclick="updateOrder('${escapeHtml(o.orderId)}')">更新</button>
+          </div>
+        </td>
+      </tr>
+    `).join("")
+    : "<tr><td colspan='10' class='empty'>目前尚無訂單</td></tr>";
 
-      document.getElementById("tripTableBody").innerHTML = html;
-    }
+  document.getElementById("orderTable").innerHTML = orderHtml;
+}
 
     async function refreshDashboard() {
       updateProfileUi();
