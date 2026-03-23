@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TravelKeeper Admin v3 - Distributor LIFF</title>
+
+<style>
+body {
+  font-family: Arial, "Noto Sans TC", sans-serif;
+  background: #f5f5f5;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 { margin-bottom: 10px; }
+
+.kpi {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.kpi-box {
+  flex: 1;
+  min-width: 140px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.section {
+  margin-top: 24px;
+}
+
+button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card {
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.card img {
+  width: 110px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.copy {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+  word-break: break-all;
+}
+
+.toolbar {
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.status {
+  background: #0b1220;
+  color: #d1fae5;
+  border-radius: 10px;
+  padding: 12px;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-box {
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #eef2ff;
+  margin-left: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="brandTitle">🚀 TravelKeeper Admin</h1>
+
+<div class="login-box">
+  <div>
+    <b>目前登入分銷商：</b>
+    <span id="distName">尚未登入</span>
+    <span id="distUidBadge" class="badge">UID 未取得</span>
+  </div>
+  <div style="margin-top:10px;">
+    <button id="btnLogin">LINE 登入分銷商</button>
+    <button id="btnRefreshLinks">刷新推廣連結</button>
+  </div>
+</div>
+
+<div class="kpi">
+  <div class="kpi-box">
+    <div>📦 行程</div>
+    <b id="kpiItinerary">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>💰 訂單</div>
+    <b id="kpiOrders">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>💵 營收</div>
+    <b id="kpiRevenue">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>🤝 分銷</div>
+    <b id="kpiDistributor">1</b>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📦 行程管理</h2>
+  <div class="toolbar">
+    <button id="btnMain" onclick="saveItinerary()">建立行程</button>
+    <button id="btnLoad" onclick="loadItineraries()">刷新行程</button>
+  </div>
+  <div id="itineraryList"></div>
+</div>
+
+<div class="section">
+  <h2>💰 訂單管理</h2>
+  <div class="toolbar">
+    <button id="btnMain2" onclick="loadOrders()">刷新訂單</button>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>訂單</th>
+        <th>客戶</th>
+        <th>金額</th>
+        <th>分銷 UID</th>
+      </tr>
+    </thead>
+    <tbody id="orderTable"></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>🧾 系統狀態</h2>
+  <div id="statusBox" class="status">尚未初始化</div>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+const BASE = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
+const TENANT = "t001";
+const LIFF_ID = "2009367829-Ewwp8jfA";
+const FRONTEND_URL = "https://fangwl591021.github.io/travelman";
+
+let PRIMARY = "#0A84FF";
+let currentDistributorProfile = null;
+let currentDistributorUid = localStorage.getItem("tk_distributor_uid") || "";
+
+function setStatus(msg, append = false) {
+  const el = document.getElementById("statusBox");
+  if (append) {
+    el.textContent += "\n" + msg;
+  } else {
+    el.textContent = msg;
+  }
+}
+
+function setDistributorUi() {
+  const nameEl = document.getElementById("distName");
+  const uidEl = document.getElementById("distUidBadge");
+
+  if (currentDistributorProfile && currentDistributorUid) {
+    nameEl.textContent = currentDistributorProfile.displayName || "已登入";
+    uidEl.textContent = currentDistributorUid;
+  } else if (currentDistributorUid) {
+    nameEl.textContent = "已記錄登入者";
+    uidEl.textContent = currentDistributorUid;
+  } else {
+    nameEl.textContent = "尚未登入";
+    uidEl.textContent = "UID 未取得";
+  }
+}
+
+async function get(url) {
+  const res = await fetch(BASE + url);
+  return await res.json();
+}
+
+async function post(url, data) {
+  const res = await fetch(BASE + url, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+  return await res.json();
+}
+
+async function loadTenant() {
+  const res = await get(`/api/public/tenant?tenantId=${TENANT}`);
+  const t = res && res.data ? res.data.data : {};
+
+  document.getElementById("brandTitle").innerText =
+    "🚀 " + (t.brandName || "TravelKeeper");
+
+  PRIMARY = t.primaryColor || "#0A84FF";
+
+  document.querySelectorAll("button").forEach(btn => {
+    btn.style.background = PRIMARY;
+  });
+}
+
+async function initDistributorLiff() {
+  setStatus("初始化 LIFF 中...");
+  await liff.init({ liffId: LIFF_ID });
+
+  if (!liff.isLoggedIn()) {
+    setStatus("尚未登入 LINE，點擊按鈕後會進行 LIFF 登入");
+    return { loggedIn: false };
+  }
+
+  const profile = await liff.getProfile();
+  currentDistributorProfile = profile;
+  currentDistributorUid = profile.userId;
+  localStorage.setItem("tk_distributor_uid", currentDistributorUid);
+
+  setDistributorUi();
+  setStatus(
+    "分銷商 LIFF 已登入\n" +
+    "displayName：" + (profile.displayName || "") + "\n" +
+    "uid：" + profile.userId
+  );
+
+  return { loggedIn: true, profile };
+}
+
+async function loginDistributor() {
+  try {
+    const result = await initDistributorLiff();
+
+    if (!result.loggedIn) {
+      liff.login({ redirectUri: window.location.href });
+      return;
+    }
+
+    // 同步註冊/更新分銷商
+    const syncRes = await post("/api/distributor/register", {
+      tenantId: TENANT,
+      uid: result.profile.userId,
+      name: result.profile.displayName || "LINE分銷商",
+      email: "",
+      phone: "",
+      status: "approved",
+      roleLevel: "basic",
+      commissionRate: 10,
+      settingsJson: { from: "liff_admin" },
+      notes: "由 Admin v3 自動登入同步"
+    });
+
+    setStatus("分銷商同步結果：\n" + JSON.stringify(syncRes, null, 2), true);
+    await loadItineraries();
+  } catch (err) {
+    setStatus("LIFF 分銷商登入失敗：\n" + (err.message || String(err)), true);
+  }
+}
+
+function buildPromoLink(itineraryId) {
+  const refUid = currentDistributorUid || "U_DIST_001";
+  return `${FRONTEND_URL}/trip.html?tenantId=${encodeURIComponent(TENANT)}&it=${encodeURIComponent(itineraryId)}&ref=${encodeURIComponent(refUid)}`;
+}
+
+async function saveItinerary() {
+  const res = await post("/api/admin/save-itinerary", {
+    tenantId: TENANT,
+    itineraryId: "it_" + Date.now(),
+    title: "東京賞櫻五日遊",
+    subtitle: "春季熱門行程",
+    region: "東北亞",
+    country: "日本",
+    city: "東京",
+    days: 5,
+    nights: 4,
+    price: 29900,
+    status: "published",
+    productType: "group_tour",
+    coverImageUrl: "https://picsum.photos/200/120"
+  });
+
+  setStatus("建立行程結果：\n" + JSON.stringify(res, null, 2));
+  await loadItineraries();
+}
+
+async function loadItineraries() {
+  const res = await get(`/api/public/itineraries?tenantId=${TENANT}`);
+  const list = (res && res.data && res.data.items) ? res.data.items : [];
+
+  document.getElementById("kpiItinerary").innerText = list.length;
+
+  const html = list.map(it => {
+    const link = buildPromoLink(it.itineraryId);
+    return `
+      <div class="card">
+        <img src="${it.coverImageUrl || 'https://picsum.photos/200'}" alt="trip">
+        <div style="flex:1;">
+          <div><b>${it.title || "未命名行程"}</b></div>
+          <div>💰 ${it.price || 0}</div>
+          <div style="margin-top:8px;">
+            <button onclick="createOrder('${it.itineraryId}')">測試下單</button>
+            <button onclick="copyLink('${link.replace(/'/g, "\\'")}')">複製推廣連結</button>
+          </div>
+          <div class="copy">推廣連結：</div>
+          <div class="copy">${link}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("itineraryList").innerHTML = html || "<div class='card'>目前尚無行程</div>";
+}
+
+async function createOrder(itineraryId) {
+  const distributorUid = currentDistributorUid || "U_DIST_001";
+
+  const res = await post("/api/admin/create-order", {
+    tenantId: TENANT,
+    itineraryId,
+    uid: "U_MEMBER_001",
+    customerName: "王小明",
+    totalAmount: 29900,
+    distributorUid: distributorUid,
+    refUid: distributorUid,
+    attributionSource: "admin_test_referral"
+  });
+
+  setStatus("建立訂單結果：\n" + JSON.stringify(res, null, 2));
+  await loadOrders();
+}
+
+async function loadOrders() {
+  const res = await get(`/api/member/orders?tenantId=${TENANT}&uid=U_MEMBER_001`);
+  const list = (res && res.data && res.data.items) ? res.data.items : [];
+
+  document.getElementById("kpiOrders").innerText = list.length;
+
+  let total = 0;
+  const html = list.map(o => {
+    total += Number(o.totalAmount || 0);
+    return `
+      <tr>
+        <td>${o.orderId || ""}</td>
+        <td>${o.customerName || ""}</td>
+        <td>${o.totalAmount || 0}</td>
+        <td>${o.distributorUid || "-"}</td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("kpiRevenue").innerText = total;
+  document.getElementById("orderTable").innerHTML = html || "<tr><td colspan='4'>目前尚無訂單</td></tr>";
+}
+
+async function copyLink(link) {
+  try {
+    await navigator.clipboard.writeText(link);
+    setStatus("已複製推廣連結：\n" + link);
+  } catch (err) {
+    setStatus("複製失敗，請手動複製：\n" + link, true);
+  }
+}
+
+document.getElementById("btnLogin").addEventListener("click", loginDistributor);
+document.getElementById("btnRefreshLinks").addEventListener("click", loadItineraries);
+
+async function boot() {
+  setDistributorUi();
+  await loadTenant();
+  await loadItineraries();
+  await loadOrders();
+
+  // 若已登入過，直接嘗試恢復 LIFF 狀態
+  try {
+    await initDistributorLiff();
+  } catch (err) {
+    setStatus("初始化 LIFF 狀態時略過：\n" + (err.message || String(err)), true);
+  }
+}
+
+boot();
+</script>
+
+</body>
+</html>
