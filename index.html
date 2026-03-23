@@ -3,69 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travelman Console</title>
+  <title>Travelman</title>
   <style>
     :root {
       --primary: #06c755;
       --primary-dark: #05a847;
       --primary-soft: #e9fff2;
-      --bg: #f3f6fb;
+      --bg: #f5f6f8;
       --panel: #ffffff;
-      --border: #dfe3e8;
-      --text: #1f2937;
+      --border: #d9dee5;
+      --text: #222;
       --muted: #6b7280;
-      --sidebar: #17212b;
-      --sidebar-text: #e5e7eb;
-      --header: rgba(255,255,255,0.92);
-      --table-head: #f8fafc;
-      --dark: #111827;
-      --danger: #dc2626;
-      --warn: #d97706;
-      --success: #16a34a;
+      --dark: #1f2937;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
       --radius: 16px;
     }
 
     * { box-sizing: border-box; }
+
     html, body {
       margin: 0;
       padding: 0;
       font-family: Arial, "Noto Sans TC", sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100%;
     }
 
-    body.sidebar-open {
-      overflow: hidden;
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .app {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: 100vh;
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 14px 40px;
     }
 
-    .sidebar {
-      background: linear-gradient(180deg, #17212b 0%, #111827 100%);
-      color: var(--sidebar-text);
-      padding: 18px 14px;
-      position: relative;
-      z-index: 40;
-    }
-
-    .sidebar-header {
+    .topbar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 18px;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: 800;
-      line-height: 1.3;
-      letter-spacing: 0.2px;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow);
     }
 
     .brand-badge {
@@ -75,111 +61,27 @@
       padding: 5px 12px;
       border-radius: 999px;
       font-size: 12px;
-      margin-top: 8px;
       font-weight: 700;
-    }
-
-    .nav-group {
-      margin-top: 22px;
-    }
-
-    .nav-title {
-      font-size: 11px;
-      color: #94a3b8;
       margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding-left: 8px;
     }
 
-    .nav-item,
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      color: var(--sidebar-text);
-      border: none;
-      padding: 11px 12px;
-      border-radius: 12px;
-      margin-bottom: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      text-decoration: none;
-      transition: all 0.18s ease;
-    }
-
-    .nav-item.active,
-    .nav-item:hover,
-    .nav-link:hover {
-      background: rgba(255,255,255,0.09);
-      transform: translateX(2px);
-    }
-
-    .nav-icon {
-      width: 18px;
-      text-align: center;
-      opacity: 0.9;
-    }
-
-    .sidebar-note {
-      margin-top: 18px;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      color: #cbd5e1;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .main {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: var(--header);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 74px;
-    }
-
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .topbar-title {
-      font-size: 22px;
+    .top-title {
+      font-size: 28px;
       font-weight: 800;
       line-height: 1.2;
+      margin: 0;
     }
 
-    .topbar-sub {
+    .top-sub {
       color: var(--muted);
       font-size: 13px;
       margin-top: 4px;
     }
 
-    .topbar-right {
+    .top-actions {
       display: flex;
-      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .btn {
@@ -187,23 +89,24 @@
       background: #fff;
       color: var(--text);
       padding: 10px 14px;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 700;
-      transition: all 0.18s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      filter: brightness(0.98);
     }
 
     .btn-primary {
       background: var(--primary);
-      color: #fff;
       border-color: var(--primary);
+      color: #fff;
     }
 
     .btn-primary:hover {
@@ -212,861 +115,403 @@
 
     .btn-dark {
       background: var(--dark);
-      color: #fff;
       border-color: var(--dark);
+      color: #fff;
     }
 
-    .btn-ghost {
-      background: #f8fafc;
-    }
-
-    .btn-sm {
-      padding: 8px 12px;
-      font-size: 13px;
-      border-radius: 10px;
-    }
-
-    .icon-btn {
-      display: none;
-      width: 42px;
-      height: 42px;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f7fffb 100%);
       border: 1px solid var(--border);
-      background: #fff;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .content {
+      border-radius: 16px;
       padding: 18px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .tab-page {
-      display: none;
-    }
-
-    .tab-page.active {
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+      margin-bottom: 14px;
       box-shadow: var(--shadow);
-    }
-
-    .panel-head {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      font-weight: 800;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .panel-body {
-      padding: 16px;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .tiny {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .kpi-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .hero-left {
+      display: grid;
+      align-content: center;
       gap: 12px;
     }
 
-    .kpi-box {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-
-    .kpi-label {
-      color: var(--muted);
+    .hero-small {
+      display: inline-block;
       font-size: 12px;
-      margin-bottom: 8px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-    }
-
-    .kpi-value {
-      font-size: 30px;
       font-weight: 800;
-      line-height: 1.1;
+      color: var(--primary-dark);
+      background: var(--primary-soft);
+      border: 1px solid #c7f0d9;
+      padding: 5px 10px;
+      border-radius: 999px;
+      width: fit-content;
     }
 
-    .kpi-sub {
-      margin-top: 8px;
-      font-size: 12px;
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin: 0;
+      word-break: break-word;
+    }
+
+    .hero-desc {
       color: var(--muted);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 16px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .status-box {
-      background: #0b1220;
-      color: #d1fae5;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.75;
+      font-size: 15px;
+      line-height: 1.9;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: Consolas, Monaco, monospace;
-      min-height: 120px;
     }
 
-    .quick-links {
+    .hero-meta {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
-    }
-
-    .quick-link {
-      display: inline-flex;
-      align-items: center;
       gap: 8px;
-      padding: 11px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 700;
-      transition: all 0.18s ease;
-    }
-
-    .quick-link:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15,23,42,0.08);
-      border-color: var(--primary);
-    }
-
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      table-layout: fixed;
-    }
-
-    th, td {
-      border-bottom: 1px solid var(--border);
-      padding: 11px 10px;
-      text-align: left;
-      font-size: 14px;
-      vertical-align: top;
-      word-break: break-word;
-    }
-
-    th {
-      background: var(--table-head);
-      color: #334155;
-      font-weight: 800;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tr:hover td {
-      background: #fbfdff;
-    }
-
-    .thumb {
-      width: 64px;
-      height: 46px;
-      object-fit: cover;
-      border-radius: 10px;
-      background: #ddd;
-      display: block;
-    }
-
-    .empty {
-      padding: 18px;
-      color: var(--muted);
-      text-align: center;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 10px;
+      background: #eef2ff;
+      color: #334155;
+      padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
-      font-weight: 800;
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-
-    .pill-green {
-      background: #dcfce7;
-      color: #166534;
-      border-color: #bbf7d0;
-    }
-
-    .pill-red {
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: #fecaca;
-    }
-
-    .pill-yellow {
-      background: #fef3c7;
-      color: #92400e;
-      border-color: #fde68a;
-    }
-
-    .pill-blue {
-      background: #dbeafe;
-      color: #1d4ed8;
-      border-color: #bfdbfe;
-    }
-
-    .pill-gray {
-      background: #f3f4f6;
-      color: #374151;
-      border-color: #e5e7eb;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-    }
-
-    .field label {
-      font-size: 12px;
-      color: var(--muted);
       font-weight: 700;
     }
 
-    .field input,
-    .field select {
-      width: 100%;
-      padding: 11px 12px;
+    .hero-price {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .hero-right {
+      min-height: 320px;
+      border-radius: 14px;
+      overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      background: #eceff3;
+    }
+
+    .hero-image {
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      object-fit: cover;
+      display: block;
+      background: #e5e7eb;
+    }
+
+    .section {
       background: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.18s ease;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
     }
 
-    .field input:focus,
-    .field select:focus {
-      border-color: var(--primary);
-    }
-
-    .filters {
+    .section-head {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
-      align-items: center;
+      margin-bottom: 14px;
     }
 
-    .filters .field {
-      min-width: 180px;
-      flex: 1 1 180px;
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 0;
     }
 
-    .filters .field.compact {
-      flex: 0 0 180px;
+    .section-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
-    .list-card {
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .trip-card {
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px;
+      overflow: hidden;
       background: #fff;
+      transition: 0.18s ease;
+      display: flex;
+      flex-direction: column;
     }
 
-    .rank-list {
+    .trip-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .trip-cover {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      display: block;
+      background: #e5e7eb;
+    }
+
+    .trip-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .trip-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.45;
+      word-break: break-word;
+      min-height: 52px;
+    }
+
+    .trip-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .trip-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+      min-height: 50px;
+    }
+
+    .trip-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .trip-price {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .list-wrap {
       display: grid;
       gap: 10px;
     }
 
-    .rank-item {
-      display: flex;
+    .list-item {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 14px;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
       border: 1px solid var(--border);
       border-radius: 14px;
+      padding: 10px;
       background: #fff;
     }
 
-    .rank-left {
+    .list-thumb {
+      width: 120px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      background: #e5e7eb;
+    }
+
+    .list-main {
       min-width: 0;
+      display: grid;
+      gap: 6px;
     }
 
-    .rank-name {
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .rank-sub {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .rank-value {
+    .list-title {
       font-size: 18px;
       font-weight: 800;
-      color: var(--primary);
-      white-space: nowrap;
+      line-height: 1.4;
+      word-break: break-word;
     }
 
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.42);
-      z-index: 35;
+    .list-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
     }
 
-    .theme-preview {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      padding: 14px;
-      background: #f8fafc;
-      border: 1px dashed var(--border);
-      border-radius: 14px;
-    }
-
-    .color-dot {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.08);
-      background: var(--primary);
-      box-shadow: 0 0 0 4px var(--primary-soft);
-    }
-
-    .mono {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      word-break: break-all;
-    }
-
-    .right-actions {
-      display: flex;
+    .list-side {
+      display: grid;
       gap: 8px;
-      flex-wrap: wrap;
+      justify-items: end;
+      text-align: right;
     }
 
-    .badge-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 22px;
-      height: 22px;
-      padding: 0 8px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary-dark);
-      font-size: 12px;
+    .list-price {
+      font-size: 22px;
       font-weight: 800;
+      color: var(--primary);
     }
 
-    @media (max-width: 1280px) {
-      .kpi-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .grid-2,
-      .grid-3 {
-        grid-template-columns: 1fr;
-      }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 18px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #fafbfc;
+    }
+
+    .status-box {
+      background: #111827;
+      color: #d1fae5;
+      border-radius: 10px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      line-height: 1.7;
+      font-family: Consolas, Monaco, monospace;
+      min-height: 80px;
+      max-height: 180px;
+      overflow: auto;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding-top: 4px;
     }
 
     @media (max-width: 1024px) {
-      .app {
+      .hero,
+      .grid-3 {
         grid-template-columns: 1fr;
       }
 
-      .sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        width: 280px;
-        max-width: 86vw;
-        transform: translateX(-100%);
-        transition: transform 0.22s ease;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+      .list-item {
+        grid-template-columns: 1fr;
       }
 
-      .sidebar.open {
-        transform: translateX(0);
+      .list-thumb {
+        width: 100%;
+        height: 180px;
       }
 
-      .overlay.show {
-        display: block;
-      }
-
-      .icon-btn {
-        display: inline-flex;
+      .list-side {
+        justify-items: start;
+        text-align: left;
       }
     }
 
     @media (max-width: 768px) {
-      .kpi-row,
-      .field-grid {
-        grid-template-columns: 1fr;
+      .top-actions {
+        width: 100%;
       }
 
-      .topbar {
-        padding: 12px 14px;
-      }
-
-      .topbar-title {
-        font-size: 20px;
-      }
-
-      .content {
-        padding: 14px;
-      }
-
-      .filters .field,
-      .filters .field.compact {
-        min-width: 100%;
+      .top-actions .btn {
         flex: 1 1 100%;
       }
 
-      .right-actions {
-        width: 100%;
+      .top-title {
+        font-size: 24px;
       }
 
-      .topbar-right {
-        width: 100%;
-        justify-content: flex-start;
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .hero-price {
+        font-size: 30px;
       }
     }
   </style>
 </head>
 <body>
-  <div id="sidebarOverlay" class="overlay"></div>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <div id="brandBadge" class="brand-badge">TravelKeeper</div>
+        <h1 class="top-title">精選旅遊行程</h1>
+        <div class="top-sub">簡單看、直接選、快速成交</div>
+      </div>
+      <div class="top-actions">
+        <a id="btnAdmin" class="btn" href="./admin.html" target="_blank">後台上稿</a>
+        <a id="btnDistributor" class="btn" href="./distributor-dashboard.html" target="_blank">分銷工作台</a>
+        <button id="btnRefresh" class="btn btn-dark" type="button">刷新資料</button>
+      </div>
+    </div>
 
-  <div class="app">
-    <aside id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          Travelman Console
-          <div id="sideBrand" class="brand-badge">TravelKeeper</div>
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-small">本週主打</div>
+        <h2 id="heroTitle" class="hero-title">載入中...</h2>
+        <div id="heroDesc" class="hero-desc">請稍候，系統正在讀取真實行程資料。</div>
+        <div id="heroMeta" class="hero-meta"></div>
+        <div id="heroPrice" class="hero-price">--</div>
+        <div class="top-actions">
+          <button id="btnHeroTrip" class="btn btn-primary" type="button">查看行程</button>
+          <a id="btnHeroSuccess" class="btn" href="./success.html" target="_blank">成功頁</a>
         </div>
       </div>
-
-      <div class="nav-group">
-        <div class="nav-title">主控台</div>
-        <button class="nav-item active" data-tab-btn="home"><span class="nav-icon">🏠</span>首頁總覽</button>
-        <button class="nav-item" data-tab-btn="itineraries"><span class="nav-icon">✈️</span>行程管理</button>
-        <button class="nav-item" data-tab-btn="orders"><span class="nav-icon">📋</span>訂單管理</button>
-        <button class="nav-item" data-tab-btn="distributors"><span class="nav-icon">🤝</span>分銷管理</button>
-        <button class="nav-item" data-tab-btn="settings"><span class="nav-icon">⚙️</span>品牌設定</button>
+      <div class="hero-right">
+        <img id="heroImage" class="hero-image" src="https://picsum.photos/1200/800" alt="featured trip" />
       </div>
+    </section>
 
-      <div class="nav-group">
-        <div class="nav-title">外部頁</div>
-        <a id="navTripLink" class="nav-link" href="./trip.html" target="_blank"><span class="nav-icon">🧳</span>trip.html</a>
-        <a id="navSuccessLink" class="nav-link" href="./success.html" target="_blank"><span class="nav-icon">✅</span>success.html</a>
-        <a id="navDistributorLink" class="nav-link" href="./distributor-dashboard.html" target="_blank"><span class="nav-icon">💼</span>分銷商後台</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-title">說明</div>
-        <div class="sidebar-note">
-          這版是 Travelman Console v2。<br>
-          已補：
-          <br>• tenantId 切換
-          <br>• KPI / 最近訂單
-          <br>• 行程 / 訂單 / 分銷搜尋
-          <br>• 手機 sidebar
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3 class="section-title">精選行程</h3>
+          <div class="section-sub">先看重點推薦，不先丟太多篩選條件</div>
         </div>
       </div>
-    </aside>
+      <div id="featuredGrid" class="grid-3">
+        <div class="empty">載入中...</div>
+      </div>
+    </section>
 
-    <main class="main">
-      <div class="topbar">
-        <div class="topbar-left">
-          <button id="btnSidebarToggle" class="icon-btn" type="button">☰</button>
-          <div>
-            <div id="pageTitle" class="topbar-title">首頁總覽</div>
-            <div class="topbar-sub">Travelman SaaS 主控台</div>
-          </div>
-        </div>
-        <div class="topbar-right">
-          <div class="field" style="min-width: 180px;">
-            <label for="tenantInput" style="display:none;">Tenant</label>
-            <input id="tenantInput" type="text" placeholder="tenantId" />
-          </div>
-          <button id="btnApplyTenant" class="btn btn-ghost">切換 Tenant</button>
-          <button id="btnRefreshAll" class="btn btn-dark">刷新資料</button>
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3 class="section-title">更多行程</h3>
+          <div class="section-sub">保留簡單列表，讓人容易往下挑選</div>
         </div>
       </div>
+      <div id="tripList" class="list-wrap">
+        <div class="empty">載入中...</div>
+      </div>
+    </section>
 
-      <div class="content">
-        <!-- HOME -->
-        <div id="tab-home" class="tab-page active">
-          <div class="kpi-row">
-            <div class="kpi-box">
-              <div class="kpi-label">行程數</div>
-              <div id="kpiItineraries" class="kpi-value">0</div>
-              <div class="kpi-sub">目前可展示 / 可成交行程</div>
-            </div>
-            <div class="kpi-box">
-              <div class="kpi-label">訂單數</div>
-              <div id="kpiOrders" class="kpi-value">0</div>
-              <div class="kpi-sub">目前系統累積訂單</div>
-            </div>
-            <div class="kpi-box">
-              <div class="kpi-label">分銷商數</div>
-              <div id="kpiDistributors" class="kpi-value">0</div>
-              <div class="kpi-sub">已註冊分銷商</div>
-            </div>
-            <div class="kpi-box">
-              <div class="kpi-label">總營收</div>
-              <div id="kpiRevenue" class="kpi-value">0</div>
-              <div class="kpi-sub">依訂單 totalAmount 加總</div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head">
-                <span>快速入口</span>
-              </div>
-              <div class="panel-body">
-                <div class="quick-links">
-                  <a id="quickTripLink" class="quick-link" href="./trip.html" target="_blank">🌍 客戶成交頁</a>
-                  <a id="quickSuccessLink" class="quick-link" href="./success.html" target="_blank">🎉 成功頁</a>
-                  <a id="quickDistributorLink" class="quick-link" href="./distributor-dashboard.html" target="_blank">💼 分銷商工作台</a>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head">租戶與 API 狀態</div>
-              <div class="panel-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label>目前 Tenant ID</label>
-                    <input id="tenantInfoInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>品牌名稱</label>
-                    <input id="brandInfoInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>方案</label>
-                    <input id="planInfoInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>主色</label>
-                    <input id="primaryColorInfoInput" type="text" readonly />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head">
-                <span>最近訂單</span>
-                <span class="badge-num" id="recentOrderCount">0</span>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th style="width: 130px;">訂單號</th>
-                      <th>客戶</th>
-                      <th style="width: 120px;">金額</th>
-                      <th style="width: 130px;">付款狀態</th>
-                      <th style="width: 160px;">分銷 UID</th>
-                    </tr>
-                  </thead>
-                  <tbody id="recentOrdersTable">
-                    <tr><td colspan="5" class="empty">載入中...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head">熱門分銷商</div>
-              <div class="panel-body">
-                <div id="topDistributorsList" class="rank-list">
-                  <div class="empty">載入中...</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">系統狀態</div>
-            <div class="panel-body">
-              <div id="statusBox" class="status-box">尚未初始化</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ITINERARIES -->
-        <div id="tab-itineraries" class="tab-page">
-          <div class="panel">
-            <div class="panel-head">
-              <span>行程管理</span>
-              <div class="right-actions">
-                <button id="btnClearTripFilters" class="btn btn-sm btn-ghost">清除篩選</button>
-              </div>
-            </div>
-            <div class="panel-body" style="border-bottom:1px solid var(--border);">
-              <div class="filters">
-                <div class="field">
-                  <label>關鍵字</label>
-                  <input id="tripKeyword" type="text" placeholder="搜尋標題 / 城市 / 國家 / ID" />
-                </div>
-                <div class="field compact">
-                  <label>狀態</label>
-                  <select id="tripStatusFilter">
-                    <option value="">全部</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="trip-table">
-                <thead>
-                  <tr>
-                    <th style="width:80px;">圖片</th>
-                    <th>行程</th>
-                    <th style="width:120px;">價格</th>
-                    <th style="width:110px;">狀態</th>
-                    <th style="width:180px;">預覽</th>
-                  </tr>
-                </thead>
-                <tbody id="itineraryTable">
-                  <tr><td colspan="5" class="empty">載入中...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ORDERS -->
-        <div id="tab-orders" class="tab-page">
-          <div class="panel">
-            <div class="panel-head">
-              <span>訂單管理</span>
-              <div class="right-actions">
-                <button id="btnClearOrderFilters" class="btn btn-sm btn-ghost">清除篩選</button>
-              </div>
-            </div>
-            <div class="panel-body" style="border-bottom:1px solid var(--border);">
-              <div class="filters">
-                <div class="field">
-                  <label>搜尋</label>
-                  <input id="orderKeyword" type="text" placeholder="訂單號 / 客戶 / 分銷 UID / itineraryId" />
-                </div>
-                <div class="field compact">
-                  <label>付款狀態</label>
-                  <select id="orderPaymentFilter">
-                    <option value="">全部</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="width:130px;">訂單號</th>
-                    <th>客戶</th>
-                    <th style="width:120px;">金額</th>
-                    <th style="width:130px;">付款狀態</th>
-                    <th style="width:180px;">分銷 UID</th>
-                    <th style="width:140px;">行程 ID</th>
-                  </tr>
-                </thead>
-                <tbody id="ordersTable">
-                  <tr><td colspan="6" class="empty">載入中...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- DISTRIBUTORS -->
-        <div id="tab-distributors" class="tab-page">
-          <div class="panel">
-            <div class="panel-head">
-              <span>分銷管理</span>
-              <div class="right-actions">
-                <button id="btnClearDistributorFilters" class="btn btn-sm btn-ghost">清除篩選</button>
-              </div>
-            </div>
-            <div class="panel-body" style="border-bottom:1px solid var(--border);">
-              <div class="filters">
-                <div class="field">
-                  <label>搜尋</label>
-                  <input id="distributorKeyword" type="text" placeholder="UID / 姓名" />
-                </div>
-                <div class="field compact">
-                  <label>狀態</label>
-                  <select id="distributorStatusFilter">
-                    <option value="">全部</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="width:170px;">UID</th>
-                    <th>姓名</th>
-                    <th style="width:120px;">狀態</th>
-                    <th style="width:120px;">佣金比例</th>
-                    <th style="width:120px;">訂單數</th>
-                    <th style="width:120px;">營收</th>
-                  </tr>
-                </thead>
-                <tbody id="distributorsTable">
-                  <tr><td colspan="6" class="empty">載入中...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- SETTINGS -->
-        <div id="tab-settings" class="tab-page">
-          <div class="grid-2">
-            <div class="panel">
-              <div class="panel-head">品牌設定</div>
-              <div class="panel-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label>品牌名稱</label>
-                    <input id="brandNameInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>主色</label>
-                    <input id="primaryColorInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>方案</label>
-                    <input id="planInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Tenant ID</label>
-                    <input id="tenantIdInput" type="text" readonly />
-                  </div>
-                </div>
-
-                <div style="margin-top:16px;">
-                  <div class="tiny" style="margin-bottom:8px;">品牌預覽</div>
-                  <div class="theme-preview">
-                    <div class="color-dot"></div>
-                    <span class="pill pill-green">主要 CTA</span>
-                    <span class="pill pill-gray">一般標籤</span>
-                    <span class="pill pill-blue">資訊區塊</span>
-                    <span class="pill pill-yellow">提醒狀態</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head">路徑與環境</div>
-              <div class="panel-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label>Worker Base URL</label>
-                    <input id="workerBaseInput" type="text" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Console URL 參數</label>
-                    <input id="consoleUrlInput" type="text" readonly />
-                  </div>
-                </div>
-                <div style="margin-top:16px;">
-                  <div class="tiny" style="margin-bottom:8px;">說明</div>
-                  <div class="list-card">
-                    <div class="muted">
-                      這頁先維持唯讀，不主動寫入品牌資料，避免踩到尚未確認的 update API。
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">資料摘要</div>
-            <div class="panel-body">
-              <div class="grid-3">
-                <div class="list-card">
-                  <div class="tiny">目前行程 API</div>
-                  <div class="mono">/api/public/itineraries?tenantId=...</div>
-                </div>
-                <div class="list-card">
-                  <div class="tiny">目前訂單 API</div>
-                  <div class="mono">/api/admin/get-orders?tenantId=...</div>
-                </div>
-                <div class="list-card">
-                  <div class="tiny">目前分銷 API</div>
-                  <div class="mono">/api/distributor/list?tenantId=...</div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3 class="section-title">系統狀態</h3>
+          <div class="section-sub">維持小區塊，不干擾主要畫面</div>
         </div>
       </div>
-    </main>
+      <div id="statusBox" class="status-box">尚未初始化</div>
+    </section>
+
+    <div class="footer-note">
+      Travelman 舊模型感首頁｜保留真實資料讀取與成交頁串接
+    </div>
   </div>
 
   <script>
@@ -1076,37 +521,18 @@
     let tenantId = DEFAULT_TENANT;
     let tenantData = null;
     let itineraries = [];
-    let orders = [];
-    let distributors = [];
 
-    function setStatus(msg, append = false) {
+    function logStatus(message, append = false) {
       const el = document.getElementById("statusBox");
-      const time = new Date().toLocaleString("zh-Hant-TW");
-      const row = `[${time}] ${msg}`;
-      el.textContent = append ? (el.textContent + "\n" + row) : row;
+      const stamp = "[" + new Date().toLocaleString("zh-Hant-TW") + "]";
+      const line = stamp + " " + message;
+      el.textContent = append ? (el.textContent + "\\n" + line) : line;
+      el.scrollTop = el.scrollHeight;
     }
 
     function qs(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name) || "";
-    }
-
-    function updateUrlTenant() {
-      const url = new URL(window.location.href);
-      url.searchParams.set("tenantId", tenantId);
-      history.replaceState({}, "", url.toString());
-      document.getElementById("consoleUrlInput").value = url.toString();
-    }
-
-    function getTenantId() {
-      const fromUrl = qs("tenantId");
-      const fromStorage = localStorage.getItem("travelman_tenant_id");
-      tenantId = fromUrl || fromStorage || DEFAULT_TENANT;
-      localStorage.setItem("travelman_tenant_id", tenantId);
-      document.getElementById("tenantInput").value = tenantId;
-      document.getElementById("tenantInfoInput").value = tenantId;
-      updateUrlTenant();
-      updateExternalLinks();
     }
 
     function formatNumber(n) {
@@ -1126,94 +552,28 @@
       return fetch(BASE + path).then(res => res.json());
     }
 
-    function badge(text, cls = "pill-gray") {
-      return `<span class="pill ${cls}">${escapeHtml(text)}</span>`;
+    function getTenantId() {
+      const fromUrl = qs("tenantId");
+      const fromStorage = localStorage.getItem("travelman_tenant_id") || localStorage.getItem("tk_tenant_id");
+      tenantId = fromUrl || fromStorage || DEFAULT_TENANT;
+      localStorage.setItem("travelman_tenant_id", tenantId);
+      localStorage.setItem("tk_tenant_id", tenantId);
     }
 
-    function paymentBadge(status) {
-      const v = String(status || "-").toLowerCase();
-      if (v === "paid" || v === "已付款") return badge(status || "已付款", "pill-green");
-      if (v === "unpaid" || v === "未付款") return badge(status || "未付款", "pill-red");
-      if (v === "processing" || v === "處理中") return badge(status || "處理中", "pill-yellow");
-      return badge(status || "-", "pill-gray");
+    function updateLinks() {
+      document.getElementById("btnAdmin").href = `./admin.html?tenantId=${encodeURIComponent(tenantId)}`;
+      document.getElementById("btnDistributor").href = `./distributor-dashboard.html?tenantId=${encodeURIComponent(tenantId)}`;
+      document.getElementById("btnHeroSuccess").href = `./success.html?tenantId=${encodeURIComponent(tenantId)}`;
     }
 
-    function statusBadge(status) {
-      const v = String(status || "-").toLowerCase();
-      if (["active", "published", "approved", "上架", "啟用"].includes(v)) return badge(status, "pill-green");
-      if (["draft", "pending", "待審核", "草稿"].includes(v)) return badge(status, "pill-yellow");
-      if (["inactive", "stopped", "停用"].includes(v)) return badge(status, "pill-red");
-      return badge(status || "-", "pill-gray");
-    }
-
-    function closeSidebar() {
-      document.getElementById("sidebar").classList.remove("open");
-      document.getElementById("sidebarOverlay").classList.remove("show");
-      document.body.classList.remove("sidebar-open");
-    }
-
-    function openSidebar() {
-      document.getElementById("sidebar").classList.add("open");
-      document.getElementById("sidebarOverlay").classList.add("show");
-      document.body.classList.add("sidebar-open");
-    }
-
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      if (sidebar.classList.contains("open")) closeSidebar();
-      else openSidebar();
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll("[data-tab-btn]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tabBtn === tab);
-      });
-
-      document.querySelectorAll(".tab-page").forEach(page => {
-        page.classList.remove("active");
-      });
-
-      const target = document.getElementById("tab-" + tab);
-      if (target) target.classList.add("active");
-
-      const titleMap = {
-        home: "首頁總覽",
-        itineraries: "行程管理",
-        orders: "訂單管理",
-        distributors: "分銷管理",
-        settings: "品牌設定"
-      };
-
-      document.getElementById("pageTitle").textContent = titleMap[tab] || "Travelman Console";
-
-      const url = new URL(window.location.href);
-      url.searchParams.set("tab", tab);
-      url.searchParams.set("tenantId", tenantId);
-      history.replaceState({}, "", url.toString());
-
-      closeSidebar();
-    }
-
-    function updateExternalLinks() {
-      const tripUrl = `./trip.html?tenantId=${encodeURIComponent(tenantId)}`;
-      const successUrl = `./success.html?tenantId=${encodeURIComponent(tenantId)}`;
-      const distributorUrl = `./distributor-dashboard.html?tenantId=${encodeURIComponent(tenantId)}`;
-
-      [
-        ["navTripLink", tripUrl],
-        ["navSuccessLink", successUrl],
-        ["navDistributorLink", distributorUrl],
-        ["quickTripLink", tripUrl],
-        ["quickSuccessLink", successUrl],
-        ["quickDistributorLink", distributorUrl]
-      ].forEach(([id, href]) => {
-        const el = document.getElementById(id);
-        if (el) el.href = href;
-      });
+    function openTrip(itineraryId) {
+      if (!itineraryId) return;
+      const url = `./trip.html?tenantId=${encodeURIComponent(tenantId)}&it=${encodeURIComponent(itineraryId)}`;
+      window.open(url, "_blank");
     }
 
     async function loadTenant() {
-      setStatus(`讀取 Tenant：${tenantId}`);
+      logStatus(`讀取 Tenant：${tenantId}`);
       const res = await apiGet(`/api/public/tenant?tenantId=${encodeURIComponent(tenantId)}`);
       tenantData = res && res.data ? res.data.data : null;
 
@@ -1225,332 +585,159 @@
         document.documentElement.style.setProperty("--primary-dark", color);
         document.documentElement.style.setProperty("--primary-soft", color + "1A");
 
-        document.getElementById("sideBrand").textContent = brand;
-        document.getElementById("brandNameInput").value = brand;
-        document.getElementById("brandInfoInput").value = brand;
-        document.getElementById("primaryColorInput").value = color;
-        document.getElementById("primaryColorInfoInput").value = color;
-        document.getElementById("planInput").value = tenantData.plan || "";
-        document.getElementById("planInfoInput").value = tenantData.plan || "";
-        document.getElementById("tenantIdInput").value = tenantData.tenantId || tenantId;
+        document.getElementById("brandBadge").textContent = brand;
+        document.title = brand;
       } else {
-        document.getElementById("sideBrand").textContent = "Unknown Tenant";
-        document.getElementById("brandNameInput").value = "";
-        document.getElementById("brandInfoInput").value = "";
-        document.getElementById("primaryColorInput").value = "";
-        document.getElementById("primaryColorInfoInput").value = "";
-        document.getElementById("planInput").value = "";
-        document.getElementById("planInfoInput").value = "";
-        document.getElementById("tenantIdInput").value = tenantId;
+        document.getElementById("brandBadge").textContent = tenantId;
       }
 
-      document.getElementById("workerBaseInput").value = BASE;
-      document.getElementById("tenantInfoInput").value = tenantId;
-      setStatus(`Tenant 載入完成：${tenantData ? (tenantData.brandName || tenantId) : "無資料"}`, true);
+      logStatus("Tenant 載入完成", true);
     }
 
     async function loadItineraries() {
       const res = await apiGet(`/api/public/itineraries?tenantId=${encodeURIComponent(tenantId)}`);
       itineraries = res && res.data ? (res.data.items || []) : [];
-      document.getElementById("kpiItineraries").textContent = formatNumber(itineraries.length);
-      populateTripStatusOptions();
-      renderItineraryTable();
-      setStatus(`行程資料載入完成：${itineraries.length} 筆`, true);
+
+      itineraries = itineraries.filter(item => {
+        const status = String(item.status || "").toLowerCase();
+        return status !== "inactive";
+      });
+
+      logStatus(`行程資料載入完成：${itineraries.length} 筆`, true);
     }
 
-    async function loadOrders() {
-      let res = null;
-      try {
-        res = await apiGet(`/api/admin/get-orders?tenantId=${encodeURIComponent(tenantId)}`);
-      } catch (err) {
-        setStatus("admin/get-orders 失敗，改用 member/orders fallback", true);
+    function getFeaturedTrip() {
+      if (!itineraries.length) return null;
+
+      const published = itineraries.filter(it => String(it.status || "").toLowerCase() === "published");
+      if (published.length) return published[0];
+      return itineraries[0];
+    }
+
+    function renderHero() {
+      const hero = getFeaturedTrip();
+
+      if (!hero) {
+        document.getElementById("heroTitle").textContent = "目前尚無可展示行程";
+        document.getElementById("heroDesc").textContent = "請先到後台上稿，系統就會自動帶入真實行程。";
+        document.getElementById("heroMeta").innerHTML = "";
+        document.getElementById("heroPrice").textContent = "--";
+        document.getElementById("heroImage").src = "https://picsum.photos/1200/800";
+        document.getElementById("btnHeroTrip").onclick = null;
+        return;
       }
 
-      if (res && res.data && res.data.items) {
-        orders = res.data.items;
-      } else {
-        try {
-          const fallback = await apiGet(`/api/member/orders?tenantId=${encodeURIComponent(tenantId)}&uid=U_MEMBER_001`);
-          orders = fallback && fallback.data ? (fallback.data.items || []) : [];
-        } catch (err) {
-          orders = [];
-        }
+      document.getElementById("heroTitle").textContent = hero.title || "未命名行程";
+      document.getElementById("heroDesc").textContent =
+        hero.description || hero.subtitle || "歡迎查看本週主打行程。";
+      document.getElementById("heroPrice").textContent = "NT$ " + formatNumber(hero.price || 0);
+      document.getElementById("heroImage").src = hero.coverImageUrl || "https://picsum.photos/1200/800";
+
+      const meta = [];
+      if (hero.region) meta.push("🧭 " + hero.region);
+      if (hero.country) meta.push("🌍 " + hero.country);
+      if (hero.city) meta.push("📍 " + hero.city);
+      if (hero.days) meta.push("🗓️ " + hero.days + " 天");
+      if (hero.departureDate) meta.push("✈️ " + hero.departureDate);
+
+      document.getElementById("heroMeta").innerHTML = meta
+        .map(item => `<span class="pill">${escapeHtml(item)}</span>`)
+        .join("");
+
+      document.getElementById("btnHeroTrip").onclick = () => openTrip(hero.itineraryId || "");
+    }
+
+    function renderFeaturedGrid() {
+      const container = document.getElementById("featuredGrid");
+      const list = itineraries.slice(0, 3);
+
+      if (!list.length) {
+        container.innerHTML = `<div class="empty">目前尚無精選行程</div>`;
+        return;
       }
 
-      document.getElementById("kpiOrders").textContent = formatNumber(orders.length);
-      document.getElementById("kpiRevenue").textContent = formatNumber(
-        orders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0)
-      );
+      container.innerHTML = list.map(it => {
+        const meta = [];
+        if (it.country) meta.push("🌍 " + it.country);
+        if (it.city) meta.push("📍 " + it.city);
+        if (it.days) meta.push("🗓️ " + it.days + " 天");
 
-      populateOrderPaymentOptions();
-      renderOrdersTable();
-      renderRecentOrders();
-      setStatus(`訂單資料載入完成：${orders.length} 筆`, true);
-    }
-
-    async function loadDistributors() {
-      try {
-        const res = await apiGet(`/api/distributor/list?tenantId=${encodeURIComponent(tenantId)}`);
-        distributors = res && res.data && res.data.items ? res.data.items : [];
-      } catch (err) {
-        distributors = [];
-      }
-
-      document.getElementById("kpiDistributors").textContent = formatNumber(distributors.length);
-      populateDistributorStatusOptions();
-      renderDistributorsTable();
-      renderTopDistributors();
-      setStatus(`分銷資料載入完成：${distributors.length} 筆`, true);
-    }
-
-    function getTripFilteredList() {
-      const kw = (document.getElementById("tripKeyword").value || "").trim().toLowerCase();
-      const status = document.getElementById("tripStatusFilter").value;
-
-      return itineraries.filter(it => {
-        const text = [
-          it.title,
-          it.country,
-          it.city,
-          it.itineraryId
-        ].join(" ").toLowerCase();
-
-        const hitKw = !kw || text.includes(kw);
-        const hitStatus = !status || String(it.status || "") === status;
-        return hitKw && hitStatus;
-      });
-    }
-
-    function renderItineraryTable() {
-      const list = getTripFilteredList();
-
-      const html = list.length
-        ? list.map(it => {
-            const previewUrl = `./trip.html?tenantId=${encodeURIComponent(tenantId)}&it=${encodeURIComponent(it.itineraryId || "")}`;
-            return `
-              <tr>
-                <td><img class="thumb" src="${it.coverImageUrl || "https://picsum.photos/200"}" alt="trip"></td>
-                <td>
-                  <div><b>${escapeHtml(it.title || "未命名行程")}</b></div>
-                  <div class="tiny">${escapeHtml(it.country || "")} ${escapeHtml(it.city || "")}</div>
-                  <div class="tiny">ID：${escapeHtml(it.itineraryId || "")}</div>
-                </td>
-                <td>NT$ ${formatNumber(it.price || 0)}</td>
-                <td>${statusBadge(it.status || "-")}</td>
-                <td>
-                  <a class="quick-link" style="padding:8px 10px;font-size:12px;" href="${previewUrl}" target="_blank">開啟成交頁</a>
-                </td>
-              </tr>
-            `;
-          }).join("")
-        : `<tr><td colspan="5" class="empty">查無符合條件的行程</td></tr>`;
-
-      document.getElementById("itineraryTable").innerHTML = html;
-    }
-
-    function getOrderFilteredList() {
-      const kw = (document.getElementById("orderKeyword").value || "").trim().toLowerCase();
-      const payment = document.getElementById("orderPaymentFilter").value;
-
-      return orders.filter(o => {
-        const text = [
-          o.orderId,
-          o.customerName,
-          o.distributorUid,
-          o.itineraryId
-        ].join(" ").toLowerCase();
-
-        const hitKw = !kw || text.includes(kw);
-        const hitPayment = !payment || String(o.paymentStatus || "") === payment;
-        return hitKw && hitPayment;
-      });
-    }
-
-    function renderOrdersTable() {
-      const list = getOrderFilteredList();
-
-      const html = list.length
-        ? list.map(o => `
-            <tr>
-              <td>${escapeHtml(o.orderId)}</td>
-              <td>
-                <div><b>${escapeHtml(o.customerName || "")}</b></div>
-                <div class="tiny">${escapeHtml(o.orderDate || o.createdAt || "")}</div>
-              </td>
-              <td>${formatNumber(o.totalAmount || 0)}</td>
-              <td>${paymentBadge(o.paymentStatus || "-")}</td>
-              <td class="mono">${escapeHtml(o.distributorUid || "-")}</td>
-              <td class="mono">${escapeHtml(o.itineraryId || "")}</td>
-            </tr>
-          `).join("")
-        : `<tr><td colspan="6" class="empty">查無符合條件的訂單</td></tr>`;
-
-      document.getElementById("ordersTable").innerHTML = html;
-    }
-
-    function getDistributorFilteredList() {
-      const kw = (document.getElementById("distributorKeyword").value || "").trim().toLowerCase();
-      const status = document.getElementById("distributorStatusFilter").value;
-
-      return distributors.filter(d => {
-        const text = [d.uid, d.name].join(" ").toLowerCase();
-        const hitKw = !kw || text.includes(kw);
-        const hitStatus = !status || String(d.status || "") === status;
-        return hitKw && hitStatus;
-      });
-    }
-
-    function renderDistributorsTable() {
-      const list = getDistributorFilteredList();
-
-      const html = list.length
-        ? list.map(d => `
-            <tr>
-              <td class="mono">${escapeHtml(d.uid || "")}</td>
-              <td><b>${escapeHtml(d.name || "")}</b></td>
-              <td>${statusBadge(d.status || "-")}</td>
-              <td>${escapeHtml(d.commissionRate || 0)}%</td>
-              <td>${formatNumber(d.orderCount || 0)}</td>
-              <td>${formatNumber(d.revenueAmount || 0)}</td>
-            </tr>
-          `).join("")
-        : `<tr><td colspan="6" class="empty">查無符合條件的分銷商</td></tr>`;
-
-      document.getElementById("distributorsTable").innerHTML = html;
-    }
-
-    function renderRecentOrders() {
-      const list = [...orders]
-        .sort((a, b) => String(b.orderDate || b.createdAt || "").localeCompare(String(a.orderDate || a.createdAt || "")))
-        .slice(0, 8);
-
-      document.getElementById("recentOrderCount").textContent = String(list.length);
-
-      const html = list.length
-        ? list.map(o => `
-            <tr>
-              <td>${escapeHtml(o.orderId)}</td>
-              <td><b>${escapeHtml(o.customerName || "")}</b></td>
-              <td>${formatNumber(o.totalAmount || 0)}</td>
-              <td>${paymentBadge(o.paymentStatus || "-")}</td>
-              <td class="mono">${escapeHtml(o.distributorUid || "-")}</td>
-            </tr>
-          `).join("")
-        : `<tr><td colspan="5" class="empty">目前尚無最近訂單</td></tr>`;
-
-      document.getElementById("recentOrdersTable").innerHTML = html;
-    }
-
-    function renderTopDistributors() {
-      const list = [...distributors]
-        .sort((a, b) => Number(b.revenueAmount || 0) - Number(a.revenueAmount || 0))
-        .slice(0, 6);
-
-      const html = list.length
-        ? list.map((d, idx) => `
-            <div class="rank-item">
-              <div class="rank-left">
-                <div class="rank-name">#${idx + 1} ${escapeHtml(d.name || d.uid || "未命名")}</div>
-                <div class="rank-sub">UID：${escapeHtml(d.uid || "")} ・ 訂單 ${formatNumber(d.orderCount || 0)} 筆</div>
+        return `
+          <div class="trip-card">
+            <img class="trip-cover" src="${it.coverImageUrl || "https://picsum.photos/600/400"}" alt="trip">
+            <div class="trip-body">
+              <div class="trip-title">${escapeHtml(it.title || "未命名行程")}</div>
+              <div class="trip-meta">
+                ${meta.map(item => `<span class="pill">${escapeHtml(item)}</span>`).join("")}
               </div>
-              <div class="rank-value">${formatNumber(d.revenueAmount || 0)}</div>
+              <div class="trip-desc">${escapeHtml((it.description || it.subtitle || "歡迎查看本行程").slice(0, 70))}</div>
+              <div class="trip-bottom">
+                <div class="trip-price">NT$ ${formatNumber(it.price || 0)}</div>
+                <button class="btn btn-primary" type="button" onclick="openTrip('${String(it.itineraryId || "").replace(/'/g, "\\\\'")}')">查看行程</button>
+              </div>
             </div>
-          `).join("")
-        : `<div class="empty">目前尚無分銷資料</div>`;
-
-      document.getElementById("topDistributorsList").innerHTML = html;
+          </div>
+        `;
+      }).join("");
     }
 
-    function populateTripStatusOptions() {
-      const select = document.getElementById("tripStatusFilter");
-      const values = [...new Set(itineraries.map(it => String(it.status || "")).filter(Boolean))].sort();
-      select.innerHTML = `<option value="">全部</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
-    }
+    function renderTripList() {
+      const container = document.getElementById("tripList");
 
-    function populateOrderPaymentOptions() {
-      const select = document.getElementById("orderPaymentFilter");
-      const values = [...new Set(orders.map(o => String(o.paymentStatus || "")).filter(Boolean))].sort();
-      select.innerHTML = `<option value="">全部</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
-    }
+      if (!itineraries.length) {
+        container.innerHTML = `<div class="empty">目前尚無更多行程</div>`;
+        return;
+      }
 
-    function populateDistributorStatusOptions() {
-      const select = document.getElementById("distributorStatusFilter");
-      const values = [...new Set(distributors.map(d => String(d.status || "")).filter(Boolean))].sort();
-      select.innerHTML = `<option value="">全部</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      container.innerHTML = itineraries.map(it => {
+        const meta = [];
+        if (it.country) meta.push("🌍 " + it.country);
+        if (it.city) meta.push("📍 " + it.city);
+        if (it.days) meta.push("🗓️ " + it.days + " 天");
+        if (it.departureDate) meta.push("✈️ " + it.departureDate);
+
+        return `
+          <div class="list-item">
+            <img class="list-thumb" src="${it.coverImageUrl || "https://picsum.photos/400/300"}" alt="trip">
+            <div class="list-main">
+              <div class="list-title">${escapeHtml(it.title || "未命名行程")}</div>
+              <div class="trip-meta">
+                ${meta.map(item => `<span class="pill">${escapeHtml(item)}</span>`).join("")}
+              </div>
+              <div class="list-desc">${escapeHtml((it.description || it.subtitle || "歡迎查看本行程").slice(0, 120))}</div>
+            </div>
+            <div class="list-side">
+              <div class="list-price">NT$ ${formatNumber(it.price || 0)}</div>
+              <button class="btn btn-primary" type="button" onclick="openTrip('${String(it.itineraryId || "").replace(/'/g, "\\\\'")}')">查看行程</button>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
     async function refreshAll() {
-      setStatus("開始刷新資料...");
+      logStatus("開始刷新資料...");
       try {
         await loadTenant();
         await loadItineraries();
-        await loadOrders();
-        await loadDistributors();
-        setStatus("資料刷新完成", true);
+        renderHero();
+        renderFeaturedGrid();
+        renderTripList();
+        updateLinks();
+        logStatus("首頁資料刷新完成", true);
       } catch (err) {
-        setStatus("刷新失敗：" + (err.message || String(err)), true);
+        logStatus("刷新失敗：" + (err.message || String(err)), true);
       }
     }
 
-    function applyTenant() {
-      const input = (document.getElementById("tenantInput").value || "").trim();
-      if (!input) return;
-      tenantId = input;
-      localStorage.setItem("travelman_tenant_id", tenantId);
-      updateUrlTenant();
-      updateExternalLinks();
-      refreshAll();
-    }
-
     function bindEvents() {
-      document.querySelectorAll("[data-tab-btn]").forEach(btn => {
-        btn.addEventListener("click", () => switchTab(btn.dataset.tabBtn));
-      });
-
-      document.getElementById("btnRefreshAll").addEventListener("click", refreshAll);
-      document.getElementById("btnApplyTenant").addEventListener("click", applyTenant);
-      document.getElementById("btnSidebarToggle").addEventListener("click", toggleSidebar);
-      document.getElementById("sidebarOverlay").addEventListener("click", closeSidebar);
-
-      document.getElementById("tripKeyword").addEventListener("input", renderItineraryTable);
-      document.getElementById("tripStatusFilter").addEventListener("change", renderItineraryTable);
-      document.getElementById("btnClearTripFilters").addEventListener("click", () => {
-        document.getElementById("tripKeyword").value = "";
-        document.getElementById("tripStatusFilter").value = "";
-        renderItineraryTable();
-      });
-
-      document.getElementById("orderKeyword").addEventListener("input", renderOrdersTable);
-      document.getElementById("orderPaymentFilter").addEventListener("change", renderOrdersTable);
-      document.getElementById("btnClearOrderFilters").addEventListener("click", () => {
-        document.getElementById("orderKeyword").value = "";
-        document.getElementById("orderPaymentFilter").value = "";
-        renderOrdersTable();
-      });
-
-      document.getElementById("distributorKeyword").addEventListener("input", renderDistributorsTable);
-      document.getElementById("distributorStatusFilter").addEventListener("change", renderDistributorsTable);
-      document.getElementById("btnClearDistributorFilters").addEventListener("click", () => {
-        document.getElementById("distributorKeyword").value = "";
-        document.getElementById("distributorStatusFilter").value = "";
-        renderDistributorsTable();
-      });
-
-      document.getElementById("tenantInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") applyTenant();
-      });
-
-      window.addEventListener("resize", () => {
-        if (window.innerWidth > 1024) closeSidebar();
-      });
+      document.getElementById("btnRefresh").addEventListener("click", refreshAll);
     }
 
     async function boot() {
       getTenantId();
       bindEvents();
-
-      const tab = qs("tab") || "home";
-      switchTab(tab);
+      updateLinks();
       await refreshAll();
     }
 
