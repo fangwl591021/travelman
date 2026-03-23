@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
-<title>TravelKeeper Admin v2</title>
+<title>TravelKeeper Admin v3</title>
 
 <style>
 body {
@@ -10,7 +10,22 @@ body {
   background: #f5f5f5;
   padding: 20px;
 }
+
 h1 { margin-bottom: 10px; }
+
+.kpi {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.kpi-box {
+  flex: 1;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
 
 .section {
   margin-top: 30px;
@@ -20,7 +35,6 @@ button {
   padding: 8px 12px;
   margin: 5px;
   border: none;
-  background: #0A84FF;
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -54,41 +68,53 @@ button {
   padding: 8px;
 }
 
-.link-box {
-  background: #000;
-  color: #0f0;
-  padding: 10px;
-  margin-top: 10px;
+.copy {
+  font-size: 12px;
+  color: #666;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🚀 TravelKeeper Admin v2</h1>
+<h1 id="brandTitle">🚀 TravelKeeper Admin</h1>
 
+<!-- KPI -->
+<div class="kpi">
+  <div class="kpi-box">
+    <div>📦 行程</div>
+    <b id="kpiItinerary">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>💰 訂單</div>
+    <b id="kpiOrders">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>💵 營收</div>
+    <b id="kpiRevenue">0</b>
+  </div>
+  <div class="kpi-box">
+    <div>🤝 分銷</div>
+    <b id="kpiDistributor">1</b>
+  </div>
+</div>
+
+<!-- 行程 -->
 <div class="section">
-<h2>📦 行程</h2>
-<button onclick="saveItinerary()">建立測試行程</button>
-<button onclick="loadItineraries()">刷新列表</button>
+<h2>📦 行程管理</h2>
+<button id="btnMain" onclick="saveItinerary()">建立行程</button>
 <div id="itineraryList"></div>
 </div>
 
+<!-- 訂單 -->
 <div class="section">
-<h2>🤝 分銷</h2>
-<button onclick="generateLink()">產生分銷連結</button>
-<div id="linkBox" class="link-box"></div>
-</div>
-
-<div class="section">
-<h2>💰 訂單</h2>
-<button onclick="createOrder()">建立測試訂單</button>
-<button onclick="loadOrders()">查訂單</button>
+<h2>💰 訂單管理</h2>
+<button id="btnMain2" onclick="loadOrders()">刷新訂單</button>
 <table class="table">
 <thead>
 <tr>
 <th>訂單</th>
-<th>會員</th>
+<th>客戶</th>
 <th>金額</th>
 <th>分銷</th>
 </tr>
@@ -100,6 +126,8 @@ button {
 <script>
 const BASE = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
 const TENANT = "t001";
+
+let PRIMARY = "#0A84FF";
 
 // ===== API =====
 async function get(url) {
@@ -113,6 +141,27 @@ async function post(url, data) {
     body: JSON.stringify(data)
   });
   return await res.json();
+}
+
+// ===== 初始化 =====
+async function init() {
+  await loadTenant();
+  await loadItineraries();
+  await loadOrders();
+}
+
+async function loadTenant() {
+  const res = await get(`/api/public/tenant?tenantId=${TENANT}`);
+  const t = res?.data?.data || {};
+
+  document.getElementById("brandTitle").innerText =
+    "🚀 " + (t.brandName || "TravelKeeper");
+
+  PRIMARY = t.primaryColor || "#0A84FF";
+
+  document.querySelectorAll("button").forEach(btn=>{
+    btn.style.background = PRIMARY;
+  });
 }
 
 // ===== 行程 =====
@@ -134,29 +183,32 @@ async function loadItineraries() {
   const res = await get(`/api/public/itineraries?tenantId=${TENANT}`);
   const list = res?.data?.items || [];
 
-  const html = list.map(it => `
+  document.getElementById("kpiItinerary").innerText = list.length;
+
+  const html = list.map(it => {
+    const link = `${location.origin}?ref=U_DIST_001&it=${it.itineraryId}`;
+
+    return `
     <div class="card">
       <img src="${it.coverImageUrl || 'https://picsum.photos/200'}">
       <div>
         <div><b>${it.title}</b></div>
         <div>💰 ${it.price || 0}</div>
+
         <button onclick="createOrder('${it.itineraryId}')">下單</button>
+
+        <div class="copy">分銷連結：</div>
+        <div class="copy">${link}</div>
       </div>
     </div>
-  `).join("");
+    `;
+  }).join("");
 
   document.getElementById("itineraryList").innerHTML = html;
 }
 
-// ===== 分銷 =====
-function generateLink() {
-  const ref = "U_DIST_001";
-  const link = `${location.origin}?ref=${ref}`;
-  document.getElementById("linkBox").innerText = link;
-}
-
 // ===== 訂單 =====
-async function createOrder(itineraryId="it_001") {
+async function createOrder(itineraryId) {
   await post("/api/admin/create-order", {
     tenantId: TENANT,
     itineraryId,
@@ -172,20 +224,30 @@ async function loadOrders() {
   const res = await get(`/api/member/orders?tenantId=${TENANT}&uid=U_MEMBER_001`);
   const list = res?.data?.items || [];
 
-  const html = list.map(o => `
+  document.getElementById("kpiOrders").innerText = list.length;
+
+  let total = 0;
+
+  const html = list.map(o => {
+    total += Number(o.totalAmount || 0);
+
+    return `
     <tr>
       <td>${o.orderId}</td>
       <td>${o.customerName}</td>
       <td>${o.totalAmount}</td>
       <td>${o.distributorUid || "-"}</td>
     </tr>
-  `).join("");
+    `;
+  }).join("");
+
+  document.getElementById("kpiRevenue").innerText = total;
 
   document.getElementById("orderTable").innerHTML = html;
 }
 
 // init
-loadItineraries();
+init();
 </script>
 
 </body>
