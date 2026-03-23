@@ -2,90 +2,534 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TravelKeeper Trip</title>
+  <style>
+    :root {
+      --primary: #0A84FF;
+      --bg: #f5f7fb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .hero {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+      margin-bottom: 16px;
+    }
+
+    .hero-image {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+      background: #ddd;
+    }
+
+    .hero-body {
+      padding: 16px;
+    }
+
+    .brand {
+      display: inline-block;
+      font-size: 12px;
+      color: white;
+      background: var(--primary);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .meta span {
+      font-size: 13px;
+      padding: 6px 10px;
+      background: #eef2ff;
+      border-radius: 999px;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 8px 0 0;
+    }
+
+    .section {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+      margin-bottom: 16px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.8;
+    }
+
+    .day-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+
+    .cta-bar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cta-grid {
+      max-width: 720px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      color: #fff;
+    }
+
+    .btn-light {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .status-box {
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      background: #0b1220;
+      color: #d1fae5;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      margin: 0 6px 6px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ref-box {
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #ecfeff;
+      color: #155e75;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
-  <h1 id="title">行程載入中...</h1>
-  <p id="price"></p>
-  <button onclick="initLiffLogin()">LINE 登入</button>
-  <button onclick="submitOrder()">立即報名</button>
+  <div class="wrap">
+    <div class="hero">
+      <img id="coverImage" class="hero-image" src="https://picsum.photos/900/500" alt="trip cover" />
+      <div class="hero-body">
+        <div id="brandName" class="brand">TravelKeeper</div>
+        <h1 id="tripTitle" class="title">行程載入中...</h1>
+        <div id="tripSubtitle" class="subtitle">請稍候</div>
+        <div id="tripMeta" class="meta"></div>
+        <div id="tripPrice" class="price">--</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>行程介紹</h2>
+      <div id="tripDescription">載入中...</div>
+    </div>
+
+    <div class="section">
+      <h2>行程亮點</h2>
+      <div id="tripHighlights"></div>
+    </div>
+
+    <div class="section">
+      <h2>每日行程</h2>
+      <div id="tripDays"></div>
+    </div>
+
+    <div class="section">
+      <h2>報名資訊</h2>
+      <div id="refInfo" class="ref-box"></div>
+      <div class="muted" style="margin-top:10px;">
+        進站後會記錄推薦來源，完成 LINE 登入後即可綁定會員與分銷來源。
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>LINE 綁定狀態</h2>
+      <div id="statusBox" class="status-box">尚未初始化</div>
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <div class="cta-grid">
+      <button id="btnLineLogin" class="btn-primary">LINE 登入 / 綁定</button>
+      <button id="btnOrder" class="btn-secondary">立即報名</button>
+    </div>
+  </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     const WORKER_URL = "https://travelkeeper-saas-worker.fangwl591021.workers.dev";
     const TENANT_ID = "t001";
-    const LIFF_ID = "你的LIFF_ID";
-    let currentUserId = "";
+    const LIFF_ID = "請換成你的 LIFF ID";
+    const DEFAULT_ORDER_AMOUNT = 29900;
 
-    (function saveRef() {
-      const url = new URL(location.href);
-      const ref = url.searchParams.get("ref");
-      const it = url.searchParams.get("it");
-      if (ref) localStorage.setItem("tk_ref_uid", ref);
-      if (it) localStorage.setItem("tk_itinerary_id", it);
-    })();
+    let tenantData = null;
+    let tripData = null;
+    let currentProfile = null;
 
-    async function loadTrip() {
-      const url = new URL(location.href);
-      const itineraryId = url.searchParams.get("it") || localStorage.getItem("tk_itinerary_id") || "";
-      const res = await fetch(`${WORKER_URL}/api/public/itinerary?tenantId=${TENANT_ID}&itineraryId=${itineraryId}`);
-      const json = await res.json();
-      const trip = json?.data?.data || {};
-      document.getElementById("title").innerText = trip.title || "找不到行程";
-      document.getElementById("price").innerText = trip.price ? `NT$ ${trip.price}` : "";
+    function qs(name) {
+      return new URL(location.href).searchParams.get(name) || "";
     }
 
-    async function initLiffLogin() {
+    function setStatus(message, append = false) {
+      const el = document.getElementById("statusBox");
+      if (append) {
+        el.textContent += "\n" + message;
+      } else {
+        el.textContent = message;
+      }
+    }
+
+    function saveTrackingParams() {
+      const ref = qs("ref");
+      const itineraryId = qs("it") || qs("itineraryId");
+      const tenantId = qs("tenantId") || TENANT_ID;
+
+      if (ref) localStorage.setItem("tk_ref_uid", ref);
+      if (itineraryId) localStorage.setItem("tk_itinerary_id", itineraryId);
+      if (tenantId) localStorage.setItem("tk_tenant_id", tenantId);
+    }
+
+    function getTrackingState() {
+      return {
+        tenantId: localStorage.getItem("tk_tenant_id") || TENANT_ID,
+        refUid: localStorage.getItem("tk_ref_uid") || "",
+        itineraryId: localStorage.getItem("tk_itinerary_id") || ""
+      };
+    }
+
+    async function apiGet(path) {
+      const res = await fetch(WORKER_URL + path);
+      return await res.json();
+    }
+
+    async function apiPost(path, body) {
+      const res = await fetch(WORKER_URL + path, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+      return await res.json();
+    }
+
+    async function loadTenant() {
+      const tenantId = getTrackingState().tenantId;
+      const res = await apiGet(`/api/public/tenant?tenantId=${encodeURIComponent(tenantId)}`);
+      tenantData = res?.data?.data || null;
+
+      if (tenantData) {
+        document.getElementById("brandName").textContent = tenantData.brandName || "TravelKeeper";
+        if (tenantData.primaryColor) {
+          document.documentElement.style.setProperty("--primary", tenantData.primaryColor);
+        }
+      }
+    }
+
+    function renderTrip(data) {
+      document.getElementById("tripTitle").textContent = data.title || "未命名行程";
+      document.getElementById("tripSubtitle").textContent = data.subtitle || `${data.country || ""} ${data.city || ""}`.trim() || "旅遊行程";
+      document.getElementById("tripPrice").textContent = `NT$ ${Number(data.price || DEFAULT_ORDER_AMOUNT).toLocaleString()}`;
+      document.getElementById("tripDescription").textContent = data.description || "暫無說明";
+      document.getElementById("coverImage").src = data.coverImageUrl || "https://picsum.photos/900/500";
+
+      const meta = [];
+      if (data.country) meta.push(`<span>${data.country}</span>`);
+      if (data.city) meta.push(`<span>${data.city}</span>`);
+      if (data.days) meta.push(`<span>${data.days} 天</span>`);
+      if (data.nights) meta.push(`<span>${data.nights} 夜</span>`);
+      if (data.status) meta.push(`<span>${data.status}</span>`);
+      document.getElementById("tripMeta").innerHTML = meta.join("");
+
+      const highlights = parseMaybeJson(data.highlightsJson, []);
+      document.getElementById("tripHighlights").innerHTML =
+        highlights.length
+          ? highlights.map(item => `<span class="tag">${escapeHtml(String(item))}</span>`).join("")
+          : `<div class="muted">目前尚未設定亮點</div>`;
+
+      const dayByDay = parseMaybeJson(data.dayByDayJson, []);
+      document.getElementById("tripDays").innerHTML =
+        dayByDay.length
+          ? dayByDay.map((item, idx) => `<div class="day-item"><b>Day ${idx + 1}</b>｜${escapeHtml(String(item))}</div>`).join("")
+          : `<div class="muted">目前尚未設定每日行程</div>`;
+    }
+
+    async function loadTrip() {
+      const itineraryId = getTrackingState().itineraryId;
+      const tenantId = getTrackingState().tenantId;
+
+      if (!itineraryId) {
+        document.getElementById("tripTitle").textContent = "缺少 itineraryId";
+        document.getElementById("tripDescription").textContent = "請從帶有 ?it=it_001 的連結進入";
+        return;
+      }
+
+      const res = await apiGet(`/api/public/itinerary?tenantId=${encodeURIComponent(tenantId)}&itineraryId=${encodeURIComponent(itineraryId)}`);
+      tripData = res?.data?.data || null;
+
+      if (!tripData) {
+        document.getElementById("tripTitle").textContent = "找不到行程";
+        document.getElementById("tripDescription").textContent = "請確認 itineraryId 是否存在";
+        return;
+      }
+
+      renderTrip(tripData);
+    }
+
+    function renderReferralInfo() {
+      const { refUid, itineraryId, tenantId } = getTrackingState();
+      document.getElementById("refInfo").innerHTML = `
+        tenantId：<b>${escapeHtml(tenantId || "-")}</b><br>
+        itineraryId：<b>${escapeHtml(itineraryId || "-")}</b><br>
+        refUid：<b>${escapeHtml(refUid || "direct")}</b>
+      `;
+    }
+
+    async function initLiffOnly() {
+      setStatus("初始化 LIFF 中...");
       await liff.init({ liffId: LIFF_ID });
+
       if (!liff.isLoggedIn()) {
+        setStatus("尚未登入 LINE，請點下方按鈕進行登入綁定");
+        return { loggedIn: false };
+      }
+
+      const profile = await liff.getProfile();
+      currentProfile = profile;
+      window.currentLineUserId = profile.userId;
+
+      setStatus([
+        "LINE 已登入",
+        `userId：${profile.userId}`,
+        `displayName：${profile.displayName || ""}`
+      ].join("\n"));
+
+      return { loggedIn: true, profile };
+    }
+
+    async function registerLineMember() {
+      const initResult = await initLiffOnly();
+
+      if (!initResult.loggedIn) {
         liff.login({ redirectUri: location.href });
         return;
       }
-      const profile = await liff.getProfile();
-      currentUserId = profile.userId;
 
-      await fetch(`${WORKER_URL}/api/member/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenantId: TENANT_ID,
-          uid: profile.userId,
-          name: profile.displayName || "",
-          avatarUrl: profile.pictureUrl || "",
-          lineDisplayName: profile.displayName || "",
-          linePictureUrl: profile.pictureUrl || "",
-          sourceChannel: "line_liff",
-          refDistributorUid: localStorage.getItem("tk_ref_uid") || ""
-        })
+      const profile = initResult.profile;
+      const { refUid, itineraryId, tenantId } = getTrackingState();
+
+      setStatus("LINE 已登入，開始寫入會員資料...", true);
+
+      const res = await apiPost("/api/member/register", {
+        tenantId,
+        uid: profile.userId,
+        name: profile.displayName || "",
+        avatarUrl: profile.pictureUrl || "",
+        lineDisplayName: profile.displayName || "",
+        linePictureUrl: profile.pictureUrl || "",
+        role: "member",
+        status: "active",
+        sourceChannel: "line_liff",
+        refDistributorUid: refUid,
+        notes: itineraryId ? `from_itinerary:${itineraryId}` : ""
       });
-      alert("LINE 會員已綁定");
+
+      setStatus("會員綁定結果：\n" + JSON.stringify(res, null, 2), true);
+      return res;
     }
 
     async function submitOrder() {
-      const itineraryId = localStorage.getItem("tk_itinerary_id") || "";
-      const refUid = localStorage.getItem("tk_ref_uid") || "";
+      const { refUid, itineraryId, tenantId } = getTrackingState();
 
-      const res = await fetch(`${WORKER_URL}/api/admin/create-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenantId: TENANT_ID,
-          itineraryId,
-          uid: currentUserId || "",
-          customerName: "LINE會員",
-          totalAmount: 29900,
-          distributorUid: refUid,
-          refUid,
-          attributionSource: "line_referral",
-          sourcePage: location.href
-        })
+      if (!itineraryId) {
+        alert("缺少 itineraryId");
+        return;
+      }
+
+      if (!currentProfile) {
+        const li = await initLiffOnly();
+        if (!li.loggedIn) {
+          alert("請先完成 LINE 登入");
+          return;
+        }
+        currentProfile = li.profile;
+      }
+
+      const amount = Number(tripData?.price || DEFAULT_ORDER_AMOUNT);
+
+      const res = await apiPost("/api/admin/create-order", {
+        tenantId,
+        itineraryId,
+        uid: currentProfile.userId,
+        customerName: currentProfile.displayName || "LINE會員",
+        customerPhone: "",
+        customerEmail: "",
+        travelDate: tripData?.departureDate || "",
+        qty: 1,
+        totalAmount: amount,
+        currency: tripData?.currency || "TWD",
+        paymentMethod: "line_liff_demo",
+        paymentStatus: "unpaid",
+        attributionSource: refUid ? "line_referral" : "direct",
+        distributorUid: refUid,
+        refUid: refUid,
+        sourcePage: location.href,
+        notes: "trip.html 正式版測試下單"
       });
 
-      const json = await res.json();
-      alert(JSON.stringify(json));
+      setStatus("訂單建立結果：\n" + JSON.stringify(res, null, 2), true);
+
+      if (res?.success) {
+        alert("訂單已送出");
+      } else {
+        alert("訂單送出失敗，請看狀態區");
+      }
     }
 
-    loadTrip();
+    function parseMaybeJson(value, fallback) {
+      try {
+        if (!value) return fallback;
+        if (Array.isArray(value)) return value;
+        if (typeof value === "object") return value;
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document.getElementById("btnLineLogin").addEventListener("click", async () => {
+      try {
+        await registerLineMember();
+      } catch (err) {
+        setStatus("LINE 綁定失敗：\n" + (err.message || String(err)), true);
+      }
+    });
+
+    document.getElementById("btnOrder").addEventListener("click", async () => {
+      try {
+        await submitOrder();
+      } catch (err) {
+        setStatus("建立訂單失敗：\n" + (err.message || String(err)), true);
+      }
+    });
+
+    (async function boot() {
+      try {
+        saveTrackingParams();
+        renderReferralInfo();
+        await loadTenant();
+        await loadTrip();
+        await initLiffOnly();
+      } catch (err) {
+        setStatus("初始化失敗：\n" + (err.message || String(err)));
+      }
+    })();
   </script>
 </body>
 </html>
