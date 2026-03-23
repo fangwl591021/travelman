@@ -453,13 +453,15 @@
                   <th>訂單號</th>
                   <th>客戶</th>
                   <th>金額</th>
+                  <th>佣金比例</th>
+                  <th>佣金金額</th>
                   <th>歸因來源</th>
                   <th>行程 ID</th>
                   <th>時間</th>
                 </tr>
               </thead>
               <tbody id="orderTable">
-                <tr><td colspan="6" class="empty">載入中...</td></tr>
+                <tr><td colspan="8" class="empty">載入中...</td></tr>
               </tbody>
             </table>
           </div>
@@ -614,7 +616,7 @@
         document.getElementById("kpiRevenue").textContent = "0";
         document.getElementById("kpiCommission").textContent = "0";
         document.getElementById("kpiUsers").textContent = "0";
-        document.getElementById("orderTable").innerHTML = "<tr><td colspan='6' class='empty'>尚未登入</td></tr>";
+        document.getElementById("orderTable").innerHTML = "<tr><td colspan='8' class='empty'>尚未登入</td></tr>";
         return;
       }
 
@@ -639,12 +641,14 @@
             <td>${escapeHtml(o.orderId)}</td>
             <td>${escapeHtml(o.customerName || "")}</td>
             <td>${formatNumber(o.totalAmount || 0)}</td>
+            <td>${escapeHtml(o.commissionRate || 0)}%</td>
+            <td>${formatNumber(o.commissionAmount || 0)}</td>
             <td>${escapeHtml(o.attributionSource || "-")}</td>
             <td>${escapeHtml(o.itineraryId || "")}</td>
             <td>${escapeHtml(o.createdAt || o.orderDate || "")}</td>
           </tr>
         `).join("")
-        : "<tr><td colspan='6' class='empty'>目前尚無訂單</td></tr>";
+        : "<tr><td colspan='8' class='empty'>目前尚無訂單</td></tr>";
 
       document.getElementById("orderTable").innerHTML = orderHtml;
     }
