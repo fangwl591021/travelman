@@ -3,25 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Travelman Admin</title>
+  <title>Travelman 後台上稿</title>
   <style>
     :root {
       --primary: #06c755;
       --primary-dark: #05a847;
-      --primary-soft: #e9fff2;
-      --bg: #f4f7fb;
+      --bg: #f6f8fb;
       --panel: #ffffff;
       --border: #dfe3e8;
       --text: #1f2937;
       --muted: #6b7280;
       --dark: #111827;
-      --danger: #dc2626;
-      --warn: #d97706;
       --info: #2563eb;
-      --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
       --radius: 18px;
-      --header-bg: rgba(255,255,255,0.92);
     }
 
     * { box-sizing: border-box; }
@@ -34,27 +31,20 @@
       color: var(--text);
     }
 
-    button, input, select, textarea {
+    button, input, textarea, select {
       font: inherit;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
     }
 
     .app {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 50;
-      background: var(--header-bg);
-      backdrop-filter: blur(12px);
+      z-index: 20;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
       padding: 12px 16px;
       display: flex;
@@ -64,7 +54,7 @@
       flex-wrap: wrap;
     }
 
-    .brand-badge {
+    .brand {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -77,23 +67,22 @@
       margin-bottom: 8px;
     }
 
-    .topbar-title {
+    .title {
       font-size: 24px;
       font-weight: 800;
       line-height: 1.3;
     }
 
-    .topbar-sub {
-      color: var(--muted);
+    .sub {
       font-size: 13px;
+      color: var(--muted);
       margin-top: 4px;
     }
 
-    .topbar-actions {
+    .top-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      align-items: center;
     }
 
     .btn {
@@ -105,19 +94,16 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 700;
-      transition: all 0.18s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
 
     .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      filter: brightness(.98);
     }
 
     .btn-primary {
       background: var(--primary);
-      color: #fff;
       border-color: var(--primary);
+      color: #fff;
     }
 
     .btn-primary:hover {
@@ -126,51 +112,37 @@
 
     .btn-dark {
       background: var(--dark);
-      color: #fff;
       border-color: var(--dark);
-    }
-
-    .btn-danger {
-      background: #fff;
-      color: var(--danger);
-      border-color: #fecaca;
+      color: #fff;
     }
 
     .btn-info {
       background: #eff6ff;
-      color: #1d4ed8;
       border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .btn-warn {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #9a3412;
     }
 
     .wrap {
       width: 100%;
-      max-width: 1560px;
+      max-width: 1180px;
       margin: 0 auto;
       padding: 18px 16px 28px;
       display: grid;
       gap: 16px;
     }
 
-    .grid-main {
-      display: grid;
-      grid-template-columns: 420px minmax(0, 1fr);
-      gap: 16px;
-      align-items: start;
-    }
-
-    .left-stack,
-    .right-stack {
-      display: grid;
-      gap: 16px;
-      align-items: start;
-    }
-
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      overflow: hidden;
       box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
     .panel-head {
@@ -189,6 +161,51 @@
       padding: 16px;
     }
 
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .step-no {
+      display: inline-flex;
+      width: 32px;
+      height: 32px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: #ecfdf5;
+      color: var(--primary-dark);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
     .field-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -200,6 +217,10 @@
       gap: 7px;
     }
 
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
     .field label {
       font-size: 12px;
       color: var(--muted);
@@ -207,54 +228,47 @@
     }
 
     .field input,
-    .field select,
-    .field textarea {
+    .field textarea,
+    .field select {
       width: 100%;
-      padding: 11px 12px;
+      padding: 12px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: #fff;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.18s ease;
     }
 
     .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
+    .field textarea:focus,
+    .field select:focus {
       border-color: var(--primary);
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
     }
 
     .upload-box {
       border: 2px dashed #cbd5e1;
       border-radius: 18px;
-      padding: 20px;
+      padding: 16px;
       background: #f8fafc;
       display: grid;
-      gap: 14px;
+      gap: 12px;
     }
 
     .upload-zone {
-      min-height: 220px;
+      min-height: 240px;
       border: 2px dashed #cbd5e1;
-      border-radius: 18px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
-      position: relative;
       overflow: hidden;
     }
 
     .upload-zone.has-image {
       border-style: solid;
-      background: #fff;
     }
 
     .upload-hint {
@@ -271,80 +285,11 @@
       border-radius: 12px;
     }
 
-    .status-box {
-      background: #0b1220;
-      color: #d1fae5;
-      border-radius: 14px;
-      padding: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 13px;
-      line-height: 1.75;
-      font-family: Consolas, Monaco, monospace;
-      min-height: 120px;
-      max-height: 260px;
-      overflow: auto;
-    }
-
-    .notice-box {
-      background: #eff6ff;
-      color: #1e40af;
-      border-radius: 14px;
-      padding: 14px;
-      border: 1px solid #bfdbfe;
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
-    .warn-box {
-      background: #fff7ed;
-      color: #9a3412;
-      border-radius: 14px;
-      padding: 14px;
-      border: 1px solid #fed7aa;
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f3f4f6;
-      color: #111827;
-      padding: 7px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid #e5e7eb;
-    }
-
-    .json-box {
-      width: 100%;
-      min-height: 360px;
-      background: #0f172a;
-      color: #d1fae5;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 14px;
-      white-space: pre-wrap;
-      overflow: auto;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
     .preview-card {
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: #fff;
       overflow: hidden;
+      background: #fff;
     }
 
     .preview-cover {
@@ -362,7 +307,7 @@
     }
 
     .preview-title {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
       line-height: 1.4;
       word-break: break-word;
@@ -374,29 +319,73 @@
       gap: 8px;
     }
 
-    .meta-pill {
+    .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       background: #eef2ff;
       color: #334155;
-      font-size: 12px;
       padding: 6px 10px;
       border-radius: 999px;
+      font-size: 12px;
       font-weight: 700;
     }
 
     .preview-price {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 800;
       color: var(--primary);
-      line-height: 1.1;
     }
 
-    .tiny {
+    .preview-desc {
       color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      background: #f3f4f6;
+      color: #111827;
+      border: 1px solid #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 999px;
       font-size: 12px;
-      line-height: 1.7;
+      font-weight: 700;
+    }
+
+    .status-box {
+      background: #0b1220;
+      color: #d1fae5;
+      border-radius: 14px;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.75;
+      font-family: Consolas, Monaco, monospace;
+      min-height: 100px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .notice {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.8;
     }
 
     .actions {
@@ -405,43 +394,50 @@
       flex-wrap: wrap;
     }
 
-    .section-gap {
-      margin-top: 16px;
+    .collapse {
+      display: none;
     }
 
-    .small-pill {
-      display: inline-flex;
-      padding: 4px 10px;
-      border-radius: 999px;
+    .collapse.open {
+      display: block;
+    }
+
+    .json-box {
+      width: 100%;
+      min-height: 240px;
+      background: #0f172a;
+      color: #d1fae5;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 14px;
+      white-space: pre-wrap;
+      overflow: auto;
+      font-family: Consolas, Monaco, monospace;
       font-size: 12px;
-      font-weight: 700;
-      background: #f3f4f6;
-      color: #374151;
-      border: 1px solid #e5e7eb;
+      line-height: 1.7;
     }
 
-    @media (max-width: 1180px) {
-      .grid-main,
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 980px) {
+      .steps,
+      .main-grid,
       .field-grid {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 768px) {
-      .topbar {
-        align-items: flex-start;
-      }
-
-      .topbar-actions {
+      .top-actions {
         width: 100%;
       }
 
-      .topbar-actions .btn {
+      .top-actions .btn {
         flex: 1 1 100%;
-      }
-
-      .wrap {
-        padding: 14px;
       }
     }
   </style>
@@ -450,268 +446,279 @@
   <div class="app">
     <div class="topbar">
       <div>
-        <div class="brand-badge">Travelman Admin</div>
-        <div class="topbar-title">行程智能上稿系統</div>
-        <div class="topbar-sub">上傳旅行海報 → AI 解析 → 人工校正 → 儲存 itinerary</div>
+        <div class="brand">Travelman Admin</div>
+        <div class="title">極簡上稿模式</div>
+        <div class="sub">旅遊業者只需要：上傳海報 → 確認重點 → 儲存 / 發布</div>
       </div>
-      <div class="topbar-actions">
-        <a class="btn" href="./index.html" target="_blank">回主控台</a>
-        <a class="btn" href="./trip.html" target="_blank">開成交頁</a>
-        <button id="btnOpenTripPreview" class="btn btn-info" type="button">預覽目前行程</button>
-        <button id="btnClearAll" class="btn btn-danger" type="button">清空</button>
-        <button id="btnCopyJson" class="btn btn-info" type="button">複製 JSON</button>
-        <button id="btnSave" class="btn btn-dark" type="button">儲存行程</button>
+      <div class="top-actions">
+        <a class="btn" href="./index.html" target="_blank">回首頁</a>
+        <button id="btnOpenTripPreview" class="btn btn-info" type="button">預覽行程頁</button>
+        <button id="btnClearAll" class="btn btn-warn" type="button">清空</button>
       </div>
     </div>
 
     <div class="wrap">
-      <div class="grid-main">
-        <div class="left-stack">
-          <div class="panel">
-            <div class="panel-head">1. 上傳與 API 設定</div>
-            <div class="panel-body">
-              <div class="field-grid">
-                <div class="field">
-                  <label>Worker Base URL</label>
-                  <input id="workerUrl" type="text" value="https://travelkeeper-saas-worker.fangwl591021.workers.dev" />
-                </div>
-                <div class="field">
-                  <label>tenantId</label>
-                  <input id="tenantId" type="text" />
-                </div>
-                <div class="field">
-                  <label>解析 Endpoint</label>
-                  <input id="parseEndpoint" type="text" value="/api/ai/upload-dm" />
-                </div>
-                <div class="field">
-                  <label>儲存 Endpoint</label>
-                  <input id="saveEndpoint" type="text" value="/api/admin/save-itinerary" />
-                </div>
-                <div class="field">
-                  <label>createdBy</label>
-                  <input id="createdBy" type="text" value="tony" />
-                </div>
-                <div class="field">
-                  <label>sourceType</label>
-                  <input id="sourceType" type="text" value="dm_image" />
-                </div>
-                <div class="field full">
-                  <label>海報圖片檔</label>
-                  <input id="posterFile" type="file" accept="image/*" />
-                </div>
-              </div>
-
-              <div class="upload-box section-gap">
-                <div id="uploadZone" class="upload-zone">
-                  <div class="upload-hint">
-                    上傳旅行海報 / DM 後，系統會呼叫 AI 解析。<br>
-                    建議圖片內容包含：標題、價格、天數、地區、亮點、行程內容。
-                  </div>
-                </div>
-
-                <div class="actions">
-                  <button id="btnParse" class="btn btn-primary" type="button">開始解析</button>
-                  <button id="btnUsePosterAsCover" class="btn" type="button">用海報當封面</button>
-                </div>
-
-                <div class="notice-box">
-                  目前 admin.html 流程：
-                  <br>• /api/ai/upload-dm：AI 解析＋建立 draft
-                  <br>• /api/admin/save-itinerary：正式儲存 itinerary
-                </div>
-              </div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-no">1</div>
+              <div class="step-title">上傳海報</div>
+              <div class="step-desc">只要上傳一張旅行 DM，系統先幫你抓內容。</div>
+            </div>
+            <div class="step">
+              <div class="step-no">2</div>
+              <div class="step-title">確認重點欄位</div>
+              <div class="step-desc">只看標題、價格、天數、日期、封面、簡介。</div>
+            </div>
+            <div class="step">
+              <div class="step-no">3</div>
+              <div class="step-title">儲存或發布</div>
+              <div class="step-desc">確認沒問題後，直接存成草稿或正式上架。</div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="panel">
-            <div class="panel-head">解析 / 儲存狀態</div>
-            <div class="panel-body">
-              <div id="statusBox" class="status-box">尚未開始</div>
+      <div class="main-grid">
+        <div class="panel">
+          <div class="panel-head">第一步：上傳海報</div>
+          <div class="panel-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>Worker Base URL</label>
+                <input id="workerUrl" type="text" value="https://travelkeeper-saas-worker.fangwl591021.workers.dev" />
+              </div>
+              <div class="field">
+                <label>tenantId</label>
+                <input id="tenantId" type="text" />
+              </div>
+              <div class="field full">
+                <label>海報圖片檔</label>
+                <input id="posterFile" type="file" accept="image/*" />
+              </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <div class="panel-head">操作建議</div>
-            <div class="panel-body">
-              <div class="tag-list">
-                <span class="tag">先解析</span>
-                <span class="tag">再人工校正</span>
-                <span class="tag">最後儲存 itinerary</span>
-                <span class="tag">必要時先複製 JSON</span>
+            <div class="upload-box" style="margin-top:16px;">
+              <div id="uploadZone" class="upload-zone">
+                <div class="upload-hint">
+                  請上傳旅遊海報 / DM。<br>
+                  系統會自動解析標題、價格、天數、亮點等資訊。
+                </div>
               </div>
 
-              <div class="notice-box section-gap">
-                現在右側會先顯示預覽，再顯示欄位校正區，
-                所以操作順序會更接近實際上稿流程。
+              <div class="actions">
+                <button id="btnParse" class="btn btn-primary" type="button">開始解析</button>
+                <button id="btnUsePosterAsCover" class="btn" type="button">用海報當封面</button>
+              </div>
+
+              <div class="notice">
+                系統目前會呼叫：
+                <br>• <b>/api/ai/upload-dm</b>：解析海報並建立草稿
+                <br>• <b>/api/admin/save-itinerary</b>：儲存行程
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <div class="field">
+                <label>解析 / 儲存狀態</label>
+                <div id="statusBox" class="status-box">尚未開始</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="right-stack">
-          <div class="panel">
-            <div class="panel-head">
-              <span>2. 行程預覽</span>
-              <span id="draftBadge" class="small-pill">draftId：--</span>
-            </div>
-            <div class="panel-body">
-              <div class="preview-card">
-                <img id="previewCover" class="preview-cover" src="https://picsum.photos/1000/600" alt="cover" />
-                <div class="preview-body">
-                  <div id="previewTitle" class="preview-title">尚未解析</div>
-                  <div id="previewMeta" class="preview-meta"></div>
-                  <div id="previewPrice" class="preview-price">--</div>
-                  <div class="tiny" id="previewDesc">請先上傳海報並解析，或手動輸入欄位。</div>
-                  <div id="previewHighlights" class="tag-list"></div>
-                </div>
+        <div class="panel">
+          <div class="panel-head">
+            <span>第二步：確認內容</span>
+            <span id="draftBadge" class="pill">draftId：--</span>
+          </div>
+          <div class="panel-body">
+            <div class="preview-card">
+              <img id="previewCover" class="preview-cover" src="https://picsum.photos/1000/600" alt="cover" />
+              <div class="preview-body">
+                <div id="previewTitle" class="preview-title">尚未解析</div>
+                <div id="previewMeta" class="preview-meta"></div>
+                <div id="previewPrice" class="preview-price">--</div>
+                <div id="previewDesc" class="preview-desc">請先上傳海報並解析，或手動輸入下方欄位。</div>
+                <div id="previewHighlights" class="tag-list"></div>
               </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <div class="panel-head">3. 解析後欄位校正</div>
-            <div class="panel-body">
-              <div class="field-grid">
-                <div class="field">
-                  <label>itineraryId</label>
-                  <input id="itineraryId" type="text" />
-                </div>
-                <div class="field">
-                  <label>status</label>
-                  <select id="status">
-                    <option value="draft">draft</option>
-                    <option value="published">published</option>
-                    <option value="inactive">inactive</option>
-                  </select>
-                </div>
+            <div class="field-grid" style="margin-top:16px;">
+              <div class="field full">
+                <label>標題</label>
+                <input id="title" type="text" />
+              </div>
 
-                <div class="field full">
-                  <label>title</label>
-                  <input id="title" type="text" />
-                </div>
+              <div class="field">
+                <label>價格</label>
+                <input id="price" type="number" min="0" />
+              </div>
 
-                <div class="field full">
-                  <label>subtitle</label>
-                  <input id="subtitle" type="text" />
-                </div>
+              <div class="field">
+                <label>幣別</label>
+                <input id="currency" type="text" value="TWD" />
+              </div>
 
-                <div class="field">
-                  <label>region</label>
-                  <input id="region" type="text" />
-                </div>
-                <div class="field">
-                  <label>productType</label>
-                  <input id="productType" type="text" value="group_tour" />
-                </div>
+              <div class="field">
+                <label>天數</label>
+                <input id="days" type="number" min="1" />
+              </div>
 
-                <div class="field">
-                  <label>country</label>
-                  <input id="country" type="text" />
-                </div>
-                <div class="field">
-                  <label>city</label>
-                  <input id="city" type="text" />
-                </div>
+              <div class="field">
+                <label>出發日期</label>
+                <input id="departureDate" type="date" />
+              </div>
 
-                <div class="field">
-                  <label>days</label>
-                  <input id="days" type="number" min="1" />
-                </div>
-                <div class="field">
-                  <label>nights</label>
-                  <input id="nights" type="number" min="0" />
-                </div>
+              <div class="field full">
+                <label>封面圖片網址</label>
+                <input id="coverImageUrl" type="text" />
+              </div>
 
-                <div class="field">
-                  <label>price</label>
-                  <input id="price" type="number" min="0" />
-                </div>
-                <div class="field">
-                  <label>currency</label>
-                  <input id="currency" type="text" value="TWD" />
-                </div>
-
-                <div class="field">
-                  <label>departureDate</label>
-                  <input id="departureDate" type="date" />
-                </div>
-                <div class="field">
-                  <label>returnDate</label>
-                  <input id="returnDate" type="date" />
-                </div>
-
-                <div class="field full">
-                  <label>coverImageUrl</label>
-                  <input id="coverImageUrl" type="text" />
-                </div>
-
-                <div class="field full">
-                  <label>description</label>
-                  <textarea id="description" rows="8"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>highlightsJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="highlightsInput" rows="5"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>dayByDayJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="dayByDayInput" rows="7"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>includesJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="includesInput" rows="4"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>excludesJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="excludesInput" rows="4"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>noticeJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="noticeInput" rows="4"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>faqJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="faqInput" rows="4"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>tagsJson（可貼 JSON 或每行一條）</label>
-                  <textarea id="tagsInput" rows="4"></textarea>
-                </div>
-
-                <div class="field full">
-                  <label>galleryJson（JSON）</label>
-                  <textarea id="galleryInput" rows="4">[]</textarea>
-                </div>
-
-                <div class="field full">
-                  <label>promoConfigJson（JSON）</label>
-                  <textarea id="promoConfigInput" rows="4">{}</textarea>
-                </div>
-
-                <div class="field">
-                  <label>draftId</label>
-                  <input id="draftId" type="text" />
-                </div>
-                <div class="field">
-                  <label>updatedBy</label>
-                  <input id="updatedBy" type="text" value="tony" />
-                </div>
+              <div class="field full">
+                <label>行程簡介</label>
+                <textarea id="description" rows="6"></textarea>
               </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <div class="panel-head">4. Payload 預覽</div>
-            <div class="panel-body">
-              <pre id="jsonPreview" class="json-box">{}</pre>
+            <div class="actions" style="margin-top:16px;">
+              <button id="btnSaveDraft" class="btn btn-dark" type="button">儲存草稿</button>
+              <button id="btnPublish" class="btn btn-primary" type="button">正式發布</button>
+              <button id="btnToggleAdvanced" class="btn btn-info" type="button">顯示進階欄位</button>
+              <button id="btnCopyJson" class="btn" type="button">複製 JSON</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="advancedPanel" class="panel collapse">
+        <div class="panel-head">進階欄位</div>
+        <div class="panel-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>itineraryId</label>
+              <input id="itineraryId" type="text" />
+            </div>
+
+            <div class="field">
+              <label>status</label>
+              <select id="status">
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+                <option value="inactive">inactive</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label>subtitle</label>
+              <input id="subtitle" type="text" />
+            </div>
+
+            <div class="field">
+              <label>region</label>
+              <input id="region" type="text" />
+            </div>
+
+            <div class="field">
+              <label>productType</label>
+              <input id="productType" type="text" value="group_tour" />
+            </div>
+
+            <div class="field">
+              <label>country</label>
+              <input id="country" type="text" />
+            </div>
+
+            <div class="field">
+              <label>city</label>
+              <input id="city" type="text" />
+            </div>
+
+            <div class="field">
+              <label>nights</label>
+              <input id="nights" type="number" min="0" />
+            </div>
+
+            <div class="field">
+              <label>returnDate</label>
+              <input id="returnDate" type="date" />
+            </div>
+
+            <div class="field full">
+              <label>highlightsJson（可貼 JSON 或每行一條）</label>
+              <textarea id="highlightsInput" rows="4"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>dayByDayJson（可貼 JSON 或每行一條）</label>
+              <textarea id="dayByDayInput" rows="6"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>includesJson</label>
+              <textarea id="includesInput" rows="3"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>excludesJson</label>
+              <textarea id="excludesInput" rows="3"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>noticeJson</label>
+              <textarea id="noticeInput" rows="3"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>faqJson</label>
+              <textarea id="faqInput" rows="3"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>tagsJson</label>
+              <textarea id="tagsInput" rows="3"></textarea>
+            </div>
+
+            <div class="field full">
+              <label>galleryJson（JSON）</label>
+              <textarea id="galleryInput" rows="3">[]</textarea>
+            </div>
+
+            <div class="field full">
+              <label>promoConfigJson（JSON）</label>
+              <textarea id="promoConfigInput" rows="3">{}</textarea>
+            </div>
+
+            <div class="field">
+              <label>draftId</label>
+              <input id="draftId" type="text" />
+            </div>
+
+            <div class="field">
+              <label>updatedBy</label>
+              <input id="updatedBy" type="text" value="tony" />
+            </div>
+
+            <div class="field">
+              <label>createdBy</label>
+              <input id="createdBy" type="text" value="tony" />
+            </div>
+
+            <div class="field">
+              <label>sourceType</label>
+              <input id="sourceType" type="text" value="dm_image" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="jsonPanel" class="panel collapse">
+        <div class="panel-head">Payload 預覽</div>
+        <div class="panel-body">
+          <pre id="jsonPreview" class="json-box">{}</pre>
+          <div class="tiny" style="margin-top:10px;">
+            這是送到 `/api/admin/save-itinerary` 的資料。
           </div>
         </div>
       </div>
@@ -731,15 +738,6 @@
       const line = stamp + " " + message;
       el.textContent = append ? (el.textContent + "\n" + line) : line;
       el.scrollTop = el.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
     }
 
     function parseMaybeJson(value, fallback) {
@@ -767,6 +765,34 @@
         }
       }
       return "";
+    }
+
+    function normalizeArrayInput(raw) {
+      if (Array.isArray(raw)) return raw.map(v => String(v).trim()).filter(Boolean);
+
+      if (typeof raw === "string") {
+        const parsed = parseMaybeJson(raw, null);
+        if (Array.isArray(parsed)) {
+          return parsed.map(v => {
+            if (typeof v === "string") return v.trim();
+            if (v && typeof v === "object") {
+              return String(v.title || v.name || v.label || v.content || v.question || "").trim();
+            }
+            return "";
+          }).filter(Boolean);
+        }
+        return linesToArray(raw);
+      }
+
+      return [];
+    }
+
+    function safeJsonValue(text, fallbackValue) {
+      const trimmed = String(text || "").trim();
+      if (!trimmed) return fallbackValue;
+      const parsed = parseMaybeJson(trimmed, "__PARSE_ERROR__");
+      if (parsed === "__PARSE_ERROR__") return fallbackValue;
+      return parsed;
     }
 
     function inferCountry(text) {
@@ -802,47 +828,11 @@
         pad(d.getSeconds());
     }
 
-    function normalizeArrayInput(raw) {
-      if (Array.isArray(raw)) return raw.map(v => String(v).trim()).filter(Boolean);
-
-      if (typeof raw === "string") {
-        const parsed = parseMaybeJson(raw, null);
-        if (Array.isArray(parsed)) {
-          return parsed.map(v => {
-            if (typeof v === "string") return v.trim();
-            if (v && typeof v === "object") {
-              return String(v.title || v.name || v.label || v.content || v.question || "").trim();
-            }
-            return "";
-          }).filter(Boolean);
-        }
-        return linesToArray(raw);
-      }
-
-      return [];
-    }
-
     function getTenantId() {
       return document.getElementById("tenantId").value.trim();
     }
 
-    function safeJsonValue(text, fallbackValue) {
-      const trimmed = String(text || "").trim();
-      if (!trimmed) return fallbackValue;
-      const parsed = parseMaybeJson(trimmed, "__PARSE_ERROR__");
-      if (parsed === "__PARSE_ERROR__") return fallbackValue;
-      return parsed;
-    }
-
     function buildPayloadFromForm() {
-      const highlights = normalizeArrayInput(document.getElementById("highlightsInput").value);
-      const dayByDay = normalizeArrayInput(document.getElementById("dayByDayInput").value);
-      const includesJson = normalizeArrayInput(document.getElementById("includesInput").value);
-      const excludesJson = normalizeArrayInput(document.getElementById("excludesInput").value);
-      const noticeJson = normalizeArrayInput(document.getElementById("noticeInput").value);
-      const faqJson = normalizeArrayInput(document.getElementById("faqInput").value);
-      const tagsJson = normalizeArrayInput(document.getElementById("tagsInput").value);
-
       return {
         tenantId: getTenantId(),
         itineraryId: document.getElementById("itineraryId").value.trim(),
@@ -861,14 +851,14 @@
         productType: document.getElementById("productType").value.trim() || "group_tour",
         coverImageUrl: document.getElementById("coverImageUrl").value.trim(),
         galleryJson: safeJsonValue(document.getElementById("galleryInput").value, []),
-        highlightsJson: highlights,
+        highlightsJson: normalizeArrayInput(document.getElementById("highlightsInput").value),
         description: document.getElementById("description").value.trim(),
-        dayByDayJson: dayByDay,
-        includesJson: includesJson,
-        excludesJson: excludesJson,
-        noticeJson: noticeJson,
-        faqJson: faqJson,
-        tagsJson: tagsJson,
+        dayByDayJson: normalizeArrayInput(document.getElementById("dayByDayInput").value),
+        includesJson: normalizeArrayInput(document.getElementById("includesInput").value),
+        excludesJson: normalizeArrayInput(document.getElementById("excludesInput").value),
+        noticeJson: normalizeArrayInput(document.getElementById("noticeInput").value),
+        faqJson: normalizeArrayInput(document.getElementById("faqInput").value),
+        tagsJson: normalizeArrayInput(document.getElementById("tagsInput").value),
         promoConfigJson: safeJsonValue(document.getElementById("promoConfigInput").value, {}),
         draftId: document.getElementById("draftId").value.trim(),
         createdBy: document.getElementById("createdBy").value.trim(),
@@ -879,10 +869,10 @@
     function refreshJsonPreview() {
       const payload = buildPayloadFromForm();
       document.getElementById("jsonPreview").textContent = JSON.stringify(payload, null, 2);
-      refreshCardPreview(payload);
+      refreshPreview(payload);
     }
 
-    function refreshCardPreview(payload) {
+    function refreshPreview(payload) {
       document.getElementById("previewCover").src =
         payload.coverImageUrl || state.posterObjectUrl || "https://picsum.photos/1000/600";
 
@@ -897,22 +887,21 @@
       if (payload.departureDate) meta.push("✈️ " + payload.departureDate);
 
       document.getElementById("previewMeta").innerHTML = meta.length
-        ? meta.map(item => `<span class="meta-pill">${escapeHtml(item)}</span>`).join("")
+        ? meta.map(item => `<span class="pill">${item}</span>`).join("")
         : "";
 
       document.getElementById("previewPrice").textContent =
         payload.price ? ((payload.currency || "TWD") + " " + Number(payload.price).toLocaleString()) : "--";
 
       document.getElementById("previewDesc").textContent =
-        payload.description || "請先上傳海報並解析，或手動輸入欄位。";
+        payload.description || "請先上傳海報並解析，或手動輸入內容。";
 
       const highlights = Array.isArray(payload.highlightsJson) ? payload.highlightsJson : [];
       document.getElementById("previewHighlights").innerHTML = highlights.length
-        ? highlights.map(item => `<span class="tag">${escapeHtml(item)}</span>`).join("")
+        ? highlights.map(item => `<span class="tag">${item}</span>`).join("")
         : "";
 
-      document.getElementById("draftBadge").textContent =
-        "draftId：" + (payload.draftId || "--");
+      document.getElementById("draftBadge").textContent = "draftId：" + (payload.draftId || "--");
     }
 
     function fillForm(payload) {
@@ -962,7 +951,7 @@
         parsed.city
       ].join(" ");
 
-      const payload = {
+      return {
         itineraryId: generateItineraryId(),
         title: valueOf(parsed.title, ""),
         subtitle: valueOf(parsed.subtitle, ""),
@@ -992,8 +981,6 @@
         createdBy: document.getElementById("createdBy").value.trim(),
         updatedBy: document.getElementById("updatedBy").value.trim()
       };
-
-      return payload;
     }
 
     async function fileToBase64(file) {
@@ -1013,7 +1000,6 @@
       }
 
       const workerUrl = document.getElementById("workerUrl").value.trim().replace(/\/$/, "");
-      const endpoint = document.getElementById("parseEndpoint").value.trim();
       const tenantId = getTenantId();
 
       if (!tenantId) {
@@ -1044,11 +1030,9 @@
       };
 
       try {
-        const res = await fetch(workerUrl + endpoint, {
+        const res = await fetch(workerUrl + "/api/ai/upload-dm", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
 
@@ -1065,9 +1049,9 @@
       }
     }
 
-    async function savePayload() {
+    async function savePayload(statusValue) {
       const workerUrl = document.getElementById("workerUrl").value.trim().replace(/\/$/, "");
-      const endpoint = document.getElementById("saveEndpoint").value.trim();
+      document.getElementById("status").value = statusValue;
       const payload = buildPayloadFromForm();
 
       if (!payload.tenantId) {
@@ -1092,11 +1076,9 @@
       logStatus("開始送出 save-itinerary payload...", true);
 
       try {
-        const res = await fetch(workerUrl + endpoint, {
+        const res = await fetch(workerUrl + "/api/admin/save-itinerary", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
@@ -1107,8 +1089,26 @@
       }
     }
 
+    function toggleAdvanced() {
+      const advanced = document.getElementById("advancedPanel");
+      const jsonPanel = document.getElementById("jsonPanel");
+      const btn = document.getElementById("btnToggleAdvanced");
+      const open = advanced.classList.contains("open");
+
+      if (open) {
+        advanced.classList.remove("open");
+        jsonPanel.classList.remove("open");
+        btn.textContent = "顯示進階欄位";
+      } else {
+        advanced.classList.add("open");
+        jsonPanel.classList.add("open");
+        btn.textContent = "隱藏進階欄位";
+      }
+    }
+
     function copyJson() {
       const text = document.getElementById("jsonPreview").textContent;
+
       if (!navigator.clipboard) {
         const ta = document.createElement("textarea");
         ta.value = text;
@@ -1146,8 +1146,8 @@
       document.getElementById("uploadZone").classList.remove("has-image");
       document.getElementById("uploadZone").innerHTML = `
         <div class="upload-hint">
-          上傳旅行海報 / DM 後，系統會呼叫 AI 解析。<br>
-          建議圖片內容包含：標題、價格、天數、地區、亮點、行程內容。
+          請上傳旅遊海報 / DM。<br>
+          系統會自動解析標題、價格、天數、亮點等資訊。
         </div>
       `;
 
@@ -1208,7 +1208,7 @@
       window.open(url, "_blank");
     }
 
-    function bindFormPreview() {
+    function bindPreviewRefresh() {
       const ids = [
         "tenantId","itineraryId","title","subtitle","region","country","city","days","nights",
         "price","currency","departureDate","returnDate","status","productType","coverImageUrl",
@@ -1233,17 +1233,19 @@
       document.getElementById("tenantId").value = tenantId;
 
       document.getElementById("btnParse").addEventListener("click", parsePoster);
-      document.getElementById("btnSave").addEventListener("click", savePayload);
-      document.getElementById("btnCopyJson").addEventListener("click", copyJson);
-      document.getElementById("btnClearAll").addEventListener("click", clearAll);
       document.getElementById("btnUsePosterAsCover").addEventListener("click", usePosterAsCover);
+      document.getElementById("btnSaveDraft").addEventListener("click", () => savePayload("draft"));
+      document.getElementById("btnPublish").addEventListener("click", () => savePayload("published"));
+      document.getElementById("btnToggleAdvanced").addEventListener("click", toggleAdvanced);
+      document.getElementById("btnCopyJson").addEventListener("click", copyJson);
       document.getElementById("btnOpenTripPreview").addEventListener("click", openTripPreview);
+      document.getElementById("btnClearAll").addEventListener("click", clearAll);
 
-      bindFormPreview();
+      bindPreviewRefresh();
       clearAll();
       document.getElementById("tenantId").value = tenantId;
       refreshJsonPreview();
-      logStatus("admin.html 初始化完成", true);
+      logStatus("極簡版 admin.html 初始化完成", true);
     }
 
     boot();
