@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅遊管家 - 舊版型新資料 (v4.0)</title>
+  <title>旅遊管家 - 平台級智能業務系統 (v4.0)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -69,7 +69,7 @@
 
     const WORKER_URL  = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
     const LIFF_ID     = '2009367829-BDZCGti8';
-    const ENDPOINT_URL= 'https://fangwl591021.github.io/travelman/';
+    const ENDPOINT_URL= 'https://fangwl591021.github.io/travelman/index.html';
     const LOGIN_URL   = 'login.html';
     const MODEL_URL   = 'model.html'; // ← 新增：推廣工具頁面
 
@@ -80,280 +80,112 @@
       return p;
     };
 
-
-    /* ===== Legacy UI → New API compatibility layer ===== */
-    const getCompatTenantId = () => {
-      const q = new URLSearchParams(window.location.search);
-      return q.get('tenantId') || localStorage.getItem('tk_tenant_id') || localStorage.getItem('travelman_tenant_id') || 't001';
+    const getTenantIdFromPage = () => {
+      const url = new URL(window.location.href);
+      return (
+        url.searchParams.get('tenantId') ||
+        localStorage.getItem('travelman_tenant_id') ||
+        localStorage.getItem('tk_tenant_id') ||
+        't001'
+      );
     };
 
-    const safeJsonParse = (value, fallback) => {
-      try {
-        if (!value) return fallback;
-        if (Array.isArray(value) || typeof value === 'object') return value;
-        return JSON.parse(value);
-      } catch (e) {
-        return fallback;
-      }
+    const extractDriveFileId = (url) => {
+      if (!url) return '';
+      const str = String(url).trim();
+      let m = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      m = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      m = str.match(/\/uc\?export=(?:download|view)&id=([a-zA-Z0-9_-]+)/);
+      if (m) return m[1];
+      return '';
     };
 
-    const arrayToNotes = (value) => {
-      const arr = safeJsonParse(value, []);
-      if (!Array.isArray(arr)) return '';
-      return arr.map(v => typeof v === 'string' ? v : (v?.title || v?.name || v?.label || v?.content || '')).filter(Boolean).join(' / ');
+    const normalizeDriveImageUrl = (url) => {
+      if (!url) return '';
+      const str = String(url).trim();
+      if (!str) return '';
+      if (str.startsWith('data:')) return str;
+      const driveId = extractDriveFileId(str);
+      if (driveId) return `https://drive.google.com/thumbnail?id=${driveId}&sz=w2000`;
+      return str;
     };
 
-    const mapNewItineraryToOld = (it) => ({
-      id: String(it.itineraryId || it.id || Date.now()),
-      title: it.title || '',
-      region: it.region || it.country || '',
-      price: Number(it.price || 0),
-      days: Number(it.days || 0),
-      startDate: it.departureDate || it.startDate || '',
-      endDate: it.returnDate || it.endDate || '',
-      image: it.coverImageUrl || it.image || '',
-      description: it.description || it.subtitle || '',
-      notes: arrayToNotes(it.highlightsJson || it.notes || []),
-      _raw: it
-    });
-
-    const mapOldToNew = (item, overrides = {}) => ({
-      tenantId: getCompatTenantId(),
-      itineraryId: String(overrides.itineraryId || item.id || item.itineraryId || Date.now()),
-      title: item.title || '',
-      subtitle: item.subtitle || '',
-      region: item.region || '',
-      country: item.country || '',
-      city: item.city || '',
-      days: Number(item.days || 0),
-      nights: Number(item.nights || 0),
-      price: Number(item.price || 0),
-      currency: item.currency || 'TWD',
-      departureDate: item.startDate || item.departureDate || '',
-      returnDate: item.endDate || item.returnDate || '',
-      status: overrides.status || item.status || 'published',
-      productType: item.productType || 'group_tour',
-      coverImageUrl: item.image || item.coverImageUrl || '',
-      galleryJson: safeJsonParse(item.galleryJson, []),
-      highlightsJson: safeJsonParse(item.highlightsJson, safeJsonParse(item.notes, [])),
-      description: item.description || '',
-      dayByDayJson: safeJsonParse(item.dayByDayJson, []),
-      includesJson: safeJsonParse(item.includesJson, []),
-      excludesJson: safeJsonParse(item.excludesJson, []),
-      noticeJson: safeJsonParse(item.noticeJson, []),
-      faqJson: safeJsonParse(item.faqJson, []),
-      tagsJson: safeJsonParse(item.tagsJson, []),
-      promoConfigJson: safeJsonParse(item.promoConfigJson, {}),
-      draftId: item.draftId || '',
-      createdBy: item.createdBy || 'legacy_index',
-      updatedBy: 'legacy_index'
-    });
-
-    const jsonResponse = (obj, status = 200) => new Response(JSON.stringify(obj), {
-      status,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
-    });
-
-    const realFetch = window.fetch.bind(window);
-
-    const getLocalOrders = () => {
-      try { return JSON.parse(localStorage.getItem('tk_local_orders') || '[]'); } catch(e) { return []; }
+    const fallbackRegionImage = (region = '') => {
+      const r = String(region || '').trim();
+      if (/日本|東京|大阪|北海道|沖繩|九州/.test(r)) return 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80';
+      if (/韓國|首爾|釜山/.test(r)) return 'https://images.unsplash.com/photo-1538485399081-7c897bf8bba0?auto=format&fit=crop&w=1200&q=80';
+      if (/泰國|曼谷|清邁|普吉/.test(r)) return 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1200&q=80';
+      if (/越南|河內|峴港|胡志明/.test(r)) return 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80';
+      if (/台灣|台北|高雄|花蓮|台中/.test(r)) return 'https://images.unsplash.com/photo-1510337550647-e84f83e341ca?auto=format&fit=crop&w=1200&q=80';
+      return 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80';
     };
-    const setLocalOrders = (orders) => localStorage.setItem('tk_local_orders', JSON.stringify(orders || []));
-    const setLocalMember = (data) => localStorage.setItem('tk_member_profile', JSON.stringify(data || {}));
-    const getLocalMember = () => { try { return JSON.parse(localStorage.getItem('tk_member_profile') || 'null'); } catch(e) { return null; } };
 
-    window.fetch = async function(input, init = {}) {
-      const url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
-      const method = ((init && init.method) || (typeof input !== 'string' && input && input.method) || 'GET').toUpperCase();
-      if (!url || !url.startsWith(WORKER_URL)) return realFetch(input, init);
-
-      const u = new URL(url, window.location.origin);
-      const tenantId = getCompatTenantId();
-
-      // ---- old AI upload endpoint -> new AI upload endpoint ----
-      if (u.pathname === '/api/upload-dm' && method === 'POST') {
-        const body = typeof init.body === 'string' ? JSON.parse(init.body || '{}') : {};
-        const res = await realFetch(`${WORKER_URL}/api/ai/upload-dm`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tenantId,
-            imageBase64: body.image || body.imageBase64 || '',
-            createdBy: 'legacy_index',
-            sourceType: 'dm_image'
-          })
-        });
-        const out = await res.json().catch(() => ({}));
-        const p = out.parsed || out.data?.parsed || out.data || {};
-        const legacy = {
-          id: Date.now(),
-          title: p.title || '',
-          region: p.region || p.country || '',
-          price: Number(p.price || 0),
-          days: Number(p.days || 0),
-          startDate: p.departureDate || p.startDate || '',
-          endDate: p.returnDate || p.endDate || '',
-          image: '',
-          description: p.description || p.subtitle || '',
-          notes: Array.isArray(p.highlights) ? p.highlights.join(' / ') : arrayToNotes(p.highlightsJson || []),
-          draftId: out.draftResult?.data?.draftId || out.draftResult?.draftId || ''
-        };
-        return jsonResponse({ success: !!out.ok, data: legacy, raw: out }, out.ok ? 200 : 500);
-      }
-
-      // ---- old catch-all itineraries endpoint -> compatibility adapter ----
-      if (u.pathname === '/api/itineraries') {
-        // GET list / query actions
-        if (method === 'GET') {
-          const action = u.searchParams.get('action') || '';
-
-          if (!action) {
-            const res = await realFetch(`${WORKER_URL}/api/public/itineraries?tenantId=${encodeURIComponent(tenantId)}`);
-            const out = await res.json().catch(() => ({}));
-            const items = out?.data?.items || out?.data || [];
-            const mapped = Array.isArray(items) ? items.filter(it => String(it.status || '').toLowerCase() !== 'inactive').map(mapNewItineraryToOld) : [];
-            window.__LEGACY_IT_RAW = {};
-            mapped.forEach(m => { window.__LEGACY_IT_RAW[String(m.id)] = m._raw || {}; });
-            return jsonResponse(mapped);
-          }
-
-          if (action === 'checkUserStatus') {
-            const uid = u.searchParams.get('uid') || '';
-            const member = getLocalMember();
-            const isMe = member && member.uid === uid;
-            return jsonResponse({
-              success: true,
-              data: isMe ? {
-                role: 'user',
-                isAdmin: false,
-                status: 'approved',
-                userData: { phone: member.phone || '', name: member.name || '' }
-              } : {
-                role: 'guest',
-                isAdmin: false,
-                status: 'guest'
-              }
-            });
-          }
-
-          if (action === 'getUserOrders') {
-            const uid = u.searchParams.get('uid') || '';
-            const list = getLocalOrders().filter(o => String(o.uid || '') === String(uid));
-            return jsonResponse({ success: true, data: list });
-          }
-
-          if (action === 'getDistributorPerformance') {
-            return jsonResponse({ success: true, users: [], orders: [] });
-          }
-
-          if (action === 'getDistributors') return jsonResponse([]);
-          if (action === 'getUsers') return jsonResponse([]);
-          if (action === 'getAllOrders') return jsonResponse({ success: true, data: getLocalOrders() });
-        }
-
-        // POST actions
-        if (method === 'POST') {
-          const body = typeof init.body === 'string' ? JSON.parse(init.body || '{}') : {};
-          const action = body.action || '';
-
-          if (action === 'registerUser') {
-            const payload = {
-              tenantId,
-              uid: body.uid || '',
-              name: body.name || '',
-              phone: body.phone || '',
-              email: body.email || '',
-              role: 'member',
-              status: 'active',
-              refDistributorUid: body.ref_uid || body.refUid || ''
-            };
-            try {
-              await realFetch(`${WORKER_URL}/api/member/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-            } catch (e) {}
-            setLocalMember({ uid: payload.uid, name: payload.name, phone: payload.phone, refUid: payload.refDistributorUid });
-            return jsonResponse({ success: true, data: payload });
-          }
-
-          if (action === 'addOrder') {
-            const orderId = 'ORD' + Date.now();
-            const order = {
-              orderId,
-              tenantId,
-              itineraryId: String(body.tourId || body.itineraryId || ''),
-              uid: body.uid || '',
-              customerName: body.contactName || '',
-              customerPhone: body.contactPhone || '',
-              qty: Number(body.pax || 1),
-              totalAmount: Number(body.totalAmount || body.price || 0),
-              refUid: body.ref_uid || body.refUid || '',
-              createdAt: new Date().toISOString(),
-              status: 'pending'
-            };
-            const orders = getLocalOrders();
-            orders.unshift(order);
-            setLocalOrders(orders);
-            return jsonResponse({ success: true, data: order, orderId });
-          }
-
-          if (action === 'updateOrder') {
-            const orders = getLocalOrders();
-            const idx = orders.findIndex(o => String(o.orderId) === String(body.orderId));
-            if (idx > -1) {
-              orders[idx] = { ...orders[idx], ...body };
-              setLocalOrders(orders);
-            }
-            return jsonResponse({ success: true });
-          }
-
-          if (action === 'uploadImage') {
-            return jsonResponse({ success: true, url: body.base64 || '' });
-          }
-
-          if (action === 'addItinerary' || action === 'updateItinerary') {
-            const payload = mapOldToNew(body, { status: body.status || 'published' });
-            const res = await realFetch(`${WORKER_URL}/api/admin/save-itinerary`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            const out = await res.json().catch(() => ({}));
-            return jsonResponse({ success: !!(out && out.ok !== false), data: out.data || out, message: out.message || '' }, out && out.ok === false ? 500 : 200);
-          }
-
-          if (action === 'deleteItinerary') {
-            const id = String(body.id || '');
-            let raw = (window.__LEGACY_IT_RAW && window.__LEGACY_IT_RAW[id]) || null;
-            if (!raw) {
-              const r = await realFetch(`${WORKER_URL}/api/public/itinerary?tenantId=${encodeURIComponent(tenantId)}&itineraryId=${encodeURIComponent(id)}`);
-              const o = await r.json().catch(() => ({}));
-              raw = o?.data?.data || o?.data || null;
-            }
-            if (!raw) return jsonResponse({ success: false, message: '找不到行程' }, 404);
-            const payload = { ...raw, itineraryId: raw.itineraryId || id, title: raw.title || body.title || '未命名行程', status: 'inactive', updatedBy: 'legacy_index' };
-            const res = await realFetch(`${WORKER_URL}/api/admin/save-itinerary`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            const out = await res.json().catch(() => ({}));
-            return jsonResponse({ success: !!(out && out.ok !== false), data: out.data || out }, out && out.ok === false ? 500 : 200);
-          }
-
-          if (action === 'updateDistributorInfo') {
-            localStorage.setItem('tk_local_distributor', JSON.stringify(body || {}));
-            return jsonResponse({ success: true, data: body });
-          }
-        }
-      }
-
-      return realFetch(input, init);
+    const mapNewItineraryToLegacy = (raw) => {
+      const highlights = Array.isArray(raw?.highlightsJson)
+        ? raw.highlightsJson
+        : (Array.isArray(raw?.highlights) ? raw.highlights : []);
+      const notesLines = Array.isArray(raw?.noticeJson)
+        ? raw.noticeJson
+        : [];
+      return {
+        id: raw?.itineraryId || raw?.id || '',
+        title: raw?.title || '',
+        region: raw?.region || raw?.country || '',
+        price: Number(raw?.price || 0),
+        days: Number(raw?.days || 0),
+        startDate: raw?.departureDate || raw?.startDate || '',
+        endDate: raw?.returnDate || raw?.endDate || '',
+        image: normalizeDriveImageUrl(raw?.coverImageUrl || raw?.image || '') || fallbackRegionImage(raw?.region || raw?.country || ''),
+        description: raw?.description || raw?.subtitle || '',
+        notes: [
+          ...highlights.map(v => String(v || '').trim()),
+          ...notesLines.map(v => String(v || '').trim())
+        ].filter(Boolean).join('\n'),
+        _status: raw?.status || 'published',
+        _raw: raw
+      };
     };
-    /* ===== /compatibility layer ===== */
+
+    const mapLegacyDraftToNew = (draft, status = 'published') => {
+      const noteLines = String(draft?.notes || '')
+        .split(/\n+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      return {
+        tenantId: getTenantIdFromPage(),
+        itineraryId: draft?.id || ('it_' + Date.now()),
+        title: draft?.title || '',
+        subtitle: '',
+        region: draft?.region || '',
+        country: '',
+        city: '',
+        days: Number(draft?.days || 0),
+        nights: 0,
+        price: Number(draft?.price || 0),
+        currency: 'TWD',
+        departureDate: draft?.startDate || '',
+        returnDate: draft?.endDate || '',
+        status,
+        productType: 'group_tour',
+        coverImageUrl: normalizeDriveImageUrl(draft?.image || ''),
+        galleryJson: [],
+        highlightsJson: noteLines,
+        description: draft?.description || '',
+        dayByDayJson: [],
+        includesJson: [],
+        excludesJson: [],
+        noticeJson: noteLines,
+        faqJson: [],
+        tagsJson: [],
+        promoConfigJson: {},
+        draftId: String(draft?.id || '').startsWith('draft_') ? String(draft.id) : '',
+        createdBy: (typeof liffProfile !== 'undefined' && (liffProfile?.displayName || liffProfile?.userId)) || 'admin',
+        updatedBy: (typeof liffProfile !== 'undefined' && (liffProfile?.displayName || liffProfile?.userId)) || 'admin'
+      };
+    };
 
     // buildFlexMessage 保留供 action=share/send 自動處理流程使用
     const buildFlexMessage = (tourItem, distributorData, refUidStr, options) => {
@@ -663,11 +495,24 @@
       const fetchItineraries = async () => {
         setIsLoading(true);
         try {
-          const res  = await fetch(`${WORKER_URL}/api/itineraries?_t=${getTimestamp()}`);
+          const tenantId = getTenantIdFromPage();
+          localStorage.setItem('travelman_tenant_id', tenantId);
+          localStorage.setItem('tk_tenant_id', tenantId);
+          const res  = await fetch(`${WORKER_URL}/api/public/itineraries?tenantId=${encodeURIComponent(tenantId)}&_t=${getTimestamp()}`);
           const data = await res.json();
-          if (data && Array.isArray(data)) { setItineraries(data); setFilteredResults(data); }
-          else if (data && data.data && Array.isArray(data.data)) { setItineraries(data.data); setFilteredResults(data.data); }
-        } catch(error) { console.error('Fetch error', error); } finally { setIsLoading(false); }
+          const items = Array.isArray(data?.data?.items) ? data.data.items : (Array.isArray(data?.data) ? data.data : []);
+          const mapped = items
+            .filter(it => String(it.status || '').toLowerCase() !== 'inactive')
+            .map(mapNewItineraryToLegacy);
+          setItineraries(mapped);
+          setFilteredResults(mapped);
+        } catch(error) {
+          console.error('Fetch error', error);
+          setItineraries([]);
+          setFilteredResults([]);
+        } finally {
+          setIsLoading(false);
+        }
       };
 
       const handleUpdateOrder = async (orderId, field, value) => {
@@ -680,7 +525,7 @@
         } catch(e) { showToast('❌ 更新失敗，請重試', 'error'); fetchFullCrmData(); }
       };
 
-      const changeTab = (newTab) => { setActiveTab(newTab); setSelectedTourId(null); setTourDetailTab('itinerary'); window.history.replaceState({}, '', `?tab=${newTab}`); };
+      const changeTab = (newTab) => { setActiveTab(newTab); setSelectedTourId(null); setTourDetailTab('itinerary'); window.history.replaceState({}, '', `?tenantId=${encodeURIComponent(getTenantIdFromPage())}&tab=${newTab}`); };
       const showToast  = (message, type = 'success') => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
       const loginAsDistributor = () => { window.location.href = `${LOGIN_URL}?type=distributor&ref_uid=${refUid || ''}`; };
       const loginAsMember      = () => { window.location.href = `${LOGIN_URL}?type=user&ref_uid=${refUid || ''}`; };
@@ -826,14 +671,35 @@
       const submitBooking = async (e) => {
         e.preventDefault(); setIsSubmitting(true);
         try {
-          const res    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'addOrder', uid:liffProfile.userId, ref_uid:refUid, ...bookingModalData }) });
+          const tenantId = getTenantIdFromPage();
+          const res = await fetch(`${WORKER_URL}/api/admin/create-order`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              tenantId,
+              itineraryId: bookingModalData.tourId,
+              uid: liffProfile?.userId || '',
+              customerName: bookingModalData.contactName || liffProfile?.displayName || 'LINE會員',
+              customerPhone: bookingModalData.contactPhone || '',
+              customerEmail: '',
+              travelDate: itineraries.find(i => String(i.id) === String(bookingModalData.tourId))?.startDate || '',
+              qty: Number(bookingModalData.pax || 1),
+              totalAmount: Number(bookingModalData.totalAmount || 0),
+              currency: 'TWD',
+              paymentMethod: 'manual',
+              paymentStatus: 'unpaid',
+              attributionSource: refUid ? 'line_referral' : 'direct',
+              distributorUid: refUid || '',
+              refUid: refUid || '',
+              sourcePage: window.location.href,
+              notes: bookingModalData.note || ''
+            })
+          });
           const result = await res.json();
-          if (result.success) {
+          if (result.ok !== false) {
             showToast('🎉 報名成功！我們已收到您的訂單。');
             setBookingModalData(null);
-            if (liffProfile) { fetchUserOrders(liffProfile.userId); if (distributorStatus === 'approved') fetchDistributorStats(liffProfile.userId); }
-            if (isAdmin) fetchFullCrmData();
-            setTimeout(() => { changeTab('member'); setIsSubmitting(false); }, 500);
+            setTimeout(() => { setIsSubmitting(false); window.location.href = `success.html?tenantId=${encodeURIComponent(tenantId)}&it=${encodeURIComponent(bookingModalData.tourId)}&amount=${encodeURIComponent(bookingModalData.totalAmount || 0)}&orderId=${encodeURIComponent(result?.data?.orderId || result?.orderId || '')}${refUid ? `&ref=${encodeURIComponent(refUid)}` : ''}`; }, 300);
           } else throw new Error(result.message || '報名失敗');
         } catch(err) { showToast('訂單送出失敗，請重試', 'error'); setIsSubmitting(false); }
       };
@@ -849,32 +715,49 @@
 
       const handleImageUploadToDrive = async (e, type = 'itinerary') => {
         const file = e.target.files[0]; if (!file) return;
-        if (type === 'itinerary') setIsUploadingImage(true); else showToast('Banner 上傳中，請稍候...');
-        const reader = new FileReader(); reader.readAsDataURL(file);
+        const reader = new FileReader();
+        if (type === 'itinerary') setIsUploadingImage(true); else showToast('Banner 圖片處理中，請稍候...');
+        reader.readAsDataURL(file);
         reader.onloadend = async () => {
           try {
-            const res    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'uploadImage', base64:reader.result }) });
-            const result = await res.json();
-            if (result.success) {
-              if (type === 'itinerary') { setDraftData({ ...draftData, image: result.url }); showToast('✅ 圖片已成功上傳！'); }
-              else { setBannerImage(result.url); localStorage.setItem('travel_keeper_banner', result.url); showToast('✅ Banner 已成功更新！'); }
-            } else throw new Error(result.message || result.error);
-          } catch(err) { showToast('上傳失敗: ' + err.message, 'error'); } finally { if (type === 'itinerary') setIsUploadingImage(false); }
+            const dataUrl = reader.result;
+            if (type === 'itinerary') {
+              setDraftData({ ...draftData, image: dataUrl });
+              showToast('✅ 圖片已載入，儲存後會一起寫入資料');
+            } else {
+              setBannerImage(dataUrl);
+              localStorage.setItem('travel_keeper_banner', dataUrl);
+              showToast('✅ Banner 已更新');
+            }
+          } catch(err) {
+            showToast('圖片處理失敗: ' + err.message, 'error');
+          } finally {
+            if (type === 'itinerary') setIsUploadingImage(false);
+          }
         };
+      };
       };
 
       const handleInsertImageToDescription = async (e) => {
         const file = e.target.files[0]; if (!file) return;
-        setIsInsertingContentImage(true); showToast('內文圖片上傳中，請稍候...');
+        setIsInsertingContentImage(true); showToast('內文圖片處理中，請稍候...');
         const reader = new FileReader(); reader.readAsDataURL(file);
         reader.onloadend = async () => {
           try {
-            const res    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'uploadImage', base64:reader.result }) });
-            const result = await res.json();
-            if (result.success) { setDraftData(prev => ({ ...prev, description:(prev.description ? prev.description + '\n\n' : '') + `![](${result.url})\n\n` })); showToast('✅ 圖片已成功插入文案！'); }
-            else throw new Error(result.message || result.error);
-          } catch(err) { showToast('圖片插入失敗: ' + err.message, 'error'); } finally { setIsInsertingContentImage(false); e.target.value = null; }
+            const dataUrl = reader.result;
+            setDraftData(prev => ({ ...prev, description:(prev.description ? prev.description + '
+
+' : '') + `![](${dataUrl})
+
+` }));
+            showToast('✅ 圖片已成功插入文案！');
+          } catch(err) {
+            showToast('圖片插入失敗: ' + err.message, 'error');
+          } finally {
+            setIsInsertingContentImage(false); e.target.value = null;
+          }
         };
+      };
       };
 
       const handleFileUpload = async (e) => {
@@ -884,43 +767,66 @@
           const reader = new FileReader(); reader.readAsDataURL(file);
           reader.onloadend = async () => {
             const base64data = reader.result;
-            let uploadedUrl = '';
-            try {
-              const driveRes    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'uploadImage', base64:base64data }) });
-              const driveResult = await driveRes.json();
-              if (driveResult.success) uploadedUrl = driveResult.url;
-            } catch(err) { console.warn('圖片上傳失敗', err); }
-            const res      = await fetch(`${WORKER_URL}/api/upload-dm`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ image:base64data }) });
+            const res = await fetch(`${WORKER_URL}/api/ai/upload-dm`, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                tenantId: getTenantIdFromPage(),
+                imageBase64: base64data,
+                createdBy: liffProfile?.displayName || liffProfile?.userId || 'admin',
+                sourceType: 'dm_image'
+              })
+            });
             const aiResult = await res.json();
-            if (aiResult.success) {
-              const parsedData   = aiResult.data;
-              const REGION_IMAGES = { '國旅':'https://images.unsplash.com/photo-1578338944883-7eecc7a95079?auto=format&fit=crop&w=800&q=80','亞洲':'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80','歐洲':'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80','美洲':'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80','大洋洲':'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=800&q=80','非洲':'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80','預設':'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80' };
-              parsedData.image   = uploadedUrl || REGION_IMAGES[parsedData.region] || REGION_IMAGES['預設'];
-              parsedData.id      = Date.now(); setDraftData(parsedData); showToast('✅ AI 解析完成！系統正自動寫入資料庫...');
-              const newItinerary = { ...parsedData, action:'addItinerary', price:parseInt(parsedData.price, 10) || 0 };
-              setItineraries(prev => [newItinerary, ...prev]);
-              try {
-                const dbRes    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newItinerary) });
-                const dbResult = await dbRes.json();
-                if (dbResult.success) { showToast('🎉 行程已成功上架！'); setDraftData({ id:null, title:'', region:'', price:'', days:'', startDate:'', endDate:'', description:'', image:'', notes:'' }); setOcrStatus('idle'); fetchItineraries(); }
-                else throw new Error('寫入失敗');
-              } catch(dbErr) { setOcrStatus('done'); showToast('寫入失敗，請手動點擊「儲存」', 'error'); }
-            } else throw new Error(aiResult.error || '解析失敗');
+            if (aiResult.ok && aiResult.parsed) {
+              const parsed = aiResult.parsed;
+              const parsedData = {
+                id: aiResult?.draftResult?.data?.draftId || ('it_' + Date.now()),
+                title: parsed.title || '',
+                region: parsed.region || parsed.country || '',
+                price: parseInt(parsed.price, 10) || 0,
+                days: parseInt(parsed.days, 10) || 0,
+                startDate: parsed.departureDate || parsed.startDate || '',
+                endDate: parsed.returnDate || parsed.endDate || '',
+                description: parsed.description || '',
+                image: normalizeDriveImageUrl(parsed.coverImageUrl || parsed.image || '') || fallbackRegionImage(parsed.region || parsed.country || ''),
+                notes: Array.isArray(parsed.highlights) ? parsed.highlights.join('
+') : ''
+              };
+              setDraftData(parsedData);
+              setOcrStatus('done');
+              showToast('✅ AI 解析完成，請確認內容後按「儲存修改 / 手動新增上架」');
+            } else {
+              throw new Error(aiResult.message || aiResult.error || '解析失敗');
+            }
             setIsUploadingImage(false);
           };
+        } catch(error) {
+          setOcrStatus('idle'); setIsUploadingImage(false); showToast(error.message || '解析失敗', 'error');
+        }
+      };
         } catch(error) { setOcrStatus('idle'); setIsUploadingImage(false); showToast(error.message || '解析失敗', 'error'); }
       };
 
       const handleUpdateContent = async () => {
         if (!draftData.title) return showToast('請先填寫內容', 'error');
-        const isEditing  = !!draftData.id;
-        const submitData = { ...draftData, id:draftData.id || Date.now(), price:parseInt(draftData.price, 10) || 0, action:isEditing ? 'updateItinerary' : 'addItinerary' };
+        const statusToSave = draftData._status === 'inactive' ? 'inactive' : 'published';
+        const submitData = mapLegacyDraftToNew({ ...draftData, id: draftData.id || ('it_' + Date.now()) }, statusToSave);
         try {
-          const res    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(submitData) });
+          const res = await fetch(`${WORKER_URL}/api/admin/save-itinerary`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(submitData)
+          });
           const result = await res.json();
-          if (result.success) { showToast(isEditing ? '修改成功！' : '新增成功！'); setDraftData({ id:null, title:'', region:'', price:'', days:'', startDate:'', endDate:'', description:'', image:'', notes:'' }); setOcrStatus('idle'); setUploadMode('dm'); fetchItineraries(); }
-          else throw new Error('操作失敗');
-        } catch(error) { showToast('寫入資料庫錯誤', 'error'); }
+          if (result.ok !== false) {
+            showToast(draftData.id ? '修改成功！' : '新增成功！');
+            setDraftData({ id:null, title:'', region:'', price:'', days:'', startDate:'', endDate:'', description:'', image:'', notes:'' });
+            setOcrStatus('idle'); setUploadMode('dm'); fetchItineraries();
+          } else throw new Error(result.message || '操作失敗');
+        } catch(error) {
+          showToast('寫入資料庫錯誤', 'error');
+        }
       };
 
       const handleEditClick = (item) => { setUploadMode('manual'); setOcrStatus('done'); setDraftData(item); window.scrollTo({ top:0, behavior:'smooth' }); };
@@ -928,11 +834,23 @@
       const confirmDelete = async () => {
         if (!deleteModalId) return;
         try {
-          const res    = await fetch(`${WORKER_URL}/api/itineraries`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'deleteItinerary', id:deleteModalId }) });
+          const target = itineraries.find(i => String(i.id) === String(deleteModalId));
+          if (!target) throw new Error('找不到行程');
+          const submitData = mapLegacyDraftToNew(target, 'inactive');
+          const res = await fetch(`${WORKER_URL}/api/admin/save-itinerary`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(submitData)
+          });
           const result = await res.json();
-          if (result.success) { showToast('已成功下架！'); setDeleteModalId(null); fetchItineraries(); }
-          else throw new Error('刪除失敗');
-        } catch(error) { showToast('下架發生錯誤', 'error'); }
+          if (result.ok !== false) {
+            showToast('已成功下架！');
+            setDeleteModalId(null);
+            fetchItineraries();
+          } else throw new Error(result.message || '下架失敗');
+        } catch(error) {
+          showToast('下架發生錯誤', 'error');
+        }
       };
 
       const saveDistributorEdit = async () => {
@@ -1008,7 +926,7 @@
 
       const goBackToList = () => {
         setSelectedTourId(null); setTourDetailTab('itinerary');
-        window.history.pushState({}, '', '?tab=home');
+        window.history.pushState({}, '', '?tenantId=' + encodeURIComponent(getTenantIdFromPage()) + '&tab=home');
         window.scrollTo({ top:0, behavior:'smooth' });
       };
 
@@ -1164,7 +1082,7 @@
                   {filteredResults.map(item => {
                     const keywords = item.description ? item.description.replace(/【.*?】/g, '').split(/[，。！？\s　]+/).filter(w => w.length >= 2 && w.length <= 8).slice(0, 4) : [];
                     return (
-                      <div key={item.id} onClick={() => { setSelectedTourId(item.id); window.history.pushState({}, '', '?t=' + item.id + (refUid ? '&r=' + refUid : '')); window.scrollTo({top:0,behavior:'smooth'}); }} className="bg-white border border-gray-200 hover:border-[#b82337] hover:shadow-lg transition-all overflow-hidden group cursor-pointer flex flex-col" style={{borderRadius:'4px'}}>
+                      <div key={item.id} onClick={() => { setSelectedTourId(item.id); window.history.pushState({}, '', '?tenantId=' + encodeURIComponent(getTenantIdFromPage()) + '&t=' + item.id + (refUid ? '&r=' + refUid : '')); window.scrollTo({top:0,behavior:'smooth'}); }} className="bg-white border border-gray-200 hover:border-[#b82337] hover:shadow-lg transition-all overflow-hidden group cursor-pointer flex flex-col" style={{borderRadius:'4px'}}>
                         <div className="h-52 overflow-hidden relative bg-gray-100 flex-shrink-0"><img src={item.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80'} className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" /></div>
                         <div className="p-4 flex flex-col flex-grow">
                           <h4 className="font-bold text-[15px] text-gray-900 line-clamp-2 leading-snug mb-2 group-hover:text-[#b82337] transition-colors">{item.title}</h4>
