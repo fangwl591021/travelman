@@ -127,7 +127,7 @@
 
             useEffect(() => {
                 if (message.text) {
-                    const timer = setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+                    const timer = setTimeout(() => setMessage({ type: '', text: '' }), 4000); // 延長提示時間以便閱讀錯誤
                     return () => clearTimeout(timer);
                 }
             }, [message.text]);
@@ -255,9 +255,8 @@
                 }
             };
 
-            // ★ 核心升級：加入 OTT 降級容錯機制的分享通訊錄 ★
+            // ★ 核心升級：加入詳盡錯誤報告的 OTT 降級容錯機制的分享通訊錄 ★
             const shareToContacts = async (recordData) => {
-                // 自動相容直接傳入 flexCard 或是完整 record 物件
                 const flexCardData = recordData.flexCard || recordData;
                 let messagePayload = flexCardData;
                 if (flexCardData.type !== 'flex') {
@@ -271,7 +270,7 @@
                 // 定義完美降級 (Fallback) 機制
                 const triggerFallback = () => {
                     const uid = liffProfile?.userId || '';
-                    const tourId = recordData.id || Date.now(); // 若無 ID 預設使用時間戳
+                    const tourId = recordData.id || Date.now(); 
                     const shareUrl = `https://liff.line.me/${LIFF_ID}?action=share&t=${tourId}&r=${uid}&o=111111`;
                     
                     const fallbackCopy = (text) => {
@@ -282,7 +281,7 @@
                         ta.select();
                         try {
                             document.execCommand('copy');
-                            setMessage({ type: 'success', text: '✅ 喚起失敗，已自動為您複製專屬分享連結！' });
+                            setMessage({ type: 'success', text: '✅ 已自動為您產生並複製專屬分享網址！' });
                         } catch (err) {
                             setMessage({ type: 'error', text: '❌ 複製失敗，請手動分享' });
                         }
@@ -293,31 +292,42 @@
                         fallbackCopy(shareUrl);
                     } else {
                         navigator.clipboard.writeText(shareUrl)
-                            .then(() => setMessage({ type: 'success', text: '✅ 喚起失敗，已自動為您複製專屬分享連結！' }))
+                            .then(() => setMessage({ type: 'success', text: '✅ 已自動為您產生並複製專屬分享網址！' }))
                             .catch(() => fallbackCopy(shareUrl));
                     }
                     setShareModalData(null);
                 };
+
+                // 檢查是否已登入 LINE (PC 版沒登入會阻擋呼叫)
+                if (!window.liff.isLoggedIn()) {
+                    setMessage({ type: 'error', text: '⚠️ 權限不足：請先點擊右上角「LINE 登入」' });
+                    return;
+                }
 
                 // 主流程：嘗試使用 shareTargetPicker
                 if (window.liff && window.liff.isApiAvailable('shareTargetPicker')) {
                     try {
                         const res = await window.liff.shareTargetPicker([messagePayload]);
                         if (res) {
-                            setMessage({ type: 'success', text: '✅ 已成功分享至 LINE 通訊錄！' });
+                            setMessage({ type: 'success', text: '✅ 已成功發送至 LINE 通訊錄！' });
                         }
                         setShareModalData(null); // 成功後關閉彈窗
                     } catch (err) {
+                        console.error("LINE Share Error:", err);
                         if (err.code !== 1000) { 
-                            // 非使用者主動取消 (通常是權限或不支援)，觸發降級容錯
-                            triggerFallback();
+                            // 這裡將原本默默降級的動作，改為大聲說出錯誤原因！
+                            // 通常 err.message 會是 "permission denied" (代表沒開關)
+                            setMessage({ type: 'error', text: `喚起阻擋: ${err.message} (請確認 Developer 後台開關)` });
+                            // 延遲 2.5 秒讓使用者看清楚錯誤訊息，再進行降級備案
+                            setTimeout(triggerFallback, 2500);
                         } else {
-                            setShareModalData(null); // 使用者主動取消，單純關閉彈窗
+                            // code 1000 代表使用者主動按了取消 (X)，單純關閉視窗不報錯
+                            setShareModalData(null); 
                         }
                     }
                 } else {
-                    // PC 版或未支援環境，直接降級為複製網址
-                    triggerFallback();
+                    setMessage({ type: 'info', text: '當前瀏覽器環境不支援，自動轉為網址分享' });
+                    setTimeout(triggerFallback, 2000);
                 }
             };
 
@@ -374,6 +384,20 @@
                     <main className="flex-1 flex flex-col min-w-0 bg-[#fbfbfb]">
                         <div className="p-6 lg:p-10 max-w-6xl w-full mx-auto">
                             
+                            {/* --- 導覽列與登入按鈕 --- */}
+                            <div className="flex justify-end mb-4">
+                                {liffProfile ? (
+                                    <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                                        <img src={liffProfile.pictureUrl || 'https://via.placeholder.com/150'} className="w-8 h-8 rounded-full border border-slate-200 object-cover" />
+                                        <span className="text-sm font-bold text-slate-700">{liffProfile.displayName}</span>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => window.liff.login({ redirectUri: window.location.href })} className="bg-[#00B900] hover:bg-[#009900] text-white px-5 py-2.5 rounded-full text-sm font-bold transition shadow-sm flex items-center gap-2">
+                                        <Icon name="log-in" size={16} /> LINE 登入以使用分享功能
+                                    </button>
+                                )}
+                            </div>
+
                             {/* --- 內容庫 (首頁展示) --- */}
                             {activeSection === 'gallery' && (
                                 <div>
