@@ -50,7 +50,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- 設定區 ---
-        const LIFF_ID = "您的_LIFF_ID_在此"; 
+        const LIFF_ID = "2009367829-qhw54Uf9"; // ✅ 從您的截圖中抓取的正確 LIFF ID
         const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/process';
         // --------------
 
@@ -74,12 +74,12 @@
             const [result, setResult] = useState(null);
             const [message, setMessage] = useState({ type: '', text: '' });
             
+            // 修復遺失的狀態變數
             const [isEditing, setIsEditing] = useState(false);
-            const [previewData, setPreviewData] = useState(null); 
-            const [shareModalData, setShareModalData] = useState(null); // 記錄當前要分享的 Flex 資料
+            const [previewData, setPreviewData] = useState(null);
+            const [shareModalData, setShareModalData] = useState(null);
             const [records, setRecords] = useState([]);
             const [isUploadingImage, setIsUploadingImage] = useState(false);
-            
             const [imageToReplace, setImageToReplace] = useState(null);
             
             const editorRef = useRef(null);
@@ -87,8 +87,32 @@
 
             useEffect(() => {
                 const initLiff = async () => {
-                    if (!window.liff || LIFF_ID === "您的_LIFF_ID_在此") return;
-                    try { await window.liff.init({ liffId: LIFF_ID }); } catch (err) { console.error(err); }
+                    if (!window.liff) return;
+                    try { 
+                        let finalLiffId = LIFF_ID;
+                        
+                        // 嘗試從 Cloudflare 抓取設定，若失敗則使用上方寫死的 LIFF_ID
+                        try {
+                            const configUrl = WORKER_URL.replace('/process', '/config');
+                            const configRes = await fetch(configUrl);
+                            const configData = await configRes.json();
+                            if (configData.LIFF_ID && configData.LIFF_ID.trim() !== "") {
+                                finalLiffId = configData.LIFF_ID;
+                            }
+                        } catch (e) {
+                            console.log("🌐 使用本地設定的 LIFF_ID");
+                        }
+
+                        if (!finalLiffId || finalLiffId.trim() === "" || finalLiffId === "您的_LIFF_ID_在此") {
+                            console.warn("⚠️ 無效的 LIFF ID，跳過初始化");
+                            return;
+                        }
+
+                        await window.liff.init({ liffId: finalLiffId }); 
+                        console.log("✅ LIFF 初始化成功");
+                    } catch (err) { 
+                        console.error('LIFF 初始化失敗:', err); 
+                    }
                 };
                 initLiff();
                 fetchRecords();
