@@ -35,8 +35,11 @@
             max-width: 100%; height: auto; border-radius: 1rem; margin-bottom: 1.5rem; 
             cursor: pointer; transition: all 0.2s; 
         }
-        .editor-content img:hover { 
+        .editor-content.editable-mode img:hover { 
             opacity: 0.85; outline: 3px dashed #06C755; outline-offset: 2px;
+        }
+        .editor-content.preview-mode img {
+            cursor: default; /* 預覽模式不顯示點擊指標 */
         }
     </style>
 </head>
@@ -72,10 +75,10 @@
             const [message, setMessage] = useState({ type: '', text: '' });
             
             const [isEditing, setIsEditing] = useState(false);
+            const [previewData, setPreviewData] = useState(null); // 新增：預覽模式狀態
             const [records, setRecords] = useState([]);
             const [isUploadingImage, setIsUploadingImage] = useState(false);
             
-            // 新增狀態：用來記錄使用者正在點擊哪一張圖片
             const [imageToReplace, setImageToReplace] = useState(null);
             
             const editorRef = useRef(null);
@@ -124,11 +127,10 @@
                 }
             };
 
-            // 處理編輯器內部的圖片上傳 (支援插入新圖 與 替換舊圖)
             const handleEditorImageUpload = async (e) => {
                 const file = e.target.files[0];
                 if (!file) {
-                    setImageToReplace(null); // 若取消上傳，重置狀態
+                    setImageToReplace(null); 
                     return;
                 }
 
@@ -148,11 +150,9 @@
                         if (data.error) throw new Error(data.error);
 
                         if (imageToReplace) {
-                            // 模式 1：點擊原圖替換 (完全保留原本的 Class 與排版)
                             imageToReplace.src = data.url;
                             setImageToReplace(null);
                         } else {
-                            // 模式 2：插入全新圖片
                             if (editorRef.current) editorRef.current.focus();
                             if (savedSelectionRef.current && window.getSelection) {
                                 const sel = window.getSelection();
@@ -170,7 +170,7 @@
                     setImageToReplace(null);
                 } finally {
                     setIsUploadingImage(false);
-                    e.target.value = ''; // 清除 input
+                    e.target.value = ''; 
                 }
             };
 
@@ -219,6 +219,7 @@
                     setResult(prev => ({ ...prev, webHtml: updatedHtml }));
                     setIsEditing(false);
                     setMessage({ type: 'success', text: '內容已更新' });
+                    fetchRecords(); // 存檔後也刷新一次紀錄庫
                 }
             };
 
@@ -246,7 +247,6 @@
 
             return (
                 <div className="flex min-h-screen">
-                    {/* 隱藏的編輯器圖片上傳 input */}
                     <input id="editorFileInput" type="file" className="hidden" onChange={handleEditorImageUpload} accept="image/*" />
 
                     <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col sticky top-0 h-screen">
@@ -285,24 +285,25 @@
 
                                                 return (
                                                     <div key={rec.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                                                        <div className="h-48 w-full overflow-hidden">
-                                                            <img src={img} alt={title} className="w-full h-full object-cover" />
+                                                        <div className="h-48 w-full overflow-hidden cursor-pointer" onClick={() => setPreviewData(rec)}>
+                                                            <img src={img} alt={title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                                                         </div>
                                                         <div className="p-5 flex-1 flex flex-col">
                                                             <div className="text-xs font-bold text-blue-600 mb-2">{mockTags}</div>
-                                                            <h3 className="text-lg font-bold text-slate-800 mb-6 flex-1">{title}</h3>
+                                                            <h3 className="text-lg font-bold text-slate-800 mb-6 flex-1 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setPreviewData(rec)}>{title}</h3>
                                                             
                                                             <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
                                                                 <span className="text-red-500 font-bold text-xl">{mockPrice}</span>
                                                                 <div className="flex items-center gap-2">
-                                                                    <button onClick={() => sendToLine(rec.flexCard)} className="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center hover:bg-green-100 transition-colors" title="傳送至 LINE">
-                                                                        <Icon name="send" size={14} />
+                                                                    {/* 新增瀏覽按鈕 */}
+                                                                    <button onClick={() => setPreviewData(rec)} className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-100 transition-colors" title="瀏覽內容">
+                                                                        <Icon name="eye" size={14} />
                                                                     </button>
                                                                     <button onClick={() => { setResult({ webHtml: rec.webHtml, flexCard: rec.flexCard }); setIsEditing(true); }} className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition-colors" title="編輯內容">
                                                                         <Icon name="edit-2" size={14} />
                                                                     </button>
-                                                                    <button className="w-8 h-8 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center hover:bg-red-50 hover:text-red-400 transition-colors" title="刪除">
-                                                                        <Icon name="trash-2" size={14} />
+                                                                    <button onClick={() => sendToLine(rec.flexCard)} className="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center hover:bg-green-100 transition-colors" title="傳送至 LINE">
+                                                                        <Icon name="send" size={14} />
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -355,6 +356,43 @@
                         </div>
                     </main>
 
+                    {/* 純瀏覽預覽彈窗 (新增) */}
+                    {previewData && (
+                        <div className="fixed inset-0 z-[100] bg-[#f8fafc] flex flex-col animate-in fade-in duration-200">
+                            <header className="border-b border-slate-200 p-4 flex justify-between items-center bg-white shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <button onClick={() => setPreviewData(null)} className="text-slate-400 hover:text-slate-800 transition-colors"><Icon name="arrow-left" size={20} /></button>
+                                    <h3 className="font-bold text-slate-800">瀏覽行程內容</h3>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => {
+                                            setResult({ webHtml: previewData.webHtml, flexCard: previewData.flexCard });
+                                            setIsEditing(true);
+                                            setPreviewData(null);
+                                        }} 
+                                        className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors"
+                                    >
+                                        <Icon name="edit-2" size={14} /> 編輯內容
+                                    </button>
+                                    <button 
+                                        onClick={() => sendToLine(previewData.flexCard)} 
+                                        className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors"
+                                    >
+                                        <Icon name="send" size={14} /> 傳送至 LINE
+                                    </button>
+                                </div>
+                            </header>
+
+                            <div className="flex-1 overflow-auto p-6 md:p-12">
+                                <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-14 border border-slate-100">
+                                    {/* preview-mode 不具備點擊圖片替換的效果 */}
+                                    <div className="editor-content preview-mode" dangerouslySetInnerHTML={{ __html: previewData.webHtml }} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 全螢幕視覺編輯器彈窗 */}
                     {isEditing && (
                         <div className="fixed inset-0 z-[100] bg-[#f8fafc] flex flex-col animate-in fade-in duration-200">
@@ -385,10 +423,9 @@
                                     if(url) execCmd('createLink', url);
                                 }} icon="link" />
                                 
-                                {/* 插入全新圖片的按鈕 */}
                                 <EditorTool onClick={() => {
                                     if(isUploadingImage) return;
-                                    setImageToReplace(null); // 明確設定為 null，代表是「插入新圖片」
+                                    setImageToReplace(null); 
                                     if (window.getSelection) {
                                         const sel = window.getSelection();
                                         if (sel.getRangeAt && sel.rangeCount > 0) {
@@ -404,21 +441,18 @@
 
                             <div className="flex-1 overflow-auto p-6 md:p-12">
                                 <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-14 border border-slate-100 relative">
-                                    
-                                    {/* 新增: 提示文字 */}
                                     <div className="absolute top-4 right-4 text-xs text-slate-400 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-full">
                                         <Icon name="mouse-pointer-click" size={14} />
                                         提示：直接點擊圖片即可上傳替換
                                     </div>
 
-                                    {/* 編輯器內容區，加入 onClick 事件捕捉圖片點擊 */}
+                                    {/* editable-mode 會顯示圖片點擊提示特效 */}
                                     <div 
                                         ref={editorRef}
                                         contentEditable
-                                        className="editor-content mt-4"
+                                        className="editor-content editable-mode mt-4"
                                         dangerouslySetInnerHTML={{ __html: result?.webHtml }}
                                         onClick={(e) => {
-                                            // 如果使用者點擊了 <img> 標籤，我們就把該元素存起來，然後觸發上傳
                                             if (e.target.tagName === 'IMG') {
                                                 setImageToReplace(e.target);
                                                 document.getElementById('editorFileInput').click();
