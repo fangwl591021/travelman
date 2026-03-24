@@ -75,13 +75,22 @@
             const [message, setMessage] = useState({ type: '', text: '' });
             
             const [isEditing, setIsEditing] = useState(false);
-            const [previewData, setPreviewData] = useState(null); 
-            const [shareModalData, setShareModalData] = useState(null); 
+            const [previewData, setPreviewData] = useState(null);
+            const [shareModalData, setShareModalData] = useState(null);
             const [records, setRecords] = useState([]);
             const [isUploadingImage, setIsUploadingImage] = useState(false);
             const [imageToReplace, setImageToReplace] = useState(null);
             
             const [liffProfile, setLiffProfile] = useState(null);
+
+            // ★ 新增：名片編輯器的聯絡資訊狀態 (自動讀取 LocalStorage) ★
+            const [contactInfo, setContactInfo] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('tk_contact_info');
+                    return saved ? JSON.parse(saved) : { phone: '', line: '', website: '' };
+                } catch(e) { return { phone: '', line: '', website: '' }; }
+            });
+            const [cardOptions, setCardOptions] = useState({ phone: false, line: false, website: false });
             
             const editorRef = useRef(null);
             const savedSelectionRef = useRef(null);
@@ -90,7 +99,6 @@
                 const initLiff = async () => {
                     if (!window.liff) return;
                     try { 
-                        // 修正：移除 fetch config 導致的時間差，直接同步初始化解決重複跳轉問題
                         if (!LIFF_ID || LIFF_ID === "您的_LIFF_ID_在此") {
                             console.warn("⚠️ 無效的 LIFF ID，跳過初始化");
                             return;
@@ -117,6 +125,18 @@
                     return () => clearTimeout(timer);
                 }
             }, [message.text]);
+
+            // 儲存聯絡資訊變更
+            const handleContactChange = (field, value) => {
+                const newInfo = { ...contactInfo, [field]: value };
+                setContactInfo(newInfo);
+                localStorage.setItem('tk_contact_info', JSON.stringify(newInfo));
+                
+                // 若輸入內容且原本未勾選，自動幫用戶勾選
+                if (value && !cardOptions[field]) {
+                    setCardOptions(prev => ({ ...prev, [field]: true }));
+                }
+            };
 
             const fetchRecords = async () => {
                 setLoading(true);
@@ -241,16 +261,55 @@
                 }
             };
 
-            const shareToContacts = async (recordData) => {
-                const flexCardData = recordData.flexCard || recordData;
-                let messagePayload = flexCardData;
-                if (flexCardData.type !== 'flex') {
-                    messagePayload = {
-                        type: "flex",
-                        altText: "旅遊行程推薦",
-                        contents: flexCardData
-                    };
+            // ★ 動態組合最終的 Flex JSON (把聯絡按鈕加進去) ★
+            const getFinalFlexPayload = (recordData) => {
+                const baseFlexCard = recordData.flexCard || recordData;
+                let clonedCard = JSON.parse(JSON.stringify(baseFlexCard));
+                
+                // 定位到 bubble 本體
+                let bubble = clonedCard.type === 'flex' ? clonedCard.contents : clonedCard;
+                
+                if (bubble.type === 'bubble') {
+                    if (!bubble.footer) {
+                        bubble.footer = { type: "box", layout: "vertical", spacing: "sm", contents: [] };
+                    }
+                    
+                    // 保留原本的第一個按鈕 (通常是 "查看行程/立即報名")
+                    const primaryButton = bubble.footer.contents.length > 0 ? bubble.footer.contents[0] : null;
+                    let newFooterContents = primaryButton ? [primaryButton] : [];
+
+                    // 根據使用者的勾選，動態安插聯絡按鈕
+                    if (cardOptions.phone && contactInfo.phone) {
+                        newFooterContents.push({
+                            type: "button", style: "secondary", height: "sm", margin: "sm",
+                            action: { type: "uri", label: `📞 聯絡電話`, uri: `tel:${contactInfo.phone.replace(/-/g, '')}` }
+                        });
+                    }
+                    if (cardOptions.line && contactInfo.line) {
+                        newFooterContents.push({
+                            type: "button", style: "secondary", height: "sm", margin: "sm",
+                            action: { type: "uri", label: "💬 私訊專屬顧問", uri: contactInfo.line }
+                        });
+                    }
+                    if (cardOptions.website && contactInfo.website) {
+                        newFooterContents.push({
+                            type: "button", style: "secondary", height: "sm", margin: "sm",
+                            action: { type: "uri", label: "🌐 官方網站", uri: contactInfo.website }
+                        });
+                    }
+                    bubble.footer.contents = newFooterContents;
                 }
+
+                // 確保外層包裝正確
+                if (clonedCard.type !== 'flex') {
+                    return { type: "flex", altText: "旅遊行程推薦", contents: clonedCard };
+                }
+                return clonedCard;
+            };
+
+            // 分享至通訊錄
+            const shareToContacts = async (recordData) => {
+                const messagePayload = getFinalFlexPayload(recordData);
 
                 const triggerFallback = () => {
                     const uid = liffProfile?.userId || '';
@@ -293,7 +352,7 @@
                         if (res) {
                             setMessage({ type: 'success', text: '✅ 已成功發送至 LINE 通訊錄！' });
                         }
-                        setShareModalData(null);
+                        setShareModalData(null); 
                     } catch (err) {
                         console.error("LINE Share Error:", err);
                         if (err.code !== 1000) { 
@@ -309,13 +368,10 @@
                 }
             };
 
+            // 複製 JSON 提供 OA 群發使用
             const copyFlexJson = (recordData) => {
-                const flexCardData = recordData.flexCard || recordData;
-                let flexPayload = flexCardData;
-                if (flexCardData.type !== 'flex') {
-                    flexPayload = { type: "flex", altText: "旅遊行程推薦", contents: flexCardData };
-                }
-                const txt = JSON.stringify(flexPayload, null, 2);
+                const messagePayload = getFinalFlexPayload(recordData);
+                const txt = JSON.stringify(messagePayload, null, 2);
                 
                 const el = document.createElement('textarea');
                 el.value = txt;
@@ -614,20 +670,41 @@
                         </div>
                     )}
 
-                    {/* ★ 發送名片：推廣與分享格式彈窗 ★ */}
+                    {/* ★ 升級版：發送名片與名片編輯器彈窗 ★ */}
                     {shareModalData && (
-                        <div className="fixed inset-0 z-[120] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 p-4">
-                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
-                                <header className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 p-4">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                                <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
                                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                        <Icon name="share-2" size={18} className="text-blue-600" /> 推廣與發送格式
+                                        <Icon name="share-2" size={18} className="text-blue-600" /> 推廣與發送設定
                                     </h3>
-                                    <button onClick={() => setShareModalData(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                    <button onClick={() => setShareModalData(null)} className="text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 p-1.5 rounded-full hover:bg-slate-100">
                                         <Icon name="x" size={20} />
                                     </button>
                                 </header>
-                                <div className="p-5 bg-slate-50">
-                                    <p className="text-sm text-slate-500 mb-4 font-medium">請選擇您要將此行程推廣出去的方式：</p>
+                                
+                                <div className="p-6 bg-white border-b border-slate-100">
+                                    <p className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                        📇 名片聯絡按鈕設定 <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">會自動記憶</span>
+                                    </p>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                            <input type="checkbox" id="chkPhone" checked={cardOptions.phone} onChange={e => setCardOptions({...cardOptions, phone: e.target.checked})} className="w-5 h-5 text-green-500 rounded focus:ring-green-500 ml-2 cursor-pointer"/>
+                                            <input type="text" placeholder="📞 聯絡電話 (如 0912...)" value={contactInfo.phone} onChange={e => handleContactChange('phone', e.target.value)} className="flex-1 text-sm border-none bg-transparent py-1.5 outline-none focus:ring-0 placeholder-slate-400"/>
+                                        </div>
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                            <input type="checkbox" id="chkLine" checked={cardOptions.line} onChange={e => setCardOptions({...cardOptions, line: e.target.checked})} className="w-5 h-5 text-green-500 rounded focus:ring-green-500 ml-2 cursor-pointer"/>
+                                            <input type="text" placeholder="💬 LINE 連結 (https://line.me/...)" value={contactInfo.line} onChange={e => handleContactChange('line', e.target.value)} className="flex-1 text-sm border-none bg-transparent py-1.5 outline-none focus:ring-0 placeholder-slate-400"/>
+                                        </div>
+                                        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                            <input type="checkbox" id="chkWeb" checked={cardOptions.website} onChange={e => setCardOptions({...cardOptions, website: e.target.checked})} className="w-5 h-5 text-green-500 rounded focus:ring-green-500 ml-2 cursor-pointer"/>
+                                            <input type="text" placeholder="🌐 官方網站連結" value={contactInfo.website} onChange={e => handleContactChange('website', e.target.value)} className="flex-1 text-sm border-none bg-transparent py-1.5 outline-none focus:ring-0 placeholder-slate-400"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-slate-50">
+                                    <p className="text-sm text-slate-500 mb-4 font-medium">請選擇推廣方式 (系統將自動組合上述按鈕)：</p>
                                     <div className="space-y-3">
                                         <button onClick={() => shareToContacts(shareModalData)} className="w-full flex items-center justify-between p-4 rounded-xl border border-green-200 bg-white hover:bg-green-50 transition-all group shadow-sm hover:shadow">
                                             <div className="flex items-center gap-4">
