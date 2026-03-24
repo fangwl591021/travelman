@@ -56,8 +56,11 @@
           
           setApplyType(type); setRefUid(ref); setTargetTourId(targetTour);
           
-          await liff.init({ liffId: LIFF_ID, withLoginOnExternalBrowser: true });
+          // 修正：移除 withLoginOnExternalBrowser 避免第三方 Cookie 被擋時造成的無限跳轉迴圈
+          await liff.init({ liffId: LIFF_ID });
+          
           if (!liff.isLoggedIn()) { 
+              // 確保 redirectUri 乾淨無誤，觸發主動登入
               liff.login({ redirectUri: window.location.href }); 
               return; 
           }
@@ -67,7 +70,6 @@
           setProfile(userProfile);
           setFormData(prev => ({ ...prev, name: userProfile.displayName, lineLink: `https://line.me/ti/p/~${userProfile.userId}` }));
 
-          // 透過 Worker 發送 POST 請求檢查會員狀態
           const checkRes = await fetch(WORKER_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -117,7 +119,6 @@
           if (isTenant) actionType = 'registerTenant';
           else if (isDist) actionType = 'registerDistributor';
 
-          // 透過 Worker 發送 POST 註冊請求
           const res = await fetch(WORKER_URL, {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' },
