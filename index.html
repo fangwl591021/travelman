@@ -1,816 +1,503 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅遊管家 - 平台級智能業務系統 (v4.0)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
-  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-    @keyframes run { 0% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-8px) rotate(5deg); } 50% { transform: translateY(0) rotate(0deg); } 75% { transform: translateY(-8px) rotate(-5deg); } 100% { transform: translateY(0) rotate(0deg); } }
-    .animate-run { animation: run 0.5s infinite ease-in-out; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .line-chat-bg { background-color: #749cbd; }
-    select.crm-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 7l3-3 3 3m0 6l-3 3-3-3'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1em; padding-right: 2rem; }
-    
-    /* 視覺編輯器專屬樣式 */
-    .editor-content { outline: none; }
-    .editor-content img { max-width: 100%; height: auto; border-radius: 12px; margin-top: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .editor-content h2 { font-size: 1.5rem; font-weight: bold; color: #b82337; margin-top: 24px; margin-bottom: 12px; border-left: 4px solid #b82337; padding-left: 12px; }
-    .editor-content p { line-height: 1.8; margin-bottom: 12px; color: #374151; font-size: 1.1rem; }
-    .editor-content a { color: #2563eb; text-decoration: underline; }
-  </style>
-</head>
-<body class="bg-gray-50 font-sans text-gray-800">
-  <div id="root"></div>
-
-  <script type="text/babel" data-presets="react,env">
-    const { useState, useEffect, useRef, useCallback } = React;
-
-    const IconWrapper = ({ children, className = "w-6 h-6" }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>;
-    const Navigation = ({ className }) => <IconWrapper className={className}><polygon points="3 11 22 2 13 21 11 13 3 11"/></IconWrapper>;
-    const Search = ({ className }) => <IconWrapper className={className}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></IconWrapper>;
-    const MapPin = ({ className }) => <IconWrapper className={className}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></IconWrapper>;
-    const Calendar = ({ className }) => <IconWrapper className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconWrapper>;
-    const Type = ({ className }) => <IconWrapper className={className}><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></IconWrapper>;
-    const UploadCloud = ({ className }) => <IconWrapper className={className}><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></IconWrapper>;
-    const ImageIcon = ({ className }) => <IconWrapper className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconWrapper>;
-    const FileText = ({ className }) => <IconWrapper className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></IconWrapper>;
-    const RefreshCw = ({ className }) => <IconWrapper className={className}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconWrapper>;
-    const Send = ({ className }) => <IconWrapper className={className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconWrapper>;
-    const Sparkles = ({ className }) => <IconWrapper className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></IconWrapper>;
-    const CheckCircle = ({ className }) => <IconWrapper className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconWrapper>;
-    const AlertCircle = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></IconWrapper>;
-    const X = ({ className }) => <IconWrapper className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconWrapper>;
-    const Edit2 = ({ className }) => <IconWrapper className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></IconWrapper>;
-    const Trash2 = ({ className }) => <IconWrapper className={className}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconWrapper>;
-    const Camera = ({ className }) => <IconWrapper className={className}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></IconWrapper>;
-    const Users = ({ className }) => <IconWrapper className={className}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
-    const UserIcon = ({ className }) => <IconWrapper className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
-    const Share2 = ({ className }) => <IconWrapper className={className}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></IconWrapper>;
-    const Briefcase = ({ className }) => <IconWrapper className={className}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></IconWrapper>;
-    const ArrowLeft = ({ className }) => <IconWrapper className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></IconWrapper>;
-    const ArrowUp = ({ className }) => <IconWrapper className={className}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></IconWrapper>;
-    const ClipboardList = ({ className }) => <IconWrapper className={className}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></IconWrapper>;
-    const CopyIcon = ({ className }) => <IconWrapper className={className}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></IconWrapper>;
-    const LinkIcon = ({ className }) => <IconWrapper className={className}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconWrapper>;
-    const Smartphone = ({ className }) => <IconWrapper className={className}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></IconWrapper>;
-    const BadgeDollarSign = ({ className }) => <IconWrapper className={className}><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></IconWrapper>;
-    const FileCheck = ({ className }) => <IconWrapper className={className}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></IconWrapper>;
-    const SendIcon = ({ className }) => <IconWrapper className={className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconWrapper>;
-    const Settings = ({ className }) => <IconWrapper className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconWrapper>;
-    const BuildingIcon = ({ className }) => <IconWrapper className={className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></IconWrapper>;
-
-    const RunningMan = ({ className }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="16" cy="5" r="2"/><path d="M12 9l3-2 1.5 2.5"/><path d="M10.5 16.5L8 11h3l2.5 4 4.5-1.5"/><path d="M14.5 22l-2-6-3.5 2.5"/><path d="M5.5 22L8 17"/>
-      </svg>
-    );
-
-    const WORKER_URL = 'https://travelkeeper.fangwl591021.workers.dev';
-    const LIFF_ID = '2009367829-qhw54Uf9'; 
-    const ENDPOINT_URL = 'https://fangwl591021.github.io/travelman/';
-    const LOGIN_URL = 'login.html'; 
-
-    const formatPhone = (phone) => {
-        if (!phone) return '';
-        const p = String(phone).trim();
-        if (p.length === 9 && p.startsWith('9')) return '0' + p;
-        return p;
-    };
-
-    const stripHtml = (html) => {
-        if (!html) return '';
-        const tmp = document.createElement("DIV");
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || "";
-    };
-
-    const buildFlexMessage = (tourItem, distributorData, refUidStr, options) => {
-        const trackingUrl = `${ENDPOINT_URL}?t=${tourItem.id}&r=${refUidStr || 'GUEST'}`;
-        const optsStr = [options.phone, options.line, options.lineAt, options.fb, options.web, options.map].map(b=>b?'1':'0').join('');
-        const shareLiffUrl = `https://liff.line.me/${LIFF_ID}?action=share&t=${tourItem.id}&r=${refUidStr || ''}&o=${optsStr}`;
-        const buttons = [
-            { "type": "button", "style": "primary", "color": "#00B900", "height": "sm", "action": { "type": "uri", "label": "查看行程 / 立即報名", "uri": trackingUrl } },
-            { "type": "button", "style": "primary", "color": "#b82337", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "分享行程給好友", "uri": shareLiffUrl } }
-        ];
-        if (options.phone && distributorData.phone) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "📞 聯絡電話", "uri": `tel:${formatPhone(distributorData.phone)}` }});
-        if (options.line && distributorData.lineLink) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "💬 私訊 LINE", "uri": distributorData.lineLink }});
-        if (options.lineAt && distributorData.lineAtLink) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "🟢 官方 LINE@", "uri": distributorData.lineAtLink }});
-        if (options.fb && distributorData.fbLink) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "👍 FB 粉絲專頁", "uri": distributorData.fbLink }});
-        if (options.web && distributorData.webLink) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "🌐 官方網站", "uri": distributorData.webLink }});
-        if (options.map && distributorData.mapLink) buttons.push({ "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "action": { "type": "uri", "label": "📍 門市導航", "uri": distributorData.mapLink }});
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Admin - 旅遊內容管理系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- LINE LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .line-green { color: #06C755; }
+        .bg-line-green { background-color: #06C755; }
+        .border-line-green { border-color: #06C755; }
+        .sidebar-item-active { background-color: #f1f5f9; color: #0f172a; font-weight: 500; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .mode-tab-active { border-bottom: 2px solid #06C755; color: #06C755; font-weight: 500;}
         
-        const plainDesc = stripHtml(tourItem.description).substring(0, 120);
+        /* 編輯器內容樣式 */
+        .editor-content { min-height: 400px; outline: none; }
+        .editor-content h2 { font-size: 1.5rem; font-weight: bold; color: #06C755; margin-bottom: 1.25rem; border-left: 4px solid #06C755; padding-left: 12px; }
+        .editor-content p { font-size: 15px; line-height: 1.8; color: #475569; margin-bottom: 1.5rem; }
+        
+        /* 讓圖片可以直接點擊替換 */
+        .editor-content img { 
+            max-width: 100%; height: auto; border-radius: 1rem; margin-bottom: 1.5rem; 
+            cursor: pointer; transition: all 0.2s; 
+        }
+        .editor-content.editable-mode img:hover { 
+            opacity: 0.85; outline: 3px dashed #06C755; outline-offset: 2px;
+        }
+        .editor-content.preview-mode img {
+            cursor: default; /* 預覽模式不顯示點擊指標 */
+        }
+    </style>
+</head>
+<body class="text-[#333333]">
+    <div id="root"></div>
 
-        return {
-          "type": "flex", "altText": `推薦行程：${tourItem.title}`,
-          "contents": {
-            "type": "bubble",
-            "hero": { "type": "image", "url": tourItem.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80', "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "action": { "type": "uri", "uri": trackingUrl } },
-            "body": { "type": "box", "layout": "vertical", "contents": [
-                { "type": "text", "text": tourItem.title, "weight": "bold", "size": "xl", "wrap": true },
-                { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
-                    { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [ { "type": "text", "text": "天數", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": `${tourItem.days} 天`, "wrap": true, "color": "#666666", "size": "sm", "flex": 5 } ] },
-                    { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [ { "type": "text", "text": "價格", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": `TWD ${Number(tourItem.price).toLocaleString()}`, "wrap": true, "color": "#b82337", "size": "md", "weight": "bold", "flex": 5 } ] },
-                    { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [ { "type": "text", "text": "介紹", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": plainDesc ? plainDesc + '...' : '點擊下方按鈕了解行程！', "wrap": true, "maxLines": 5, "color": "#666666", "size": "sm", "flex": 5 } ] }
-                  ] } ] },
-            "footer": { "type": "box", "layout": "vertical", "spacing": "sm", "contents": buttons, "flex": 0 }
-          }
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- 設定區 ---
+        const LIFF_ID = "您的_LIFF_ID_在此"; 
+        const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/process';
+        // --------------
+
+        const Icon = ({ name, size = 18, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide && iconRef.current) {
+                    iconRef.current.innerHTML = `<i data-lucide="${name}"></i>`;
+                    window.lucide.createIcons({ root: iconRef.current, attrs: { class: className, width: size, height: size }});
+                }
+            }, [name, size, className]);
+            return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
         };
-    };
 
-    function App() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const actionParam = urlParams.get('action'); 
-      const [activeTab, setActiveTab] = useState(urlParams.get('tab') || 'home'); 
-      const [tourDetailTab, setTourDetailTab] = useState('itinerary'); 
-      const [shareStatusText, setShareStatusText] = useState('搜尋中...'); 
-      const [selectedTourId, setSelectedTourId] = useState(() => urlParams.get('t') || urlParams.get('tour_id') || null);
-      const [refUid, setRefUid] = useState(() => {
-        const urlRef = urlParams.get('r') || urlParams.get('ref_uid');
-        if (urlRef) localStorage.setItem('tracking_ref_uid', urlRef);
-        return urlRef || localStorage.getItem('tracking_ref_uid') || '';
-      });
+        const App = () => {
+            const [activeSection, setActiveSection] = useState('gallery'); 
+            const [travelMode, setTravelMode] = useState('text');
+            const [loading, setLoading] = useState(false);
+            const [image, setImage] = useState(null);
+            const [travelText, setTravelText] = useState('');
+            const [result, setResult] = useState(null);
+            const [message, setMessage] = useState({ type: '', text: '' });
+            
+            const [isEditing, setIsEditing] = useState(false);
+            const [previewData, setPreviewData] = useState(null); // 新增：預覽模式狀態
+            const [records, setRecords] = useState([]);
+            const [isUploadingImage, setIsUploadingImage] = useState(false);
+            
+            const [imageToReplace, setImageToReplace] = useState(null);
+            
+            const editorRef = useRef(null);
+            const savedSelectionRef = useRef(null);
 
-      const [crmSubTab, setCrmSubTab] = useState('orders');
-      const [itineraries, setItineraries] = useState([]);
-      const [toast, setToast] = useState(null);
-      const [isLoading, setIsLoading] = useState(true); 
-      const [isUploadingImage, setIsUploadingImage] = useState(false); 
-      const [isInsertingContentImage, setIsInsertingContentImage] = useState(false); 
-      const [isSubmitting, setIsSubmitting] = useState(false); 
-      
-      const [liffProfile, setLiffProfile] = useState(null);
-      const [isLiffReady, setIsLiffReady] = useState(false);
-      const [distributorStatus, setDistributorStatus] = useState(null); 
-      const [isGeneralMember, setIsGeneralMember] = useState(false);
-      const [isAdmin, setIsAdmin] = useState(false);
+            useEffect(() => {
+                const initLiff = async () => {
+                    if (!window.liff || LIFF_ID === "您的_LIFF_ID_在此") return;
+                    try { await window.liff.init({ liffId: LIFF_ID }); } catch (err) { console.error(err); }
+                };
+                initLiff();
+                fetchRecords();
+            }, []);
 
-      const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-      const [isTenant, setIsTenant] = useState(false);
-      const [tenantStatus, setTenantStatus] = useState(null);
-      const [myTenantData, setMyTenantData] = useState(null);
+            useEffect(() => {
+                if (message.text) {
+                    const timer = setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+                    return () => clearTimeout(timer);
+                }
+            }, [message.text]);
 
-      const [myDistributorData, setMyDistributorData] = useState(null);
-      const [myUserData, setMyUserData] = useState(null);
-      const [distributorStats, setDistributorStats] = useState({ users: [], orders: [] }); 
-      const [isStatusChecked, setIsStatusChecked] = useState(false);
+            const fetchRecords = async () => {
+                setLoading(true);
+                try {
+                    const response = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getRecords' })
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error);
+                    setRecords(data.records || []);
+                } catch (err) {
+                    setMessage({ type: 'error', text: `無法載入紀錄: ${err.message}` });
+                } finally {
+                    setLoading(false);
+                }
+            };
 
-      const [crmTenants, setCrmTenants] = useState([]);
-      const [crmDistributors, setCrmDistributors] = useState([]);
-      const [crmUsers, setCrmUsers] = useState([]);
-      const [crmOrders, setCrmOrders] = useState([]); 
-      const [myOrders, setMyOrders] = useState([]); 
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setImage(reader.result);
+                    reader.readAsDataURL(file);
+                }
+            };
 
-      const [searchRegion, setSearchRegion] = useState('');
-      const [searchStartDate, setSearchStartDate] = useState('');
-      const [searchEndDate, setSearchEndDate] = useState('');
-      const [searchKeyword, setSearchKeyword] = useState('');
-      const [filteredResults, setFilteredResults] = useState([]);
-      
-      const [distOrderSearchMonth, setDistOrderSearchMonth] = useState('');
-      const [distOrderSearchKeyword, setDistOrderSearchKeyword] = useState('');
-      
-      const [crmOrderSearchMonth, setCrmOrderSearchMonth] = useState('');
-      const [crmOrderSearchKeyword, setCrmOrderSearchKeyword] = useState('');
+            const handleEditorImageUpload = async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    setImageToReplace(null); 
+                    return;
+                }
 
-      const [bannerImage, setBannerImage] = useState(() => localStorage.getItem('travel_keeper_banner') || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80');
-      const [uploadMode, setUploadMode] = useState('dm');
-      const [ocrStatus, setOcrStatus] = useState('idle');
-      
-      const [draftData, setDraftData] = useState({ id: null, title: '', region: '', price: '', days: '', startDate: '', endDate: '', description: '', image: '', notes: '' });
-      const [deleteModalId, setDeleteModalId] = useState(null);
-      const [bookingModalData, setBookingModalData] = useState(null);
-      const [editingDistributor, setEditingDistributor] = useState(null);
-      const [editFormData, setEditFormData] = useState({});
-      const [editingTenant, setEditingTenant] = useState(null);
-      const [editTenantForm, setEditTenantForm] = useState({});
-      
-      const [distPanel, setDistPanel] = useState('tours');
-      const [promoToolOpen, setPromoToolOpen] = useState(false);
-      const [distCardMode, setDistCardMode] = useState('single');
-      const [distSelectedIds, setDistSelectedIds] = useState(new Set());
-      const [flexModalItem, setFlexModalItem] = useState(null);
-      
-      const [contactInfo, setContactInfo] = useState(() => {
-          try {
-              const saved = localStorage.getItem('tk_contact_info');
-              return saved ? JSON.parse(saved) : { phone: '', line: '', website: '' };
-          } catch(e) { return { phone: '', line: '', website: '' }; }
-      });
-      const [cardOptions, setCardOptions] = useState({ phone: false, line: false, lineAt: false, fb: false, web: false, map: false });
-      
-      const [aiImage, setAiImage] = useState(null);
-      const [isAiLoading, setIsAiLoading] = useState(false);
-      const [aiResult, setAiResult] = useState(null);
+                setIsUploadingImage(true);
+                setMessage({ type: 'info', text: '圖片上傳至 Google Drive 中...' });
 
-      const editorRef = useRef(null);
-      const articleTopRef = useRef(null);
-      const priceCardAnchorRef = useRef(null);
-      const articleBodyRef = useRef(null);
-      const [priceCardStyle, setPriceCardStyle] = useState({});
+                try {
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const base64 = reader.result.split(',')[1];
+                        const response = await fetch(WORKER_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'uploadImage', imageBase64: base64 })
+                        });
+                        const data = await response.json();
+                        if (data.error) throw new Error(data.error);
 
-      const execCmd = (cmd, val = null) => document.execCommand(cmd, false, val);
+                        if (imageToReplace) {
+                            imageToReplace.src = data.url;
+                            setImageToReplace(null);
+                        } else {
+                            if (editorRef.current) editorRef.current.focus();
+                            if (savedSelectionRef.current && window.getSelection) {
+                                const sel = window.getSelection();
+                                sel.removeAllRanges();
+                                sel.addRange(savedSelectionRef.current);
+                            }
+                            execCmd('insertImage', data.url);
+                        }
+                        
+                        setMessage({ type: 'success', text: '圖片更新成功！' });
+                    };
+                    reader.readAsDataURL(file);
+                } catch (err) {
+                    setMessage({ type: 'error', text: `上傳失敗: ${err.message}` });
+                    setImageToReplace(null);
+                } finally {
+                    setIsUploadingImage(false);
+                    e.target.value = ''; 
+                }
+            };
 
-      // ===== 所有 render 函數的實現 =====
-      
-      const renderHomeTab = () => (
-        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-3xl overflow-hidden shadow-md">
-                <img src={bannerImage} className="w-full h-48 sm:h-64 md:h-80 object-cover" />
-                <div className="p-6 md:p-10">
-                  <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">探索全台熱門行程</h1>
-                  <p className="text-gray-500 font-medium text-lg">精選旅遊特色商品，找到最適合您的行程</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl shadow-md p-6 flex flex-col justify-center">
-              <p className="text-xs text-gray-500 font-bold mb-3 uppercase tracking-widest">快速導覽</p>
-              <div className="space-y-2">
-                <button onClick={() => { setSearchRegion(''); setSearchKeyword(''); setSearchStartDate(''); setSearchEndDate(''); setFilteredResults(itineraries); }} className="w-full text-left px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition-colors">🔄 重設篩選</button>
-                {!isGeneralMember && <button onClick={loginAsMember} className="w-full text-left px-4 py-3 rounded-xl text-sm font-bold bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">👤 會員登入</button>}
-                {!distributorStatus && <button onClick={loginAsDistributor} className="w-full text-left px-4 py-3 rounded-xl text-sm font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors">💼 經銷申請</button>}
-              </div>
-            </div>
-          </div>
+            const runAI = async () => {
+                let payload = { action: 'generateContent' };
+                if (activeSection === 'travel') {
+                    if (travelMode === 'image') {
+                        if (!image) { setMessage({ type: 'error', text: '請先上傳圖片素材' }); return; }
+                        payload.imageBase64 = image.split(',')[1];
+                        payload.mode = 'ImageToWeb';
+                    } else {
+                        if (!travelText) { setMessage({ type: 'error', text: '請輸入文章內容' }); return; }
+                        payload.textInput = travelText;
+                        payload.mode = 'ArticleToWeb';
+                    }
+                } else if (activeSection === 'copy') {
+                    if (!image) { setMessage({ type: 'error', text: '請先上傳商品圖片' }); return; }
+                    payload.imageBase64 = image.split(',')[1];
+                    payload.mode = 'Product';
+                }
 
-          <div className="bg-white rounded-3xl shadow-md p-6 md:p-8 mb-10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"><Search className="w-6 h-6 text-blue-600" /> 搜尋行程</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-              <input type="text" placeholder="搜尋行程名稱或介紹..." value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} className="col-span-1 md:col-span-2 lg:col-span-2 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
-              <select value={searchRegion} onChange={e => setSearchRegion(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none crm-select">
-                <option value="">📍 選擇地區</option>
-                <option value="國旅">國旅</option>
-                <option value="亞洲">亞洲</option>
-                <option value="歐洲">歐洲</option>
-                <option value="美洲">美洲</option>
-              </select>
-              <input type="date" value={searchStartDate} onChange={e => setSearchStartDate(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
-              <input type="date" value={searchEndDate} onChange={e => setSearchEndDate(e.target.value)} className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
-            </div>
-            <button onClick={handleSearch} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-lg transition-colors shadow-lg">🔍 搜尋</button>
-          </div>
+                setLoading(true);
+                setMessage({ type: 'info', text: 'AI 達人正在為您編排內容與精美配圖...' });
+                
+                try {
+                    const response = await fetch(WORKER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error);
+                    setResult(data);
+                    setMessage({ type: 'success', text: '生成完畢！' });
+                    fetchRecords(); 
+                } catch (err) {
+                    setMessage({ type: 'error', text: `發生錯誤: ${err.message}` });
+                } finally { setLoading(false); }
+            };
 
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3"><MapPin className="w-6 h-6 text-red-600" /> 精選行程 ({filteredResults.length})</h2>
-            {isLoading ? (
-              <div className="text-center py-20"><RefreshCw className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" /><p className="text-gray-500 font-bold text-lg">載入中...</p></div>
-            ) : filteredResults.length === 0 ? (
-              <div className="text-center py-20"><AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" /><p className="text-gray-500 font-bold text-lg">找不到符合條件的行程</p></div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredResults.map(tour => (
-                  <div key={tour.id} onClick={() => { setSelectedTourId(tour.id); setTourDetailTab('itinerary'); window.history.pushState({}, '', `?t=${tour.id}`); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer group">
-                    <div className="relative h-48 overflow-hidden bg-gray-200">
-                      <img src={tour.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2">{tour.title}</h3>
-                      <div className="space-y-2 text-sm text-gray-600 mb-4">
-                        <p className="flex items-center gap-2"><Calendar className="w-4 h-4 text-blue-600" /> {tour.days} 天</p>
-                        <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-red-600" /> {tour.region}</p>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-gray-100 pt-4">
-                        <span className="text-2xl font-black text-blue-600">TWD {Number(tour.price).toLocaleString()}</span>
-                        <button onClick={(e) => { e.stopPropagation(); handleBookNow(tour); }} className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">報名</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      );
+            const execCmd = (cmd, val = null) => document.execCommand(cmd, false, val);
 
-      const renderMemberTab = () => {
-        if (!isGeneralMember) {
-          return (
-            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-              <div className="bg-white rounded-3xl shadow-md p-12 text-center">
-                <UserIcon className="w-20 h-20 text-gray-300 mx-auto mb-6" />
-                <h2 className="text-3xl font-bold text-gray-800 mb-3">歡迎使用會員中心</h2>
-                <p className="text-gray-500 font-medium text-lg mb-8">登入或註冊帳號，即可查看您的訂單和會員資訊</p>
-                <button onClick={loginAsMember} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-colors">👤 會員登入</button>
-              </div>
-            </div>
-          );
-        }
+            const saveEdit = () => {
+                if (editorRef.current) {
+                    const updatedHtml = editorRef.current.innerHTML;
+                    setResult(prev => ({ ...prev, webHtml: updatedHtml }));
+                    setIsEditing(false);
+                    setMessage({ type: 'success', text: '內容已更新' });
+                    fetchRecords(); // 存檔後也刷新一次紀錄庫
+                }
+            };
 
-        return (
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-            <h1 className="text-3xl font-black text-gray-900 mb-8">👤 會員中心</h1>
-            <div className="bg-white rounded-3xl shadow-md p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">我的訂單 ({myOrders.length})</h2>
-              {myOrders.length === 0 ? (
-                <p className="text-gray-500 font-medium text-center py-10">您目前沒有訂單</p>
-              ) : (
-                <div className="space-y-4">
-                  {myOrders.map((order, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-xl p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-bold text-gray-800">{order.tourTitle || '行程'}</p>
-                        <p className="text-sm text-gray-500">訂單編號：{order.orderId}</p>
-                      </div>
-                      <span className={`px-4 py-2 rounded-lg font-bold text-sm ${order.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{order.status || '待確認'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      };
+            const sendToLine = (flexCardData) => {
+                if (window.liff && window.liff.isInClient() && flexCardData) {
+                    window.liff.sendMessages([{ type: "flex", altText: "推薦行程", contents: flexCardData }])
+                        .then(() => setMessage({ type: 'success', text: '已傳送至 LINE！' }))
+                        .catch(err => setMessage({ type: 'error', text: '傳送失敗' }));
+                } else {
+                    setMessage({ type: 'info', text: '請在 LINE 官方帳號內點擊傳送' });
+                }
+            };
 
-      const renderDistributorTab = () => {
-        if (distributorStatus !== 'approved') {
-          return (
-            <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-              <div className="bg-white rounded-3xl shadow-md p-12 text-center">
-                <Briefcase className="w-20 h-20 text-gray-300 mx-auto mb-6" />
-                <h2 className="text-3xl font-bold text-gray-800 mb-3">經銷商專區</h2>
-                <p className="text-gray-500 font-medium text-lg mb-8">成為我們的經銷商夥伴，享受完整的銷售支援</p>
-                <button onClick={loginAsDistributor} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-colors">💼 申請成為經銷商</button>
-              </div>
-            </div>
-          );
-        }
+            const parseCardInfo = (html) => {
+                if (!html) return { title: '未命名專案', img: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800' };
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                const h2 = div.querySelector('h2');
+                const img = div.querySelector('img');
+                return {
+                    title: h2 ? h2.innerText : '未命名旅遊行程',
+                    img: img ? img.src : 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800'
+                };
+            };
 
-        return (
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-            <h1 className="text-3xl font-black text-gray-900 mb-8">💼 經銷商專區</h1>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-3xl shadow-md p-6">
-                <p className="text-sm text-gray-500 font-bold mb-2">推薦用戶</p>
-                <p className="text-4xl font-black text-blue-600">{distributorStats.users?.length || 0}</p>
-              </div>
-              <div className="bg-white rounded-3xl shadow-md p-6">
-                <p className="text-sm text-gray-500 font-bold mb-2">成交訂單</p>
-                <p className="text-4xl font-black text-green-600">{distributorStats.orders?.length || 0}</p>
-              </div>
-              <div className="bg-white rounded-3xl shadow-md p-6">
-                <button onClick={() => setPromoToolOpen(true)} className="w-full bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-bold transition-colors">🚀 推廣名片</button>
-              </div>
-            </div>
-          </div>
-        );
-      };
+            return (
+                <div className="flex min-h-screen">
+                    <input id="editorFileInput" type="file" className="hidden" onChange={handleEditorImageUpload} accept="image/*" />
 
-      const renderCrmTab = () => {
-        if (!isAdmin) {
-          return <div className="p-20 text-center text-gray-500 font-bold text-2xl">無權限存取</div>;
-        }
-
-        return (
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-            <h1 className="text-3xl font-black text-gray-900 mb-8">🎯 {isSuperAdmin ? '系統總' : '旅行社'}後台</h1>
-            <div className="flex gap-2 mb-8 overflow-x-auto custom-scrollbar">
-              <button onClick={() => setCrmSubTab('orders')} className={`shrink-0 px-4 py-2 rounded-lg font-bold ${crmSubTab === 'orders' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>訂單管理</button>
-              <button onClick={() => setCrmSubTab('distributors')} className={`shrink-0 px-4 py-2 rounded-lg font-bold ${crmSubTab === 'distributors' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>經銷商</button>
-              <button onClick={() => setCrmSubTab('users')} className={`shrink-0 px-4 py-2 rounded-lg font-bold ${crmSubTab === 'users' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>會員</button>
-              {isSuperAdmin && <button onClick={() => setCrmSubTab('tenants')} className={`shrink-0 px-4 py-2 rounded-lg font-bold ${crmSubTab === 'tenants' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>主帳號</button>}
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-md p-8">
-              {crmSubTab === 'orders' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">📦 訂單列表</h2>
-                  {crmOrders.length === 0 ? (
-                    <p className="text-gray-500 text-center py-10">暫無訂單</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                          <tr>
-                            <th className="px-4 py-3 text-left font-bold text-gray-700">訂單編號</th>
-                            <th className="px-4 py-3 text-left font-bold text-gray-700">行程</th>
-                            <th className="px-4 py-3 text-left font-bold text-gray-700">狀態</th>
-                            <th className="px-4 py-3 text-left font-bold text-gray-700">操作</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {crmOrders.map((order, idx) => (
-                            <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                              <td className="px-4 py-3 text-gray-800 font-medium">{order.orderId}</td>
-                              <td className="px-4 py-3 text-gray-800">{order.tourTitle}</td>
-                              <td className="px-4 py-3">
-                                <select value={order.status || ''} onChange={e => handleUpdateOrder(order.orderId, 'status', e.target.value)} className="px-3 py-1 border border-gray-200 rounded-lg text-sm font-bold crm-select">
-                                  <option value="pending">待確認</option>
-                                  <option value="confirmed">已確認</option>
-                                  <option value="cancelled">已取消</option>
-                                </select>
-                              </td>
-                              <td className="px-4 py-3"><button onClick={() => { /* 編輯邏輯 */ }} className="text-blue-600 hover:text-blue-700 font-bold">編輯</button></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {crmSubTab === 'distributors' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">💼 經銷商列表</h2>
-                  {crmDistributors.length === 0 ? (
-                    <p className="text-gray-500 text-center py-10">暫無經銷商</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {crmDistributors.map((dist, idx) => (
-                        <div key={idx} className="border border-gray-200 rounded-xl p-4 flex justify-between items-center">
-                          <div>
-                            <p className="font-bold text-gray-800">{dist.name}</p>
-                            <p className="text-sm text-gray-500">{dist.phone}</p>
-                          </div>
-                          <span className={`px-4 py-2 rounded-lg font-bold text-sm ${dist.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{dist.status || '待審核'}</span>
+                    <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col sticky top-0 h-screen">
+                        <div className="p-6 flex items-center gap-2 border-b border-slate-100">
+                            <span className="font-bold text-xl italic text-slate-800">SaaS <span className="text-blue-600">Admin</span></span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                        <nav className="flex-1 p-4 space-y-2 mt-2">
+                            <SidebarItem active={activeSection === 'gallery'} onClick={() => { setActiveSection('gallery'); fetchRecords(); }} icon="layout-grid" label="內容庫" />
+                            <SidebarItem active={activeSection === 'travel'} onClick={() => { setActiveSection('travel'); setResult(null); }} icon="map" label="新增行程網頁" />
+                            <SidebarItem active={activeSection === 'copy'} onClick={() => { setActiveSection('copy'); setResult(null); }} icon="edit-3" label="新增社群文案" />
+                        </nav>
+                    </aside>
 
-              {crmSubTab === 'users' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">👥 會員列表</h2>
-                  <p className="text-gray-500 text-center py-10">總計 {crmUsers.length} 位會員</p>
-                </div>
-              )}
+                    <main className="flex-1 flex flex-col min-w-0 bg-[#fbfbfb]">
+                        <div className="p-6 lg:p-10 max-w-6xl w-full mx-auto">
+                            
+                            {activeSection === 'gallery' && (
+                                <div>
+                                    <div className="flex justify-between items-center mb-8">
+                                        <h2 className="text-2xl font-bold text-slate-800">全部行程與內容</h2>
+                                        <button onClick={fetchRecords} className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-sm">
+                                            <Icon name="refresh-cw" size={14}/> 重新整理
+                                        </button>
+                                    </div>
 
-              {crmSubTab === 'tenants' && isSuperAdmin && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">🏢 主帳號列表</h2>
-                  <p className="text-gray-500 text-center py-10">總計 {crmTenants.length} 個主帳號</p>
+                                    {loading && records.length === 0 ? (
+                                        <div className="flex justify-center py-20 text-slate-400">
+                                            <Icon name="loader-2" className="animate-spin" size={32} />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {records.map((rec, idx) => {
+                                                const { title, img } = parseCardInfo(rec.webHtml);
+                                                const mockTags = idx % 2 === 0 ? "熱門 · 推薦" : "最新 · 企劃";
+                                                const mockPrice = idx % 2 === 0 ? "$22,900" : "$9,500";
+
+                                                return (
+                                                    <div key={rec.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                                                        <div className="h-48 w-full overflow-hidden cursor-pointer" onClick={() => setPreviewData(rec)}>
+                                                            <img src={img} alt={title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                                                        </div>
+                                                        <div className="p-5 flex-1 flex flex-col">
+                                                            <div className="text-xs font-bold text-blue-600 mb-2">{mockTags}</div>
+                                                            <h3 className="text-lg font-bold text-slate-800 mb-6 flex-1 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => setPreviewData(rec)}>{title}</h3>
+                                                            
+                                                            <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
+                                                                <span className="text-red-500 font-bold text-xl">{mockPrice}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    {/* 新增瀏覽按鈕 */}
+                                                                    <button onClick={() => setPreviewData(rec)} className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-100 transition-colors" title="瀏覽內容">
+                                                                        <Icon name="eye" size={14} />
+                                                                    </button>
+                                                                    <button onClick={() => { setResult({ webHtml: rec.webHtml, flexCard: rec.flexCard }); setIsEditing(true); }} className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition-colors" title="編輯內容">
+                                                                        <Icon name="edit-2" size={14} />
+                                                                    </button>
+                                                                    <button onClick={() => sendToLine(rec.flexCard)} className="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center hover:bg-green-100 transition-colors" title="傳送至 LINE">
+                                                                        <Icon name="send" size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {(activeSection === 'travel' || activeSection === 'copy') && (
+                                <div className="max-w-3xl mx-auto">
+                                    <header className="mb-8">
+                                        <h2 className="text-2xl font-bold text-slate-800 mb-1">
+                                            {activeSection === 'travel' ? "新增行程網頁" : "新增社群文案"}
+                                        </h2>
+                                        <p className="text-sm text-slate-500">
+                                            {activeSection === 'travel' ? "AI 自動分段並匹配 16:9 旅遊圖庫" : "快速生成跨平台社群素材"}
+                                        </p>
+                                    </header>
+
+                                    {activeSection === 'travel' && (
+                                        <div className="flex gap-6 mb-6">
+                                            <button onClick={() => setTravelMode('text')} className={`pb-2 text-sm transition-all ${travelMode === 'text' ? 'mode-tab-active' : 'text-slate-400 hover:text-slate-600'}`}>文章生網頁</button>
+                                            <button onClick={() => setTravelMode('image')} className={`pb-2 text-sm transition-all ${travelMode === 'image' ? 'mode-tab-active' : 'text-slate-400 hover:text-slate-600'}`}>圖片生網頁</button>
+                                        </div>
+                                    )}
+
+                                    <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 mb-8">
+                                        {activeSection === 'travel' && travelMode === 'text' ? (
+                                            <textarea value={travelText} onChange={(e) => setTravelText(e.target.value)} placeholder="在此貼上旅遊行程文章，AI 將為您自動分段並配圖..." className="w-full h-48 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:border-line-green focus:ring-1 focus:ring-line-green outline-none text-sm transition-all resize-none" />
+                                        ) : (
+                                            <div onClick={() => !loading && document.getElementById('fileInput').click()} className={`border-2 border-dashed rounded-2xl py-14 flex flex-col items-center justify-center transition-all cursor-pointer ${image ? 'border-line-green bg-green-50/20' : 'border-slate-200 hover:bg-slate-50'}`}>
+                                                {image ? <img src={image} className="max-h-56 rounded-xl shadow-sm" /> : <p className="text-sm text-slate-400">點擊上傳原始素材或商品照片</p>}
+                                                <input id="fileInput" type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                                            </div>
+                                        )}
+
+                                        <div className="mt-8 flex justify-end">
+                                            <button disabled={loading} onClick={runAI} className="bg-line-green text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#05b34c] transition-all disabled:opacity-50 flex items-center gap-2 shadow-md shadow-green-100">
+                                                {loading ? <Icon name="loader-2" className="animate-spin" size={16} /> : <Icon name="sparkles" size={16} />}
+                                                立即生成並存入內容庫
+                                            </button>
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+                        </div>
+                    </main>
+
+                    {/* 純瀏覽預覽彈窗 (新增) */}
+                    {previewData && (
+                        <div className="fixed inset-0 z-[100] bg-[#f8fafc] flex flex-col animate-in fade-in duration-200">
+                            <header className="border-b border-slate-200 p-4 flex justify-between items-center bg-white shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <button onClick={() => setPreviewData(null)} className="text-slate-400 hover:text-slate-800 transition-colors"><Icon name="arrow-left" size={20} /></button>
+                                    <h3 className="font-bold text-slate-800">瀏覽行程內容</h3>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => {
+                                            setResult({ webHtml: previewData.webHtml, flexCard: previewData.flexCard });
+                                            setIsEditing(true);
+                                            setPreviewData(null);
+                                        }} 
+                                        className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors"
+                                    >
+                                        <Icon name="edit-2" size={14} /> 編輯內容
+                                    </button>
+                                    <button 
+                                        onClick={() => sendToLine(previewData.flexCard)} 
+                                        className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors"
+                                    >
+                                        <Icon name="send" size={14} /> 傳送至 LINE
+                                    </button>
+                                </div>
+                            </header>
+
+                            <div className="flex-1 overflow-auto p-6 md:p-12">
+                                <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-14 border border-slate-100">
+                                    {/* preview-mode 不具備點擊圖片替換的效果 */}
+                                    <div className="editor-content preview-mode" dangerouslySetInnerHTML={{ __html: previewData.webHtml }} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 全螢幕視覺編輯器彈窗 */}
+                    {isEditing && (
+                        <div className="fixed inset-0 z-[100] bg-[#f8fafc] flex flex-col animate-in fade-in duration-200">
+                            <header className="border-b border-slate-200 p-4 flex justify-between items-center bg-white shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-slate-800 transition-colors"><Icon name="arrow-left" size={20} /></button>
+                                    <h3 className="font-bold text-slate-800">網頁內容編輯器</h3>
+                                </div>
+                                <button onClick={saveEdit} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-colors">
+                                    儲存修改
+                                </button>
+                            </header>
+                            
+                            {/* 編輯器工具列 */}
+                            <div className="border-b border-slate-200 bg-white p-2 flex flex-wrap gap-1 justify-center shadow-sm z-10">
+                                <EditorTool onClick={() => execCmd('formatBlock', 'H2')} icon="heading" label="段落標題" />
+                                <div className="w-px h-6 bg-slate-200 mx-2 self-center"></div>
+                                <EditorTool onClick={() => execCmd('bold')} icon="bold" />
+                                <EditorTool onClick={() => execCmd('italic')} icon="italic" />
+                                <EditorTool onClick={() => execCmd('underline')} icon="underline" />
+                                <div className="w-px h-6 bg-slate-200 mx-2 self-center"></div>
+                                <EditorTool onClick={() => execCmd('justifyLeft')} icon="align-left" />
+                                <EditorTool onClick={() => execCmd('justifyCenter')} icon="align-center" />
+                                <EditorTool onClick={() => execCmd('justifyRight')} icon="align-right" />
+                                <div className="w-px h-6 bg-slate-200 mx-2 self-center"></div>
+                                <EditorTool onClick={() => {
+                                    const url = prompt('請輸入連結網址:', 'https://');
+                                    if(url) execCmd('createLink', url);
+                                }} icon="link" />
+                                
+                                <EditorTool onClick={() => {
+                                    if(isUploadingImage) return;
+                                    setImageToReplace(null); 
+                                    if (window.getSelection) {
+                                        const sel = window.getSelection();
+                                        if (sel.getRangeAt && sel.rangeCount > 0) {
+                                            savedSelectionRef.current = sel.getRangeAt(0);
+                                        }
+                                    }
+                                    document.getElementById('editorFileInput').click();
+                                }} icon={isUploadingImage && !imageToReplace ? "loader-2" : "image"} iconClass={isUploadingImage && !imageToReplace ? "animate-spin" : ""} label="插入新圖片" />
+                                
+                                <div className="w-px h-6 bg-slate-200 mx-2 self-center"></div>
+                                <EditorTool onClick={() => execCmd('removeFormat')} icon="eraser" label="清除格式" />
+                            </div>
+
+                            <div className="flex-1 overflow-auto p-6 md:p-12">
+                                <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-14 border border-slate-100 relative">
+                                    <div className="absolute top-4 right-4 text-xs text-slate-400 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-full">
+                                        <Icon name="mouse-pointer-click" size={14} />
+                                        提示：直接點擊圖片即可上傳替換
+                                    </div>
+
+                                    {/* editable-mode 會顯示圖片點擊提示特效 */}
+                                    <div 
+                                        ref={editorRef}
+                                        contentEditable
+                                        className="editor-content editable-mode mt-4"
+                                        dangerouslySetInnerHTML={{ __html: result?.webHtml }}
+                                        onClick={(e) => {
+                                            if (e.target.tagName === 'IMG') {
+                                                setImageToReplace(e.target);
+                                                document.getElementById('editorFileInput').click();
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Toast 提示 */}
+                    {message.text && (
+                        <div className={`fixed bottom-8 right-8 z-[110] flex items-center gap-2 px-6 py-3.5 rounded-xl shadow-xl text-sm text-white font-medium animate-in slide-in-from-right-8 ${message.type === 'error' ? 'bg-red-500' : 'bg-slate-800'}`}>
+                            <Icon name={message.type === 'success' ? "check-circle-2" : (isUploadingImage ? "loader-2" : "info")} className={isUploadingImage ? "animate-spin" : ""} size={18} />
+                            {message.text}
+                        </div>
+                    )}
                 </div>
-              )}
-            </div>
-          </div>
+            );
+        };
+
+        const SidebarItem = ({ active, onClick, icon, label }) => (
+            <button 
+                onClick={onClick} 
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${active ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-100'}`}
+            >
+                <Icon name={icon} size={18} />
+                <span>{label}</span>
+            </button>
         );
-      };
 
-      const renderAdminEditorTab = () => {
-        if (!isAdmin) {
-          return <div className="p-20 text-center text-gray-500 font-bold text-2xl">無權限存取</div>;
-        }
-
-        return (
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8 animate-fade-in pb-20">
-            <h1 className="text-3xl font-black text-gray-900 mb-8">✨ 智能上稿系統</h1>
-            <div className="bg-white rounded-3xl shadow-md p-8 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">📤 上傳行程</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">行程標題</label>
-                  <input type="text" value={draftData.title} onChange={e => setDraftData({...draftData, title: e.target.value})} placeholder="輸入行程標題" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">地區</label>
-                  <select value={draftData.region} onChange={e => setDraftData({...draftData, region: e.target.value})} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none crm-select">
-                    <option value="">選擇地區</option>
-                    <option value="國旅">國旅</option>
-                    <option value="亞洲">亞洲</option>
-                    <option value="歐洲">歐洲</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">天數</label>
-                  <input type="number" value={draftData.days} onChange={e => setDraftData({...draftData, days: e.target.value})} placeholder="天數" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">價格 (TWD)</label>
-                  <input type="number" value={draftData.price} onChange={e => setDraftData({...draftData, price: e.target.value})} placeholder="價格" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <label className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition-colors">
-                  <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="font-bold text-gray-700">上傳圖片</p>
-                  <input type="file" onChange={(e) => handleImageUploadToDrive(e, 'itinerary')} accept="image/*" className="hidden" />
-                </label>
-                <button onClick={handleUpdateContent} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors">💾 儲存</button>
-              </div>
-            </div>
-          </div>
+        const EditorTool = ({ onClick, icon, iconClass = "", label }) => (
+            <button 
+                onClick={onClick}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+                title={label}
+            >
+                <Icon name={icon} size={16} className={iconClass} />
+                {label && <span className="text-xs font-medium">{label}</span>}
+            </button>
         );
-      };
 
-      // 主要渲染函數的其餘實現...
-
-      useEffect(() => {
-        if (!selectedTourId) return;
-        const CARD_WIDTH = 360;
-        const TOP_OFFSET = 130; 
-
-        const updateCardPos = () => {
-          if (!priceCardAnchorRef.current || !articleBodyRef.current) return;
-          const anchorRect = priceCardAnchorRef.current.getBoundingClientRect();
-          const articleRect = articleBodyRef.current.getBoundingClientRect();
-          const rightGap = window.innerWidth - anchorRect.right;
-
-          if (articleRect.top > TOP_OFFSET) {
-            setPriceCardStyle({ display: 'none' });
-          } else {
-            setPriceCardStyle({
-              position: 'fixed',
-              top: TOP_OFFSET + 'px',
-              right: Math.max(rightGap, 12) + 'px',
-              width: CARD_WIDTH + 'px',
-              zIndex: 20,
-              display: 'block',
-            });
-          }
-        };
-
-        const tid = setTimeout(updateCardPos, 80);
-        window.addEventListener('scroll', updateCardPos, { passive: true });
-        window.addEventListener('resize', updateCardPos, { passive: true });
-        return () => {
-          clearTimeout(tid);
-          window.removeEventListener('scroll', updateCardPos);
-          window.removeEventListener('resize', updateCardPos);
-        };
-      }, [selectedTourId]);
-
-      useEffect(() => {
-          if (editorRef.current && activeTab === 'admin') {
-              editorRef.current.innerHTML = draftData.description || '';
-          }
-      }, [draftData.id, activeTab]);
-
-      const getTimestamp = () => new Date().getTime();
-
-      useEffect(() => { initLiff(); fetchItineraries(); }, []);
-
-      useEffect(() => {
-        const processAutoAction = async () => {
-             if (!isLiffReady || isLoading || !liffProfile || !isStatusChecked) return;
-             const tourId = urlParams.get('t') || urlParams.get('tour_id');
-             const rUid = urlParams.get('r') || urlParams.get('ref_uid');
-             const optsParam = urlParams.get('o') || urlParams.get('opts') || '000000';
-             
-             const tour = itineraries.find(i => String(i.id) === String(tourId));
-             if (!tour) { setShareStatusText('❌ 找不到該行程資訊'); setTimeout(() => window.location.replace(ENDPOINT_URL), 2000); return; }
-
-             let targetDistData = {};
-             if (rUid === liffProfile.userId && myDistributorData) { 
-                 targetDistData = myDistributorData; 
-             } else if (rUid) {
-                 try {
-                     const res = await fetch(`${WORKER_URL}/api/itineraries?action=checkUserStatus&uid=${rUid}&_t=${getTimestamp()}`);
-                     const data = await res.json();
-                     if (data.success && data.data.role === 'distributor') targetDistData = data.data.distributorData;
-                 } catch(e) {}
-             }
-
-             const cOptions = { phone: optsParam[0]==='1', line: optsParam[1]==='1', lineAt: optsParam[2]==='1', fb: optsParam[3]==='1', web: optsParam[4]==='1', map: optsParam[5]==='1' };
-             const flexMsg = buildFlexMessage(tour, targetDistData, rUid, cOptions);
-
-             if (actionParam === 'send') {
-                 setShareStatusText("極速傳送中...");
-                 try {
-                     const context = liff.getContext();
-                     if (context && context.type !== 'none' && context.type !== 'external') { 
-                         await liff.sendMessages([flexMsg]); 
-                         liff.closeWindow(); 
-                     } else { 
-                         setShareStatusText('電腦版無聊天室，即將展開網頁...'); 
-                         setTimeout(() => window.location.replace(`${ENDPOINT_URL}?t=${tourId}&r=${rUid}`), 1000); 
-                     }
-                 } catch (e) { window.location.replace(`${ENDPOINT_URL}?t=${tourId}&r=${rUid}`); }
-             } else if (actionParam === 'share') {
-                 setShareStatusText("準備通訊錄...");
-                 try { 
-                     await liff.shareTargetPicker([flexMsg]); 
-                     liff.closeWindow(); 
-                 } catch(e) { 
-                     if (e.message && e.message.includes('not allowed')) { liff.logout(); window.location.reload(); } else { liff.closeWindow(); } 
-                 }
-             }
-        };
-        if (actionParam === 'share' || actionParam === 'send') processAutoAction();
-      }, [isLiffReady, isLoading, liffProfile, isStatusChecked, actionParam]);
-
-      const initLiff = async () => {
-        try {
-          if (!LIFF_ID || LIFF_ID === '您的_LIFF_ID_在此') return;
-          await liff.init({ liffId: LIFF_ID });
-          setIsLiffReady(true);
-          
-          if (liff.isLoggedIn()) {
-            const profile = await liff.getProfile();
-            setLiffProfile(profile);
-            let activeRef = urlParams.get('r') || urlParams.get('ref_uid');
-            if (!activeRef) {
-                try { activeRef = localStorage.getItem('tracking_ref_uid'); } catch(e){}
-            }
-            if (activeRef && activeRef !== profile.userId) { fetch(`${WORKER_URL}/api/itineraries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'registerUser', uid: profile.userId, name: profile.displayName, ref_uid: activeRef }) }).catch(e => console.error("Silent tracking error", e)); }
-            checkMyStatus(profile.userId);
-          } else {
-             setIsStatusChecked(true);
-          }
-        } catch (err) { console.error('LIFF 初始化失敗', err); setIsStatusChecked(true); }
-      };
-
-      const checkMyStatus = async (uid) => {
-        try {
-          const res = await fetch(`${WORKER_URL}/api/itineraries?action=checkUserStatus&uid=${uid}&_t=${getTimestamp()}`);
-          const data = await res.json();
-          if (data.success) {
-             const info = data.data;
-             if (info.isSuperAdmin) setIsSuperAdmin(true);
-             if (info.isAdmin || info.isSuperAdmin) setIsAdmin(true);
-
-             if (info.role === 'tenant') { 
-                 setIsTenant(true);
-                 setTenantStatus(info.status ? info.status.toString().trim().toLowerCase() : 'pending');
-                 setMyTenantData(info.tenantData);
-                 if (info.status === 'approved') setIsAdmin(true); 
-             } else if (info.role === 'distributor') { 
-                 setDistributorStatus(info.status ? info.status.toString().trim().toLowerCase() : 'pending'); 
-                 setMyDistributorData(info.distributorData); 
-                 setIsGeneralMember(true); 
-                 fetchUserOrders(uid); 
-             } else if (info.role === 'user') { 
-                 if (info.userData && info.userData.phone) { 
-                     setMyUserData(info.userData); 
-                     setIsGeneralMember(true); 
-                     fetchUserOrders(uid); 
-                 } 
-             }
-          }
-        } catch (e) { console.error('Status check error', e); } finally { setIsStatusChecked(true); }
-      };
-
-      useEffect(() => {
-          if (activeTab === 'crm' && isAdmin) fetchFullCrmData();
-          if (activeTab === 'distributor' && distributorStatus === 'approved' && liffProfile) fetchDistributorStats(liffProfile.userId);
-          if (activeTab === 'member' && isGeneralMember && liffProfile) fetchUserOrders(liffProfile.userId);
-      }, [activeTab, isAdmin, distributorStatus, isGeneralMember, liffProfile]);
-
-      const fetchUserOrders = async (uid) => {
-          try {
-              const res = await fetch(`${WORKER_URL}/api/itineraries?action=getUserOrders&uid=${uid}&_t=${getTimestamp()}`);
-              const data = await res.json();
-              if (data.success) setMyOrders(data.data);
-          } catch(e) { console.error('Fetch Orders error', e); }
-      };
-
-      const fetchDistributorStats = async (uid) => {
-          try {
-              const res = await fetch(`${WORKER_URL}/api/itineraries?action=getDistributorPerformance&uid=${uid}&_t=${getTimestamp()}`);
-              const data = await res.json();
-              if (data.success) setDistributorStats({ users: data.users || [], orders: data.orders || [] });
-          } catch(e) { console.error('Fetch Dist Stats error', e); }
-      };
-
-      const fetchFullCrmData = async () => {
-        try {
-          const [resT, resD, resU, resO] = await Promise.all([
-            fetch(`${WORKER_URL}/api/itineraries?action=getTenants&_t=${getTimestamp()}`),
-            fetch(`${WORKER_URL}/api/itineraries?action=getDistributors&_t=${getTimestamp()}`),
-            fetch(`${WORKER_URL}/api/itineraries?action=getUsers&_t=${getTimestamp()}`),
-            fetch(`${WORKER_URL}/api/itineraries?action=getAllOrders&_t=${getTimestamp()}`)
-          ]);
-          const [dataT, dataD, dataU, dataO] = await Promise.all([resT.json(), resD.json(), resU.json(), resO.json()]);
-          setCrmTenants(Array.isArray(dataT) ? dataT : []);
-          setCrmDistributors(Array.isArray(dataD) ? dataD : []);
-          setCrmUsers(Array.isArray(dataU) ? dataU : []);
-          if (dataO && dataO.success) setCrmOrders(Array.isArray(dataO.data) ? dataO.data : []);
-        } catch (e) { console.error('CRM Fetch error', e); }
-      };
-
-      const fetchItineraries = async () => {
-        setIsLoading(true);
-        try {
-          const res = await fetch(`${WORKER_URL}/api/itineraries?action=getItineraries&_t=${getTimestamp()}`);
-          const data = await res.json();
-          if (data && Array.isArray(data)) { setItineraries(data); setFilteredResults(data); }
-          else if (data && data.data && Array.isArray(data.data)) { setItineraries(data.data); setFilteredResults(data.data); }
-        } catch (error) { console.error('Fetch error', error); } finally { setIsLoading(false); }
-      };
-
-      const handleUpdateOrder = async (orderId, field, value) => {
-          setCrmOrders(prev => prev.map(o => String(o.orderId) === String(orderId) ? { ...o, [field]: value } : o));
-          try {
-              const res = await fetch(`${WORKER_URL}/api/itineraries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'updateOrder', orderId, [field]: value }) });
-              const result = await res.json();
-              if (result.success) showToast('✅ 訂單狀態已更新');
-              else throw new Error();
-          } catch(e) { showToast('❌ 更新失敗，請重試', 'error'); fetchFullCrmData(); }
-      };
-
-      const changeTab = (newTab) => { setActiveTab(newTab); setSelectedTourId(null); setTourDetailTab('itinerary'); window.history.replaceState({}, '', `?tab=${newTab}`); };
-      const showToast = (message, type = 'success') => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
-      const loginAsDistributor = () => { window.location.href = `${LOGIN_URL}?type=distributor&ref_uid=${refUid || ''}`; };
-      const loginAsMember = () => { window.location.href = `${LOGIN_URL}?type=user&ref_uid=${refUid || ''}`; };
-
-      const handleBookNow = (tour) => {
-          if (!isGeneralMember) { window.location.href = `${LOGIN_URL}?type=user&ref_uid=${refUid || ''}&t=${tour.id}`; return; }
-          setBookingModalData({ 
-              tourId: tour.id, tourTitle: tour.title, price: tour.price, pax: 1, totalAmount: tour.price, 
-              contactName: liffProfile?.displayName || '', 
-              contactPhone: formatPhone(myUserData?.phone || myDistributorData?.phone || ''), 
-              note: '' 
-          });
-      };
-
-      const handleSearch = () => {
-        let results = itineraries;
-        if (searchRegion) results = results.filter(item => item.region.includes(searchRegion));
-        if (searchKeyword) { const kw = searchKeyword.toLowerCase(); results = results.filter(item => (item.title && item.title.toLowerCase().includes(kw)) || (item.description && item.description.toLowerCase().includes(kw))); }
-        if (searchStartDate) results = results.filter(item => item.startDate && item.startDate >= searchStartDate);
-        if (searchEndDate) results = results.filter(item => item.endDate && item.endDate <= searchEndDate);
-        setFilteredResults(results); showToast(`為您找到 ${results.length} 筆符合的行程`);
-      };
-
-      const handleImageUploadToDrive = async (e, type = 'itinerary') => {
-        const file = e.target.files[0]; if (!file) return;
-        if (type === 'itinerary') setIsUploadingImage(true); else showToast('Banner 上傳中，請稍候...');
-        const reader = new FileReader(); reader.readAsDataURL(file);
-        reader.onloadend = async () => {
-          try {
-            const res = await fetch(`${WORKER_URL}/api/itineraries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'uploadImage', base64: reader.result }) });
-            const result = await res.json();
-            if (result.success) {
-              if (type === 'itinerary') { setDraftData({ ...draftData, image: result.url }); showToast('✅ 圖片已成功上傳！'); } 
-              else { setBannerImage(result.url); localStorage.setItem('travel_keeper_banner', result.url); showToast('✅ Banner 已成功更新！'); }
-            } else throw new Error(result.message || result.error);
-          } catch (err) { showToast('上傳失敗: ' + err.message, 'error'); } finally { if (type === 'itinerary') setIsUploadingImage(false); }
-        };
-      };
-
-      let roleBadge = <span className="bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded font-bold border border-gray-200">訪客</span>;
-      if (isSuperAdmin) roleBadge = <span className="bg-red-100 text-red-700 text-[11px] px-2 py-0.5 rounded font-bold border border-red-200">👑 系統總管</span>;
-      else if (isTenant && tenantStatus === 'approved') roleBadge = <span className="bg-purple-100 text-purple-700 text-[11px] px-2 py-0.5 rounded font-bold border border-purple-200">🏢 主帳號</span>;
-      else if (isTenant && tenantStatus === 'pending') roleBadge = <span className="bg-yellow-100 text-yellow-700 text-[11px] px-2 py-0.5 rounded font-bold border border-yellow-200">⏳ 主帳號審核中</span>;
-      else if (distributorStatus === 'approved') roleBadge = <span className="bg-emerald-100 text-emerald-700 text-[11px] px-2 py-0.5 rounded font-bold border border-emerald-200">💼 金牌經銷商</span>;
-      else if (distributorStatus === 'pending') roleBadge = <span className="bg-yellow-100 text-yellow-700 text-[11px] px-2 py-0.5 rounded font-bold border border-yellow-200">⏳ 經銷審核中</span>;
-      else if (isGeneralMember) roleBadge = <span className="bg-orange-100 text-orange-700 text-[11px] px-2 py-0.5 rounded font-bold border border-orange-200">👤 一般會員</span>;
-
-      if (actionParam === 'share' || actionParam === 'send') {
-          return (<div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center"><div className="text-blue-600 mb-6"><RunningMan className="w-20 h-20 animate-run" /></div><p className="text-gray-600 font-bold text-2xl tracking-widest animate-pulse">{shareStatusText}</p></div>);
-      }
-
-      const renderNavBar = () => (
-        <nav className="bg-white shadow-sm sticky top-0 z-50">
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between py-3 md:py-0 md:h-16">
-              <div className="flex justify-between items-center w-full md:w-auto">
-                <div className="flex items-center cursor-pointer mr-8" onClick={() => changeTab('home')}><Navigation className="h-8 w-8 text-blue-600 mr-2" /><span className="font-bold text-xl tracking-wider text-blue-900">旅遊管家</span></div>
-                <div className="md:hidden flex items-center">{liffProfile ? (<div className="flex items-center gap-2"><div className="flex flex-col items-end">{roleBadge}</div><img src={liffProfile.pictureUrl || 'https://via.placeholder.com/150'} className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover" /></div>) : (<button onClick={() => liff.login({ redirectUri: window.location.href })} className="bg-[#00B900] hover:bg-[#009900] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">LINE 登入</button>)}</div>
-              </div>
-              <div className="flex items-center space-x-1 overflow-x-auto custom-scrollbar mt-3 md:mt-0 pb-1 md:pb-0 w-full md:w-auto flex-nowrap">
-                <button onClick={() => changeTab('home')} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'home' ? 'text-blue-700 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>找行程</button>
-                <button onClick={() => changeTab('member')} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center ${activeTab === 'member' ? 'text-orange-700 bg-orange-50' : 'text-gray-600 hover:bg-gray-100'}`}><Users className="w-4 h-4 mr-1.5" /> 會員中心</button>
-                <button onClick={() => changeTab('distributor')} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center ${activeTab === 'distributor' ? 'text-emerald-700 bg-emerald-50' : 'text-gray-600 hover:bg-gray-100'}`}><Briefcase className="w-4 h-4 mr-1.5" /> 經銷商專區</button>
-                {isAdmin && (
-                  <>
-                    <button onClick={() => changeTab('crm')} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center ${activeTab === 'crm' ? 'text-purple-700 bg-purple-50' : 'text-gray-600 hover:bg-gray-100'}`}>{isSuperAdmin ? '系統總後台' : '旅行社後台'}</button>
-                    <button onClick={() => changeTab('admin')} className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'admin' ? 'text-blue-700 bg-blue-50' : 'text-gray-600 hover:bg-gray-100'}`}>智能上稿</button>
-                  </>
-                )}
-              </div>
-              <div className="hidden md:flex items-center ml-4 pl-4 border-l border-gray-200 shrink-0">
-                {liffProfile ? (<div className="flex items-center gap-3"><div className="text-right"><p className="text-sm font-bold text-gray-800 leading-none mb-1.5">{liffProfile.displayName}</p><div className="flex justify-end">{roleBadge}</div></div><img src={liffProfile.pictureUrl || 'https://via.placeholder.com/150'} className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" /></div>) : (<button onClick={() => liff.login({ redirectUri: window.location.href })} className="bg-[#00B900] hover:bg-[#009900] text-white px-4 py-2 rounded-lg text-sm font-bold transition shadow-sm">LINE 登入</button>)}
-              </div>
-            </div>
-          </div>
-        </nav>
-      );
-
-      return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-          {renderNavBar()}
-          <div className="flex-grow w-full">
-            {activeTab === 'home' && renderHomeTab()}
-            {activeTab === 'member' && renderMemberTab()}
-            {activeTab === 'distributor' && renderDistributorTab()}
-            {activeTab === 'crm' && renderCrmTab()}
-            {activeTab === 'admin' && renderAdminEditorTab()}
-          </div>
-          
-          {toast && (<div className="fixed bottom-6 right-6 z-[130] animate-fade-in-up"><div className={`flex items-center p-5 rounded-2xl shadow-2xl ${toast.type === 'error' ? 'bg-red-50 text-red-800' : toast.type === 'info' ? 'bg-blue-50 text-blue-800' : 'bg-gray-900 text-white'}`}><span className="font-bold text-base tracking-wide">{toast.message}</span></div></div>)}
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
