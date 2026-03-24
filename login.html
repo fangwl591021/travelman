@@ -22,11 +22,9 @@
   <script type="text/babel" data-presets="react,env">
     const { useState, useEffect } = React;
 
-    // --- 系統設定區 ---
-    const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/process';
+    const WORKER_URL = 'https://travelkeeper.fangwl591021.workers.dev';
     const LIFF_ID = '2009367829-qhw54Uf9'; 
     const MAIN_APP_URL = 'index.html'; 
-    // -----------------
 
     const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16 text-green-500 mb-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
     const Briefcase = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-emerald-600"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
@@ -68,7 +66,8 @@
           setProfile(userProfile);
           setFormData(prev => ({ ...prev, name: userProfile.displayName, lineLink: `https://line.me/ti/p/~${userProfile.userId}` }));
 
-          const checkRes = await fetch(WORKER_URL, {
+          // 核心修正：統一向您的 WORKER_URL 發送 POST 驗證請求
+          const checkRes = await fetch(`${WORKER_URL}/api/itineraries`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ action: 'checkUserStatus', uid: userProfile.userId })
@@ -117,7 +116,7 @@
           if (isTenant) actionType = 'registerTenant';
           else if (isDist) actionType = 'registerDistributor';
 
-          const res = await fetch(WORKER_URL, {
+          const res = await fetch(`${WORKER_URL}/api/itineraries`, {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: actionType, uid: profile.userId, ref_uid: refUid, ...formData, mapLink: finalMapLink })
