@@ -130,81 +130,6 @@
         };
     };
 
-    const renderAgencyBlogDescription = (text) => {
-      if (!text) return null;
-      const isHtml = /<[a-z][\s\S]*>/i.test(text);
-      if (isHtml) {
-          return <div className="editor-content" dangerouslySetInnerHTML={{ __html: text }} />;
-      }
-
-      const lines = text.split('\n');
-      const blocks = [];
-      let currentBlock = { type: 'intro', dayText: '行程介紹', title: '', content: [], meals: [], hotels: [] };
-      let inMeal = false; let inHotel = false;
-
-      for (let i = 0; i < lines.length; i++) {
-          let line = lines[i].trim();
-          if (!line) { currentBlock.content.push({ type: 'space' }); continue; }
-          const dayMatch = line.match(/^(Day\s*\d+|第\s*[\d一二三四五六七八九十]+\s*天)(.*)/i);
-          if (dayMatch) {
-              if (currentBlock.content.length > 0 || currentBlock.meals.length > 0 || currentBlock.hotels.length > 0 || currentBlock.dayText !== '行程介紹') blocks.push(currentBlock);
-              currentBlock = { type: 'day', dayText: dayMatch[1].replace(/\s+/g, ''), title: dayMatch[2].replace(/^[:：\-\s]+/, ''), content: [], meals: [], hotels: [] };
-              inMeal = false; inHotel = false; continue;
-          }
-          if (line.match(/^(餐食|早餐|午餐|晚餐)[:：]/)) { inMeal = true; inHotel = false; currentBlock.meals.push(line); continue; }
-          if (line.match(/^(住宿|飯店|旅館|酒店)[:：]/)) { inHotel = true; inMeal = false; currentBlock.hotels.push(line); continue; }
-          if (inMeal && line.match(/^(早餐|午餐|晚餐|早|午|晚)[:：]/)) { currentBlock.meals.push(line); continue; }
-          if (inHotel && line.length < 40) { currentBlock.hotels.push(line); continue; }
-          inMeal = false; inHotel = false;
-          const parts = line.split(/(!\[.*?\]\(.*?\))/g);
-          const parsedLine = parts.filter(p => p).map((part) => {
-              const mdMatch = part.match(/^!\[(.*?)\]\((.*?)\)$/);
-              if (mdMatch) return { type: 'image', alt: mdMatch[1], url: mdMatch[2] };
-              if (part.startsWith('http') && !part.includes(' ') && parts.length === 1) return { type: 'image', alt: '圖片', url: part };
-              return { type: 'text', text: part };
-          });
-          currentBlock.content.push({ type: 'mixed', elements: parsedLine });
-      }
-      blocks.push(currentBlock);
-      return blocks.map((block, bIdx) => (
-          <div key={bIdx} className="mb-12 w-full max-w-full">
-              {block.dayText !== '行程介紹' && (
-                  <div className="mb-10 mt-16 w-full">
-                      <div className="text-center relative mb-8"><div className="absolute top-1/2 left-0 w-full border-t-[2px] border-dashed border-[#b82337] -z-10"></div><h2 className="inline-block px-6 bg-white text-4xl md:text-5xl font-black text-gray-900 tracking-widest">{block.dayText}</h2></div>
-                      {block.title && (<div className="flex items-start mb-6 px-2"><span className="text-[#b82337] font-light text-2xl mr-3 flex-shrink-0">— {block.dayText.replace(/\D/g, '') || '*'}</span><h3 className="text-xl md:text-2xl font-bold text-gray-800 leading-snug pt-0.5">{block.title}</h3></div>)}
-                  </div>
-              )}
-              <div className="text-[1.15rem] leading-[2.2] text-gray-700 tracking-wide text-justify w-full break-words">
-                  {block.content.map((item, idx) => {
-                      if (item.type === 'space') return <div key={idx} className="h-6"></div>;
-                      if (item.type === 'mixed') {
-                          return (
-                              <p key={idx} className="mb-5 break-words whitespace-pre-wrap">
-                                  {item.elements.map((el, eIdx) => {
-                                      if (el.type === 'image') return (
-                                          <span key={eIdx} className="block my-10 w-full relative group">
-                                              <img src={el.url} className="w-full h-auto max-w-full object-cover rounded-none md:rounded-2xl max-h-[800px] border border-gray-100" alt={el.alt} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                                              <span className="hidden bg-blue-50 p-5 border-l-[6px] border-blue-500 my-4 rounded-lg text-sm text-blue-800 shadow-sm font-medium tracking-wider w-full overflow-hidden break-words"><span className="font-extrabold mr-2 text-red-600">⚠️ 防盜鏈阻擋：</span>原網站禁止直接顯示圖片，請改用系統「上傳雲端圖片」按鈕，或 <a href={el.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 underline font-bold">點此查看圖片</a></span>
-                                          </span>
-                                      );
-                                      return <span key={eIdx}>{el.text}</span>;
-                                  })}
-                              </p>
-                          );
-                      }
-                      return null;
-                  })}
-              </div>
-              {(block.meals.length > 0 || block.hotels.length > 0) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-10">
-                      {block.meals.length > 0 && (<div className="border border-gray-200 p-6 flex items-start bg-white w-full rounded-md shadow-sm hover:shadow-md transition"><div className="text-3xl mr-4 opacity-90 flex-shrink-0 text-[#b82337]">🍽️</div><div className="w-full border-l-[3px] border-[#b82337] pl-5 min-w-0"><p className="font-bold text-gray-900 mb-2 text-lg">餐食</p><div className="space-y-1 text-gray-600 font-medium text-[0.95rem] break-words">{block.meals.map((m, mIdx) => { const parts = m.split(/[:：](.+)/); if (parts.length > 1) return (<div key={mIdx} className="flex"><span className="font-bold text-gray-900 w-14 flex-shrink-0">{parts[0]}</span><span className="text-gray-600 break-words flex-1">: {parts[1]}</span></div>); return <p key={mIdx}>{m}</p>; })}</div></div></div>)}
-                      {block.hotels.length > 0 && (<div className="border border-gray-200 p-6 flex items-start bg-white w-full rounded-md shadow-sm hover:shadow-md transition"><div className="text-3xl mr-4 opacity-90 flex-shrink-0 text-[#b82337]">🏨</div><div className="w-full border-l-[3px] border-[#b82337] pl-5 min-w-0"><p className="font-bold text-gray-900 mb-2 text-lg">住宿</p><div className="space-y-1 text-gray-600 font-medium text-[0.95rem] break-words">{block.hotels.map((h, hIdx) => { const parts = h.split(/[:：](.+)/); if (parts.length > 1) return (<div key={hIdx} className="flex"><span className="font-bold text-gray-900 w-14 flex-shrink-0">{parts[0]}</span><span className="text-gray-600 break-words flex-1">: {parts[1]}</span></div>); return <p key={hIdx}>{h}</p>; })}</div></div></div>)}
-                  </div>
-              )}
-          </div>
-      ));
-    };
-
     function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const actionParam = urlParams.get('action'); 
@@ -286,7 +211,6 @@
       });
       const [cardOptions, setCardOptions] = useState({ phone: false, line: false, lineAt: false, fb: false, web: false, map: false });
       
-      // ★ AI 文案大師專用狀態 ★
       const [aiImage, setAiImage] = useState(null);
       const [isAiLoading, setIsAiLoading] = useState(false);
       const [aiResult, setAiResult] = useState(null);
@@ -296,6 +220,8 @@
       const priceCardAnchorRef = useRef(null);
       const articleBodyRef = useRef(null);
       const [priceCardStyle, setPriceCardStyle] = useState({});
+
+      const execCmd = (cmd, val = null) => document.execCommand(cmd, false, val);
 
       useEffect(() => {
         if (!selectedTourId) return;
@@ -852,7 +778,6 @@
         setPromoToolOpen(false);
       };
 
-      // ★ 渲染 AI 文案大師 Tab ★
       const renderAiCopyTab = () => {
         if (!isAdmin) return <div className="p-20 text-center text-gray-500 font-bold text-2xl">無權限存取</div>;
         
@@ -1000,7 +925,6 @@
             {activeTab === 'ai_copy' && renderAiCopyTab()}
           </div>
           
-          {/* OTT 推廣名片與容錯機制設定彈窗 */}
           {promoToolOpen && (
             <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
