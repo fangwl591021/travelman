@@ -75,13 +75,12 @@
             const [message, setMessage] = useState({ type: '', text: '' });
             
             const [isEditing, setIsEditing] = useState(false);
-            const [previewData, setPreviewData] = useState(null);
-            const [shareModalData, setShareModalData] = useState(null);
+            const [previewData, setPreviewData] = useState(null); 
+            const [shareModalData, setShareModalData] = useState(null); 
             const [records, setRecords] = useState([]);
             const [isUploadingImage, setIsUploadingImage] = useState(false);
             const [imageToReplace, setImageToReplace] = useState(null);
             
-            // 新增 liffProfile 狀態，用於取得 UID
             const [liffProfile, setLiffProfile] = useState(null);
             
             const editorRef = useRef(null);
@@ -91,28 +90,15 @@
                 const initLiff = async () => {
                     if (!window.liff) return;
                     try { 
-                        let finalLiffId = LIFF_ID;
-                        
-                        try {
-                            const configUrl = WORKER_URL.replace('/process', '/config');
-                            const configRes = await fetch(configUrl);
-                            const configData = await configRes.json();
-                            if (configData.LIFF_ID && configData.LIFF_ID.trim() !== "") {
-                                finalLiffId = configData.LIFF_ID;
-                            }
-                        } catch (e) {
-                            console.log("🌐 使用本地設定的 LIFF_ID");
-                        }
-
-                        if (!finalLiffId || finalLiffId.trim() === "" || finalLiffId === "您的_LIFF_ID_在此") {
+                        // 修正：移除 fetch config 導致的時間差，直接同步初始化解決重複跳轉問題
+                        if (!LIFF_ID || LIFF_ID === "您的_LIFF_ID_在此") {
                             console.warn("⚠️ 無效的 LIFF ID，跳過初始化");
                             return;
                         }
 
-                        await window.liff.init({ liffId: finalLiffId }); 
+                        await window.liff.init({ liffId: LIFF_ID }); 
                         console.log("✅ LIFF 初始化成功");
 
-                        // 登入後取得 profile
                         if (window.liff.isLoggedIn()) {
                             const profile = await window.liff.getProfile();
                             setLiffProfile(profile);
@@ -127,7 +113,7 @@
 
             useEffect(() => {
                 if (message.text) {
-                    const timer = setTimeout(() => setMessage({ type: '', text: '' }), 4000); // 延長提示時間以便閱讀錯誤
+                    const timer = setTimeout(() => setMessage({ type: '', text: '' }), 4000); 
                     return () => clearTimeout(timer);
                 }
             }, [message.text]);
@@ -255,7 +241,6 @@
                 }
             };
 
-            // ★ 核心升級：加入詳盡錯誤報告的 OTT 降級容錯機制的分享通訊錄 ★
             const shareToContacts = async (recordData) => {
                 const flexCardData = recordData.flexCard || recordData;
                 let messagePayload = flexCardData;
@@ -267,7 +252,6 @@
                     };
                 }
 
-                // 定義完美降級 (Fallback) 機制
                 const triggerFallback = () => {
                     const uid = liffProfile?.userId || '';
                     const tourId = recordData.id || Date.now(); 
@@ -298,30 +282,24 @@
                     setShareModalData(null);
                 };
 
-                // 檢查是否已登入 LINE (PC 版沒登入會阻擋呼叫)
                 if (!window.liff.isLoggedIn()) {
                     setMessage({ type: 'error', text: '⚠️ 權限不足：請先點擊右上角「LINE 登入」' });
                     return;
                 }
 
-                // 主流程：嘗試使用 shareTargetPicker
                 if (window.liff && window.liff.isApiAvailable('shareTargetPicker')) {
                     try {
                         const res = await window.liff.shareTargetPicker([messagePayload]);
                         if (res) {
                             setMessage({ type: 'success', text: '✅ 已成功發送至 LINE 通訊錄！' });
                         }
-                        setShareModalData(null); // 成功後關閉彈窗
+                        setShareModalData(null);
                     } catch (err) {
                         console.error("LINE Share Error:", err);
                         if (err.code !== 1000) { 
-                            // 這裡將原本默默降級的動作，改為大聲說出錯誤原因！
-                            // 通常 err.message 會是 "permission denied" (代表沒開關)
                             setMessage({ type: 'error', text: `喚起阻擋: ${err.message} (請確認 Developer 後台開關)` });
-                            // 延遲 2.5 秒讓使用者看清楚錯誤訊息，再進行降級備案
                             setTimeout(triggerFallback, 2500);
                         } else {
-                            // code 1000 代表使用者主動按了取消 (X)，單純關閉視窗不報錯
                             setShareModalData(null); 
                         }
                     }
@@ -331,7 +309,6 @@
                 }
             };
 
-            // 複製 JSON 提供 OA 群發使用
             const copyFlexJson = (recordData) => {
                 const flexCardData = recordData.flexCard || recordData;
                 let flexPayload = flexCardData;
@@ -437,7 +414,6 @@
                                                                     <button onClick={() => { setResult({ webHtml: rec.webHtml, flexCard: rec.flexCard }); setIsEditing(true); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors text-xs font-bold">
                                                                         <Icon name="edit-2" size={14} /> 編輯
                                                                     </button>
-                                                                    {/* 傳遞完整的 rec 紀錄給 share 函數，包含 id 供降級機制使用 */}
                                                                     <button onClick={() => setShareModalData(rec)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors text-xs font-bold">
                                                                         <Icon name="send" size={14} /> 發送
                                                                     </button>
@@ -638,7 +614,7 @@
                         </div>
                     )}
 
-                    {/* ★ 發送名片：推廣與分享格式彈窗 (加入降級容錯機制) ★ */}
+                    {/* ★ 發送名片：推廣與分享格式彈窗 ★ */}
                     {shareModalData && (
                         <div className="fixed inset-0 z-[120] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 p-4">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
@@ -653,7 +629,6 @@
                                 <div className="p-5 bg-slate-50">
                                     <p className="text-sm text-slate-500 mb-4 font-medium">請選擇您要將此行程推廣出去的方式：</p>
                                     <div className="space-y-3">
-                                        {/* 分享通訊錄：調用 shareTargetPicker，帶有完善的降級容錯 */}
                                         <button onClick={() => shareToContacts(shareModalData)} className="w-full flex items-center justify-between p-4 rounded-xl border border-green-200 bg-white hover:bg-green-50 transition-all group shadow-sm hover:shadow">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
@@ -667,7 +642,6 @@
                                             <Icon name="chevron-right" size={20} className="text-slate-300 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
                                         </button>
                                         
-                                        {/* 複製 JSON 提供官方帳號群發 */}
                                         <button onClick={() => copyFlexJson(shareModalData)} className="w-full flex items-center justify-between p-4 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 transition-all group shadow-sm hover:shadow">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
