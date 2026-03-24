@@ -50,7 +50,7 @@
         const { useState, useEffect, useRef } = React;
 
         // --- 設定區 ---
-        const LIFF_ID = "2009367829-qhw54Uf9"; // ✅ 從您的截圖中抓取的正確 LIFF ID
+        const LIFF_ID = "2009367829-qhw54Uf9"; 
         const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/process';
         // --------------
 
@@ -74,13 +74,15 @@
             const [result, setResult] = useState(null);
             const [message, setMessage] = useState({ type: '', text: '' });
             
-            // 修復遺失的狀態變數
             const [isEditing, setIsEditing] = useState(false);
             const [previewData, setPreviewData] = useState(null);
             const [shareModalData, setShareModalData] = useState(null);
             const [records, setRecords] = useState([]);
             const [isUploadingImage, setIsUploadingImage] = useState(false);
             const [imageToReplace, setImageToReplace] = useState(null);
+            
+            // 新增 liffProfile 狀態，用於取得 UID
+            const [liffProfile, setLiffProfile] = useState(null);
             
             const editorRef = useRef(null);
             const savedSelectionRef = useRef(null);
@@ -91,7 +93,6 @@
                     try { 
                         let finalLiffId = LIFF_ID;
                         
-                        // 嘗試從 Cloudflare 抓取設定，若失敗則使用上方寫死的 LIFF_ID
                         try {
                             const configUrl = WORKER_URL.replace('/process', '/config');
                             const configRes = await fetch(configUrl);
@@ -110,6 +111,12 @@
 
                         await window.liff.init({ liffId: finalLiffId }); 
                         console.log("✅ LIFF 初始化成功");
+
+                        // 登入後取得 profile
+                        if (window.liff.isLoggedIn()) {
+                            const profile = await window.liff.getProfile();
+                            setLiffProfile(profile);
+                        }
                     } catch (err) { 
                         console.error('LIFF 初始化失敗:', err); 
                     }
@@ -248,37 +255,75 @@
                 }
             };
 
-            // ★ 核心升級：調用 shareTargetPicker 開啟通訊錄分享 ★
-            const shareToContacts = async (flexCardData) => {
+            // ★ 核心升級：加入 OTT 降級容錯機制的分享通訊錄 ★
+            const shareToContacts = async (recordData) => {
+                // 自動相容直接傳入 flexCard 或是完整 record 物件
+                const flexCardData = recordData.flexCard || recordData;
+                let messagePayload = flexCardData;
+                if (flexCardData.type !== 'flex') {
+                    messagePayload = {
+                        type: "flex",
+                        altText: "旅遊行程推薦",
+                        contents: flexCardData
+                    };
+                }
+
+                // 定義完美降級 (Fallback) 機制
+                const triggerFallback = () => {
+                    const uid = liffProfile?.userId || '';
+                    const tourId = recordData.id || Date.now(); // 若無 ID 預設使用時間戳
+                    const shareUrl = `https://liff.line.me/${LIFF_ID}?action=share&t=${tourId}&r=${uid}&o=111111`;
+                    
+                    const fallbackCopy = (text) => {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try {
+                            document.execCommand('copy');
+                            setMessage({ type: 'success', text: '✅ 喚起失敗，已自動為您複製專屬分享連結！' });
+                        } catch (err) {
+                            setMessage({ type: 'error', text: '❌ 複製失敗，請手動分享' });
+                        }
+                        document.body.removeChild(ta);
+                    };
+
+                    if (!navigator.clipboard) {
+                        fallbackCopy(shareUrl);
+                    } else {
+                        navigator.clipboard.writeText(shareUrl)
+                            .then(() => setMessage({ type: 'success', text: '✅ 喚起失敗，已自動為您複製專屬分享連結！' }))
+                            .catch(() => fallbackCopy(shareUrl));
+                    }
+                    setShareModalData(null);
+                };
+
+                // 主流程：嘗試使用 shareTargetPicker
                 if (window.liff && window.liff.isApiAvailable('shareTargetPicker')) {
                     try {
-                        // 確保格式為完整的 Flex Message Payload
-                        let messagePayload = flexCardData;
-                        if (flexCardData.type !== 'flex') {
-                            messagePayload = {
-                                type: "flex",
-                                altText: "旅遊行程推薦",
-                                contents: flexCardData
-                            };
-                        }
-
                         const res = await window.liff.shareTargetPicker([messagePayload]);
                         if (res) {
                             setMessage({ type: 'success', text: '✅ 已成功分享至 LINE 通訊錄！' });
                         }
-                        setShareModalData(null); // 關閉彈窗
+                        setShareModalData(null); // 成功後關閉彈窗
                     } catch (err) {
-                        if (err.code !== 1000) { // 排除用戶主動取消的情況
-                            setMessage({ type: 'error', text: '分享發生錯誤或權限不足' });
+                        if (err.code !== 1000) { 
+                            // 非使用者主動取消 (通常是權限或不支援)，觸發降級容錯
+                            triggerFallback();
+                        } else {
+                            setShareModalData(null); // 使用者主動取消，單純關閉彈窗
                         }
                     }
                 } else {
-                    setMessage({ type: 'info', text: '請在 LINE APP 內操作，以使用通訊錄分享功能' });
+                    // PC 版或未支援環境，直接降級為複製網址
+                    triggerFallback();
                 }
             };
 
             // 複製 JSON 提供 OA 群發使用
-            const copyFlexJson = (flexCardData) => {
+            const copyFlexJson = (recordData) => {
+                const flexCardData = recordData.flexCard || recordData;
                 let flexPayload = flexCardData;
                 if (flexCardData.type !== 'flex') {
                     flexPayload = { type: "flex", altText: "旅遊行程推薦", contents: flexCardData };
@@ -361,7 +406,6 @@
                                                             
                                                             <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
                                                                 <span className="text-red-500 font-bold text-xl">{mockPrice}</span>
-                                                                {/* 修改：加入中文文字說明，按鈕更大更好按 */}
                                                                 <div className="flex items-center gap-2">
                                                                     <button onClick={() => setPreviewData(rec)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-xs font-bold">
                                                                         <Icon name="eye" size={14} /> 預覽
@@ -369,7 +413,8 @@
                                                                     <button onClick={() => { setResult({ webHtml: rec.webHtml, flexCard: rec.flexCard }); setIsEditing(true); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors text-xs font-bold">
                                                                         <Icon name="edit-2" size={14} /> 編輯
                                                                     </button>
-                                                                    <button onClick={() => setShareModalData(rec.flexCard)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors text-xs font-bold">
+                                                                    {/* 傳遞完整的 rec 紀錄給 share 函數，包含 id 供降級機制使用 */}
+                                                                    <button onClick={() => setShareModalData(rec)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors text-xs font-bold">
                                                                         <Icon name="send" size={14} /> 發送
                                                                     </button>
                                                                 </div>
@@ -420,7 +465,6 @@
                                         </div>
                                     </section>
 
-                                    {/* 修正：找回消失的「生成結果預覽與編輯區」 */}
                                     {result && activeSection === 'travel' && (
                                         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 animate-in fade-in slide-in-from-bottom-4">
                                             <div className="flex justify-between items-center mb-6">
@@ -431,7 +475,7 @@
                                                     <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-slate-100 px-5 py-2.5 rounded-lg hover:bg-slate-200 transition-colors shadow-sm">
                                                         <Icon name="edit-2" size={16} /> ✏️ 編輯網頁
                                                     </button>
-                                                    <button onClick={() => setShareModalData(result.flexCard)} className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#06C755] px-5 py-2.5 rounded-lg hover:bg-[#05b34c] transition-colors shadow-md shadow-green-200">
+                                                    <button onClick={() => setShareModalData(result)} className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#06C755] px-5 py-2.5 rounded-lg hover:bg-[#05b34c] transition-colors shadow-md shadow-green-200">
                                                         <Icon name="send" size={16} /> 發送至 LINE
                                                     </button>
                                                 </div>
@@ -484,7 +528,7 @@
                                         <Icon name="edit-2" size={16} /> 編輯內容
                                     </button>
                                     <button 
-                                        onClick={() => setShareModalData(previewData.flexCard)} 
+                                        onClick={() => setShareModalData(previewData)} 
                                         className="flex items-center gap-1.5 text-sm font-bold text-white bg-[#06C755] px-5 py-2.5 rounded-lg hover:bg-[#05b34c] transition-colors shadow-md shadow-green-200"
                                     >
                                         <Icon name="send" size={16} /> 分享與發送
@@ -570,7 +614,7 @@
                         </div>
                     )}
 
-                    {/* ★ 發送名片：推廣與分享格式彈窗 ★ */}
+                    {/* ★ 發送名片：推廣與分享格式彈窗 (加入降級容錯機制) ★ */}
                     {shareModalData && (
                         <div className="fixed inset-0 z-[120] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200 p-4">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
@@ -585,7 +629,7 @@
                                 <div className="p-5 bg-slate-50">
                                     <p className="text-sm text-slate-500 mb-4 font-medium">請選擇您要將此行程推廣出去的方式：</p>
                                     <div className="space-y-3">
-                                        {/* 分享通訊錄：調用 shareTargetPicker */}
+                                        {/* 分享通訊錄：調用 shareTargetPicker，帶有完善的降級容錯 */}
                                         <button onClick={() => shareToContacts(shareModalData)} className="w-full flex items-center justify-between p-4 rounded-xl border border-green-200 bg-white hover:bg-green-50 transition-all group shadow-sm hover:shadow">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
