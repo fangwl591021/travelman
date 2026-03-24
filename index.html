@@ -7,35 +7,35 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col items-center p-6">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center p-6 font-sans">
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-        <h1 class="text-2xl font-bold text-slate-800 mb-2">Travlkeeper</h1>
-        <p class="text-slate-500 mb-8">選擇您想分享給好友的旅遊行程</p>
+    <div class="max-w-md w-full bg-white rounded-[2rem] shadow-2xl p-10 text-center border border-slate-100">
+        <h1 class="text-3xl font-black text-blue-600 mb-2 italic">Travlkeeper</h1>
+        <p class="text-slate-400 text-sm mb-10 tracking-widest uppercase">Select Adventure to Share</p>
 
         <!-- 狀態顯示 -->
-        <div id="status" class="mb-6 p-3 rounded-lg bg-blue-50 text-blue-600 text-sm hidden">
-            正在初始化 LIFF...
+        <div id="status" class="mb-8 p-4 rounded-2xl bg-blue-50 text-blue-600 text-xs font-bold hidden animate-pulse">
+            INITIALIZING LIFF...
         </div>
 
         <!-- 主要操作區 -->
-        <div class="space-y-4">
-            <button id="btnShare" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50" disabled>
-                🚀 分享行程給好友
+        <div class="space-y-6">
+            <button id="btnShare" class="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-100 active:scale-95 disabled:opacity-30 disabled:grayscale" disabled>
+                🚀 挑選並分享行程
             </button>
             
-            <button id="btnSaveTest" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl transition-all">
-                📥 儲存測試資料到 D1
+            <button id="btnSaveTest" class="w-full py-4 bg-slate-50 hover:bg-slate-100 text-slate-400 font-bold rounded-2xl transition-all text-xs tracking-tighter">
+                📥 寫入 D1 測試資料
             </button>
         </div>
 
-        <div id="result" class="mt-6 text-xs text-slate-400 break-all"></div>
+        <div id="result" class="mt-10 text-[10px] text-slate-300 font-mono break-all leading-relaxed"></div>
     </div>
 
     <script>
-        // --- 設定區 ---
-        const LIFF_ID = '您的_LIFF_ID'; // 請在 LINE Developers 建立 LIFF 並填入 ID
-        const WORKER_URL = 'https://line-bot-v2.fangwl591021.workers.dev';
+        // --- 最新設定區 ---
+        const LIFF_ID = '2009367829-Ewwp8jfA'; 
+        const WORKER_URL = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
 
         const btnShare = document.getElementById('btnShare');
         const btnSaveTest = document.getElementById('btnSaveTest');
@@ -44,7 +44,7 @@
 
         // 初始化 LIFF
         async function main() {
-            showStatus('正在啟動 LINE LIFF...');
+            showStatus('啟動中...');
             try {
                 await liff.init({ liffId: LIFF_ID });
                 
@@ -60,52 +60,60 @@
             }
         }
 
-        // 執行分享
+        // 執行分享 (串接新的 Worker API)
         btnShare.onclick = async () => {
-            showStatus('正在從 D1 抓取資料...');
+            showStatus('讀取行程中...');
             try {
-                // 1. 呼叫您的 Worker API 取得 Flex Message
-                const response = await fetch(`${WORKER_URL}/api/share`);
+                // 1. 從 Worker 獲取最新的行程清單 (假設我們取第一個或是開啟選擇 UI)
+                const response = await fetch(`${WORKER_URL}/api/list`);
                 const result = await response.json();
 
-                if (!result.success) throw new Error(result.error);
-
-                // 2. 檢查是否可以使用 shareTargetPicker
-                if (!liff.isApiAvailable('shareTargetPicker')) {
-                    alert('請在 LINE App 內開啟此網頁以使用分享功能');
+                if (!result.success || result.data.length === 0) {
+                    alert('目前沒有可分享的行程，請先至後台新增！');
                     return;
                 }
 
-                // 3. 開啟 LINE 好友選擇器並發送
-                const shareRes = await liff.shareTargetPicker([result.flexMessage]);
+                // 2. 取得第一個行程的 Flex Message (示範用)
+                const firstId = result.data[0].id;
+                const flexRes = await fetch(`${WORKER_URL}/api/flex?id=${firstId}`);
+                const flexData = await flexRes.json();
+
+                // 3. 檢查分享功能並發送
+                if (!liff.isApiAvailable('shareTargetPicker')) {
+                    alert('請在 LINE App 內開啟此網頁');
+                    return;
+                }
+
+                const shareRes = await liff.shareTargetPicker([flexData.flex]);
                 
                 if (shareRes) {
                     showStatus('分享成功！');
-                } else {
-                    showStatus('使用者取消分享');
                 }
             } catch (err) {
                 showStatus('分享失敗: ' + err.message, true);
             }
         };
 
-        // 測試儲存資料到 D1
+        // 測試寫入資料
         btnSaveTest.onclick = async () => {
-            showStatus('正在寫入資料...');
+            showStatus('寫入 D1...');
             try {
                 const profile = await liff.getProfile();
                 const response = await fetch(`${WORKER_URL}/api/save`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: profile.userId,
-                        name: profile.displayName,
-                        status: "來自 LIFF 的測試行程"
+                        title: "來自 LIFF 的測試行程",
+                        destination: "台灣",
+                        days: 3,
+                        price: 8800,
+                        cover_url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+                        content: "### Day 1\\n測試行程內容..."
                     })
                 });
                 const res = await response.json();
                 showStatus('資料庫寫入成功！');
-                resultDiv.innerText = JSON.stringify(res);
+                resultDiv.innerText = "Response: " + JSON.stringify(res);
             } catch (err) {
                 showStatus('寫入失敗: ' + err.message, true);
             }
@@ -114,7 +122,7 @@
         function showStatus(msg, isError = false) {
             statusDiv.innerText = msg;
             statusDiv.classList.remove('hidden');
-            statusDiv.className = isError ? 'mb-6 p-3 rounded-lg bg-red-50 text-red-600 text-sm' : 'mb-6 p-3 rounded-lg bg-blue-50 text-blue-600 text-sm';
+            statusDiv.className = isError ? 'mb-8 p-4 rounded-2xl bg-red-50 text-red-600 text-xs font-bold' : 'mb-8 p-4 rounded-2xl bg-blue-50 text-blue-600 text-xs font-bold';
         }
 
         main();
