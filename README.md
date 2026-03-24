@@ -8,3 +8,6 @@ Travlkeeper - 行程管理與分享工具本專案是一個基於 Cloudflare Wor
 執行：wrangler d1 execute travlkeeper --remote --file=./schema.sql
 3. 部署專案wrangler deploy
 API 說明GET /: 顯示 LIFF 前端網頁。GET /api/list: 取得所有行程。GET /api/flex?id={id}: 產生特定行程的 LINE Flex Message 格式。POST /api/save: 儲存或更新行程資料。LINE 設定提醒LIFF Endpoint: 填入 https://<你的域名>.workers.dev/。Scopes: 必須勾選 profile。Features: 必須勾選 shareTargetPicker。
+Travlkeeper - SaaS AI 行程管理工具部署與修復提醒1. 資料庫欄位補全如果遇到 no column named price 或 no column named cover_url，請執行：npx wrangler d1 execute travlkeeper --remote --command "ALTER TABLE itineraries ADD COLUMN cover_url TEXT; ALTER TABLE itineraries ADD COLUMN price INTEGER;"
+2. 部署指令npm run deploy
+這會強行指定 src/index.ts 部署，避開 Windows 路徑 Bug。3. 功能清單AI 視覺辨識：自動掃描旅遊 DM 並生成 Markdown 故事。多圖自動化：根據行程關鍵字自動搜尋 Unsplash 圖片。後台管理：支援行程的編輯、刪除與 LIFF 分享。
