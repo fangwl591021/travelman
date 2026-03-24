@@ -56,11 +56,9 @@
           
           setApplyType(type); setRefUid(ref); setTargetTourId(targetTour);
           
-          // 修正：移除 withLoginOnExternalBrowser 避免第三方 Cookie 被擋時造成的無限跳轉迴圈
           await liff.init({ liffId: LIFF_ID });
           
           if (!liff.isLoggedIn()) { 
-              // 確保 redirectUri 乾淨無誤，觸發主動登入
               liff.login({ redirectUri: window.location.href }); 
               return; 
           }
