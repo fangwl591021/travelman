@@ -1,7 +1,7 @@
 import { handleWPProxy } from './wp_proxy_handler.js';
 import { runAgent } from './adk_agent.js';
 
-// 將管理後台樣式嵌入變數，確保雲端環境 100% 讀取成功
+// 嵌入您喜愛的管理後台介面，確保雲端編輯器不因檔案讀取問題失效
 const adminHTML = `
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -14,7 +14,6 @@ const adminHTML = `
 </head>
 <body class="bg-slate-50 min-h-screen font-sans">
     <div class="flex">
-        <!-- Sidebar -->
         <aside class="w-64 bg-[#174a5a] text-white h-screen sticky top-0 flex flex-col p-6">
             <div class="text-2xl font-black mb-10 flex items-center gap-3">
                 <i class="fa-solid fa-compass text-teal-400"></i>
@@ -26,12 +25,9 @@ const adminHTML = `
                 <a href="#" class="block p-3 hover:bg-white/5 rounded-xl"><i class="fa-solid fa-user-tag mr-3"></i>業務管理</a>
                 <a href="#" class="block p-3 hover:bg-white/5 rounded-xl"><i class="fa-solid fa-clipboard-list mr-3"></i>成交紀錄</a>
             </nav>
-            <div class="text-xs text-white/40 mt-auto pt-6 border-t border-white/10">
-                雲端版本 2.5.0
-            </div>
+            <div class="text-xs text-white/40 mt-auto pt-6 border-t border-white/10">雲端版本 2.5.0</div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 p-10">
             <header class="flex justify-between items-center mb-10">
                 <h2 class="text-2xl font-black text-slate-800">系統概況</h2>
@@ -43,7 +39,6 @@ const adminHTML = `
                 </div>
             </header>
 
-            <!-- Metrics -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                     <p class="text-slate-400 text-[10px] font-bold uppercase mb-2 tracking-widest">總成交額</p>
@@ -63,7 +58,6 @@ const adminHTML = `
                 </div>
             </div>
 
-            <!-- Activity Logs (ACTMASTER) -->
             <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
                 <div class="flex justify-between items-center mb-6">
                     <h4 class="font-black text-lg text-slate-800">即時活動追蹤 (ACTMASTER)</h4>
@@ -72,27 +66,13 @@ const adminHTML = `
                 <div class="space-y-4">
                     <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
+                            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
                             <div>
                                 <p class="text-sm font-bold text-slate-700">用戶 U821...39 已報名 [東京櫻花季]</p>
                                 <p class="text-[10px] text-slate-400">推薦人代碼: REF-8821A</p>
                             </div>
                         </div>
                         <span class="text-xs text-slate-400">3 分鐘前</span>
-                    </div>
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                                <i class="fa-solid fa-eye"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-slate-700">用戶 U112...05 正在查看 [曼谷行程]</p>
-                                <p class="text-[10px] text-slate-400">來源: 名片分享卡片 (ShareTargetPicker)</p>
-                            </div>
-                        </div>
-                        <span class="text-xs text-slate-400">12 分鐘前</span>
                     </div>
                 </div>
             </div>
@@ -105,15 +85,12 @@ const adminHTML = `
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const path = url.pathname.toLowerCase();
+    const path = url.pathname.toLowerCase().replace(/\/$/, "");
 
-    // 1. 強化路由判斷：支援 /admin, /admin/ 或是任何結尾為 admin 的請求
-    if (path === '/admin' || path === '/admin/' || path.endsWith('/admin')) {
+    // 1. 優先處理管理後台路由 (支援 /admin 與 /admin/)
+    if (path === "/admin" || url.pathname === "/admin") {
       return new Response(adminHTML, {
-        headers: { 
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-cache"
-        }
+        headers: { "Content-Type": "text/html; charset=utf-8" }
       });
     }
 
@@ -125,8 +102,7 @@ export default {
 
         for (const event of events) {
           const userText = event.message?.text || "";
-          
-          // 判定 AI 處理範疇
+          // 判定 AI 處理範疇 (旅遊管家關鍵字、圖片OCR、Postback活動)
           const isAIIntent = /報名|行程|推薦|活動|查詢|我的/.test(userText) || 
                             event.message?.type === "image" || 
                             event.type === "postback";
@@ -134,7 +110,7 @@ export default {
           if (isAIIntent) {
             await runAgent(event, env);
           } else {
-            // 轉發至舊系統
+            // 雙 Webhook Hub: 其餘轉發至 WordPress 舊系統
             await handleWPProxy(request, body, env);
           }
         }
@@ -144,13 +120,12 @@ export default {
       }
     }
 
-    // 3. 預設回應：若以上皆不符合，則回傳 JSON
+    // 3. 預設備援回應 (若路徑不正確則顯示 JSON 狀態)
     return new Response(JSON.stringify({
       status: "active",
       engine: "TravelKeeper-SaaS-Core",
-      path_accessed: url.pathname,
-      method: request.method,
-      time: new Date().toISOString()
+      access_path: url.pathname,
+      timestamp: new Date().toISOString()
     }), {
       headers: { "Content-Type": "application/json" }
     });
