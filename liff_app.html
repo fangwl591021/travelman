@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>旅行管家 - 雲端推薦系統</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col items-center font-sans p-6">
+  <div id="loading" class="mt-24 text-slate-400">正在連線雲端管家...</div>
+  
+  <div id="app" class="hidden w-full max-w-md">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 p-10">
+      <div class="w-12 h-1 bg-slate-100 rounded-full mb-10 mx-auto"></div>
+      
+      <h1 class="text-3xl font-black text-[#174a5a] mb-3 tracking-tight">專屬數位名片</h1>
+      <p class="text-slate-500 text-sm leading-relaxed mb-10">分享您的推薦代碼，好友成功報名後，您將獲得專屬分潤紀錄。</p>
+      
+      <div class="bg-slate-50 rounded-3xl p-8 mb-10 border border-slate-100/50">
+        <div class="flex items-center gap-5">
+          <div class="w-14 h-14 bg-[#174a5a] rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-[#174a5a]/20" id="initial">T</div>
+          <div>
+            <div class="font-bold text-slate-800 text-lg" id="userName">載入中...</div>
+            <div class="text-[10px] font-bold text-[#174a5a] uppercase tracking-widest mt-1">代碼：<span id="refCode">----</span></div>
+          </div>
+        </div>
+      </div>
+
+      <button id="shareBtn" class="w-full bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-bold text-lg shadow-xl shadow-[#174a5a]/30 active:scale-95 transition-all">
+        選擇好友並分享行程
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const liffId = "2008729640-bptxTkoO";
+
+    async function init() {
+      try {
+        await liff.init({ liffId });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        
+        const profile = await liff.getProfile();
+        // 推薦碼生成邏輯：SHA256(UID + 生日)
+        const code = await generateCode(profile.userId, "1990-01-01");
+        
+        document.getElementById('userName').innerText = profile.displayName;
+        document.getElementById('initial').innerText = profile.displayName[0];
+        document.getElementById('refCode').innerText = code;
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+
+        document.getElementById('shareBtn').onclick = () => share(code, profile.displayName);
+      } catch (e) { console.error(e); }
+    }
+
+    async function generateCode(uid, bday) {
+      const msg = new TextEncoder().encode(uid + bday);
+      const hash = await crypto.subtle.digest('SHA-256', msg);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 8).toUpperCase();
+    }
+
+    async function share(code, name) {
+      const flex = {
+        type: "bubble",
+        hero: { type: "image", url: "https://fangwl591021.github.io/travelman/assets/sample.jpg", size: "full", aspectRatio: "20:13", aspectMode: "cover" },
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            { type: "text", text: `${name} 向您推薦優質行程`, weight: "bold", size: "lg" },
+            { type: "text", text: "點擊下方查看您的管家為您準備的旅遊驚喜", size: "xs", color: "#666666", margin: "md" }
+          ]
+        },
+        footer: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            { type: "button", action: { type: "uri", label: "立即查看", uri: `https://liff.line.me/${liffId}?ref=${code}` }, style: "primary", color: "#174a5a" }
+          ]
+        }
+      };
+
+      try {
+        // 使用 OTT 機制確保 PC 版支援
+        const res = await liff.shareTargetPicker([{ type: "flex", altText: `${name} 推薦了行程`, contents: flex }]);
+        if (res) liff.closeWindow();
+      } catch (e) {
+        if (e.message.includes('not allowed')) {
+          liff.logout();
+          window.location.reload();
+        }
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
