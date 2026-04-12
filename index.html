@@ -9,75 +9,74 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
     body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
-    input, textarea { outline: none; transition: all 0.2s; }
-    input:focus, textarea:focus { border-color: #174a5a; background-color: #fff !important; }
+    .input-box { width: 100%; background: #f8fafc; border: 2px solid transparent; border-radius: 1rem; padding: 1rem; outline: none; transition: 0.2s; }
+    .input-box:focus { border-color: #174a5a; background: white; }
+    .editor-card { background: white; border-radius: 2rem; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); padding: 2rem; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
   </style>
 </head>
-<body class="min-h-screen p-4">
-  <div id="app" class="max-w-3xl mx-auto">
+<body class="p-4 md:p-10">
+  <div id="app" class="max-w-2xl mx-auto">
     
-    <!-- 1. 文案輸入階段 -->
-    <div v-if="step === 'input'" class="bg-white rounded-[2rem] shadow-xl p-8 md:p-12">
-        <h1 class="text-3xl font-black text-slate-800 mb-6">🚀 行程上稿工作台</h1>
-        <p class="text-slate-400 text-sm mb-4">請貼入 NotebookLM 解析後的文案，我們將為您生成編輯草稿：</p>
-        <textarea v-model="rawText" class="w-full h-80 p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-sm" placeholder="在此貼入文案..."></textarea>
-        <button @click="parseDraft" :disabled="!rawText || processing" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg disabled:opacity-50">
-          {{ processing ? 'AI 正在解析中...' : '生成預覽編輯框架' }}
+    <!-- Step 1: Input -->
+    <div v-if="step === 'input'" class="editor-card">
+      <h1 class="text-3xl font-black text-[#174a5a] mb-6 flex items-center gap-2">🚀 <span>行程上稿</span></h1>
+      <p class="text-slate-400 text-xs mb-4">貼入 NotebookLM 解析後的行程文字，點擊按鈕生成預覽框架：</p>
+      <textarea v-model="rawText" class="input-box h-80 mb-6 text-sm" placeholder="在此貼入文案..."></textarea>
+      <button @click="parseDraft" :disabled="!rawText || processing" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl disabled:opacity-50">
+        {{ processing ? 'AI 解析中，請稍候...' : '生成預覽編輯框架' }}
+      </button>
+    </div>
+
+    <!-- Step 2: Edit -->
+    <div v-if="step === 'edit'" class="pb-32">
+      <div class="editor-card">
+        <h2 class="text-xl font-black mb-6">🛠️ 基本資訊編修</h2>
+        <div class="space-y-4">
+          <div><label class="text-[10px] font-bold text-slate-300 ml-1 uppercase">行程標題</label>
+          <input v-model="course.title" class="input-box font-bold"></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-[10px] font-bold text-slate-300 ml-1 uppercase">價格</label>
+            <input v-model="course.price" type="number" class="input-box font-black text-red-500"></div>
+            <div><label class="text-[10px] font-bold text-slate-300 ml-1 uppercase">總天數</label>
+            <input v-model="course.days" type="number" class="input-box"></div>
+          </div>
+          <div><label class="text-[10px] font-bold text-slate-300 ml-1 uppercase">簡介摘要</label>
+          <textarea v-model="course.desc" class="input-box text-xs h-20"></textarea></div>
+        </div>
+      </div>
+
+      <div v-for="(day, idx) in course.itinerary" :key="idx" class="editor-card relative">
+        <div class="absolute top-0 left-0 bg-slate-900 text-white px-4 py-1 text-[10px] font-black rounded-br-2xl">DAY 0{{ idx + 1 }}</div>
+        <div class="mt-4 space-y-4">
+          <input v-model="day.route" class="input-box font-bold text-slate-700">
+          <div class="grid grid-cols-3 gap-2">
+            <input v-model="day.b" placeholder="早" class="input-box text-xs py-2">
+            <input v-model="day.l" placeholder="午" class="input-box text-xs py-2">
+            <input v-model="day.d" placeholder="晚" class="input-box text-xs py-2">
+          </div>
+          <textarea v-model="day.infosStr" class="input-box text-xs h-24" placeholder="詳細內容..."></textarea>
+          <input v-model="day.hotel" placeholder="入住飯店" class="input-box text-xs py-2">
+          <div class="flex items-center gap-2 px-2">
+            <span class="text-[10px] font-bold text-teal-600">配圖關鍵字:</span>
+            <input v-model="day.kw" class="flex-1 bg-teal-50 border-none rounded-lg py-1 px-2 text-xs font-mono">
+          </div>
+        </div>
+      </div>
+
+      <div class="fixed bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t flex gap-4 z-50">
+        <button @click="step = 'input'" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">重新解析</button>
+        <button @click="saveCourse" :disabled="saving" class="flex-[2] bg-[#174a5a] text-white py-4 rounded-2xl font-black shadow-xl disabled:opacity-50">
+          {{ saving ? '發布中...' : '確認並儲存行程' }}
         </button>
+      </div>
     </div>
 
-    <!-- 2. 編輯與預覽階段 -->
-    <div v-if="step === 'edit'" class="space-y-6 pb-24">
-        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
-            <h2 class="text-xl font-black mb-6 flex items-center gap-2">🛠️ 行程基本資訊</h2>
-            <div class="space-y-4">
-                <div><label class="text-[10px] font-bold text-slate-400 uppercase">行程標題</label>
-                <input v-model="course.title" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">總天數</label>
-                    <input v-model="course.days" type="number" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent"></div>
-                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">價格</label>
-                    <input v-model="course.price" type="number" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent text-red-500"></div>
-                </div>
-                <div><label class="text-[10px] font-bold text-slate-400 uppercase">感性摘要</label>
-                <textarea v-model="course.desc" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-2 border-transparent" rows="3"></textarea></div>
-            </div>
-        </div>
-
-        <!-- 每日明細編輯 -->
-        <div v-for="(day, idx) in course.itinerary" :key="idx" class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 relative overflow-hidden">
-            <div class="absolute top-0 left-0 bg-slate-900 text-white px-4 py-1 text-[10px] font-black">DAY 0{{ idx + 1 }}</div>
-            <div class="mt-4 space-y-4">
-                <input v-model="day.route" class="w-full bg-slate-50 p-3 rounded-xl font-bold text-lg border-2 border-transparent">
-                <div class="grid grid-cols-3 gap-2">
-                    <input v-model="day.meals.breakfast" placeholder="早餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
-                    <input v-model="day.meals.lunch" placeholder="午餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
-                    <input v-model="day.meals.dinner" placeholder="晚餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
-                </div>
-                <div><label class="text-[10px] font-bold text-slate-400">景點描述 (逗號分隔)</label>
-                <textarea v-model="day.infosStr" class="w-full bg-slate-50 p-3 rounded-xl text-xs border border-slate-100" rows="2"></textarea></div>
-                <div><label class="text-[10px] font-bold text-slate-400">入住飯店</label>
-                <input v-model="day.hotel" class="w-full bg-slate-50 p-3 rounded-xl text-xs border border-slate-100"></div>
-                <div><label class="text-[10px] font-bold text-slate-400">圖片關鍵字 (英文)</label>
-                <input v-model="day.kw" class="w-full bg-teal-50 p-3 rounded-xl text-xs border border-teal-100 font-mono"></div>
-            </div>
-        </div>
-
-        <!-- 固定在底部的操作列 -->
-        <div class="fixed bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 flex gap-4 z-50">
-            <button @click="step = 'input'" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">重新解析</button>
-            <button @click="saveCourse" :disabled="saving" class="flex-[2] bg-[#174a5a] text-white py-4 rounded-2xl font-black shadow-xl disabled:opacity-50">
-                {{ saving ? '正在儲存至資料庫...' : '確認並發布網站' }}
-            </button>
-        </div>
-    </div>
-
-    <!-- 3. 成功階段 -->
-    <div v-if="step === 'success'" class="bg-white rounded-[3rem] shadow-xl p-12 text-center">
-        <div class="text-6xl mb-6">✅</div>
-        <h2 class="text-2xl font-black mb-8">行程已成功儲存並發布！</h2>
-        <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg mb-4">預覽正式網站</button>
-        <button @click="reset" class="text-slate-400 font-bold underline">上傳下一份行程</button>
+    <!-- Step 3: Success -->
+    <div v-if="step === 'success'" class="editor-card text-center py-16">
+      <div class="text-6xl mb-6">✨</div>
+      <h2 class="text-2xl font-black mb-8 text-slate-800">行程已發布成功！</h2>
+      <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">點此開啟正式網頁</button>
+      <button @click="reset" class="text-slate-400 font-bold underline text-sm">繼續處理下一份行程</button>
     </div>
 
   </div>
@@ -86,13 +85,10 @@
     const { createApp } = Vue;
     createApp({
       data() {
-        return {
-          step: 'input', processing: false, saving: false,
-          rawText: '', course: {}, finalId: ''
-        }
+        return { step: 'input', processing: false, saving: false, rawText: '', course: {}, finalId: '' }
       },
       async mounted() {
-        await liff.init({ liffId: "2008729640-bptxTkoO" });
+        try { await liff.init({ liffId: "2008729640-bptxTkoO" }); } catch(e) {}
       },
       methods: {
         async parseDraft() {
@@ -104,16 +100,16 @@
               body: JSON.stringify({ text: this.rawText })
             });
             const data = await res.json();
-            // 轉換為編輯器友善格式
-            data.itinerary = (data.itinerary || []).map(d => ({ ...d, infosStr: (d.infos || []).join('\n'), meals: d.meals || {} }));
+            if (data.itinerary) {
+              data.itinerary = data.itinerary.map(d => ({ ...d, infosStr: (d.infos || []).join('\n') }));
+            }
             this.course = data;
             this.step = 'edit';
-          } catch (e) { alert("AI 解析草稿失敗"); }
+          } catch (e) { alert("AI 解析草稿逾時"); }
           finally { this.processing = false; }
         },
         async saveCourse() {
           this.saving = true;
-          // 將編輯過的字串轉回陣列
           this.course.itinerary.forEach(d => { d.infos = d.infosStr.split('\n').filter(Boolean); });
           try {
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
@@ -122,15 +118,13 @@
               body: JSON.stringify(this.course)
             });
             const data = await res.json();
-            if (data.success) {
-              this.finalId = data.id;
-              this.step = 'success';
-            } else { alert("儲存失敗：" + data.msg); }
-          } catch (e) { alert("網路連線錯誤"); }
+            if (data.success) { this.finalId = data.id; this.step = 'success'; }
+            else { alert("失敗：" + data.msg); }
+          } catch (e) { alert("網路連線超時"); }
           finally { this.saving = false; }
         },
         openSite() { window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${this.finalId}`, '_blank'); },
-        reset() { this.step = 'input'; this.rawText = ''; this.course = {}; }
+        reset() { this.step = 'input'; this.rawText = ''; }
       }
     }).mount('#app');
   </script>
