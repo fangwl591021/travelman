@@ -9,49 +9,51 @@
     <style>
         body { font-family: 'PingFang TC', sans-serif; background-color: #ffffff; }
         .magazine-img { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2); border-radius: 40px; }
+        .day-label { writing-mode: vertical-lr; text-orientation: mixed; }
     </style>
 </head>
 <body class="text-slate-900">
     <div id="app">
-        <!-- 沒資料時的畫面 -->
+        <!-- 讀取中或錯誤 -->
         <div v-if="!course" class="flex flex-col items-center justify-center h-screen px-10 text-center">
-            <p class="text-slate-300 font-bold">正在讀取行程編碼資料...</p>
+            <div class="animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mb-4"></div>
+            <p class="text-slate-400 font-bold">正在讀取行程編碼資料...</p>
         </div>
 
         <div v-else>
             <!-- Hero -->
             <div class="relative h-[65vh] md:h-[85vh] overflow-hidden">
-                <img :src="course.cover_image" class="w-full h-full object-cover">
+                <img :src="`https://source.unsplash.com/featured/?${encodeURIComponent(course.title)}`" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-16 left-6 right-6 max-w-5xl mx-auto text-white text-left">
-                    <p class="text-teal-400 font-black tracking-widest mb-4 uppercase">PREMIUM TOUR</p>
-                    <h1 class="text-4xl md:text-7xl font-black mb-8 leading-tight tracking-tighter">{{ course.product_title }}</h1>
+                <div class="absolute bottom-16 left-6 right-6 max-w-5xl mx-auto text-white">
+                    <p class="text-teal-400 font-black tracking-widest mb-4 uppercase">{{ course.days }} DAYS TOUR</p>
+                    <h1 class="text-4xl md:text-7xl font-black mb-8 leading-tight">{{ course.title }}</h1>
                     <div class="flex items-baseline gap-4">
                         <span class="text-4xl font-black text-white" v-if="course.price > 0">NT$ {{ Number(course.price).toLocaleString() }}</span>
-                        <span class="opacity-50 text-xs font-bold uppercase tracking-widest">起 / Per Person</span>
+                        <span class="opacity-50 text-xs font-bold uppercase tracking-widest">起 / person</span>
                     </div>
                 </div>
             </div>
 
             <!-- Intro -->
             <div class="max-w-3xl mx-auto px-8 py-24 text-center">
-                <p class="text-xl md:text-2xl text-slate-400 leading-relaxed font-serif italic">{{ course.description }}</p>
+                <p class="text-xl md:text-2xl text-slate-400 leading-relaxed font-serif italic">{{ course.desc }}</p>
             </div>
 
             <!-- Itinerary Timeline -->
             <div class="max-w-4xl mx-auto px-6 pb-40">
-                <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-32 relative">
-                    <div class="flex items-center gap-4 mb-10">
-                        <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black text-lg">0{{ idx + 1 }}</div>
-                        <h2 class="text-2xl md:text-4xl font-black text-slate-800">{{ day.route }}</h2>
+                <div v-for="(day, idx) in course.list" :key="idx" class="mb-32 relative">
+                    <div class="flex items-start gap-6 mb-10">
+                        <div class="day-label bg-slate-900 text-white font-black py-4 px-2 rounded-xl text-xs tracking-tighter shadow-xl">DAY 0{{ day.day || idx + 1 }}</div>
+                        <h2 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-snug">{{ day.route }}</h2>
                     </div>
                     
                     <div class="mb-12 overflow-hidden magazine-img">
-                        <img :src="day.image" class="w-full h-80 md:h-[550px] object-cover">
+                        <img :src="`https://source.unsplash.com/featured/?${encodeURIComponent(day.kw || 'travel')}`" class="w-full h-80 md:h-[550px] object-cover hover:scale-105 transition-transform duration-[1.5s]">
                     </div>
 
                     <div class="space-y-6 mb-12">
-                        <p v-for="p in day.descriptions" :key="p" class="text-slate-500 leading-loose md:text-lg">{{ p }}</p>
+                        <p v-for="p in day.infos" :key="p" class="text-slate-500 leading-loose md:text-lg text-justify">{{ p }}</p>
                     </div>
 
                     <!-- Info Card -->
@@ -59,15 +61,15 @@
                         <div class="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
                             <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">MEALS</p>
                             <div class="space-y-4 text-sm font-bold text-slate-700">
-                                <div class="flex justify-between"><span>早</span><span>{{ day.meals.breakfast || '酒店內享用' }}</span></div>
-                                <div class="flex justify-between"><span>午</span><span>{{ day.meals.lunch || '特色餐食' }}</span></div>
-                                <div class="flex justify-between"><span>晚</span><span>{{ day.meals.dinner || '精選料理' }}</span></div>
+                                <div class="flex justify-between"><span>早</span><span>{{ day.meals.b || '酒店享用' }}</span></div>
+                                <div class="flex justify-between"><span>午</span><span>{{ day.meals.l || '特色風味餐' }}</span></div>
+                                <div class="flex justify-between"><span>晚</span><span>{{ day.meals.d || '精選料理' }}</span></div>
                             </div>
                         </div>
                         <div class="bg-[#174a5a] p-8 rounded-[2rem] text-white">
                             <p class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6">STAY</p>
-                            <p class="font-black text-lg leading-snug">{{ day.hotel || '豪華酒店' }}</p>
-                            <p class="text-[10px] text-white/50 mt-2 font-bold uppercase">Or Equivalent</p>
+                            <p class="font-black text-lg leading-snug">{{ day.hotel || '頂級豪華飯店' }}</p>
+                            <p class="text-[10px] text-white/50 mt-2 font-bold uppercase">Or Similar Class</p>
                         </div>
                     </div>
                 </div>
@@ -75,7 +77,9 @@
 
             <!-- Sticky CTA -->
             <div class="fixed bottom-0 left-0 w-full p-6 bg-white/90 backdrop-blur-2xl border-t border-slate-100 flex justify-center z-50">
-                <button class="w-full max-w-md bg-slate-900 text-white py-5 rounded-2xl font-black text-lg shadow-2xl active:scale-95 transition-all">立即洽詢行程</button>
+                <button class="w-full max-w-md bg-slate-900 text-white py-5 rounded-2xl font-black text-lg shadow-2xl active:scale-95 transition-all">
+                    立即報名諮詢行程
+                </button>
             </div>
         </div>
     </div>
@@ -86,15 +90,18 @@
             data() { return { course: null } },
             mounted() {
                 const params = new URLSearchParams(window.location.search);
-                const data = params.get('d'); // 改讀取 d
+                const data = params.get('d');
                 if (data) {
                     try {
+                        // 使用正確的 Unicode 解碼方式
                         const jsonStr = decodeURIComponent(atob(data).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                         this.course = JSON.parse(jsonStr);
-                        document.title = this.course.product_title;
-                        window.scrollTo(0, 0);
-                    } catch (e) { alert("資料載入失敗"); }
-                } else { alert("找不到行程資料，請重新從 LINE 上傳。"); }
+                        document.title = this.course.title;
+                    } catch (e) { 
+                        console.error("Decoding error:", e);
+                        alert("資料讀取失敗，請確認網址完整性。"); 
+                    }
+                } else { alert("找不到行程資料，請重新上傳文案。"); }
             }
         }).mount('#app');
     </script>
