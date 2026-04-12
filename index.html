@@ -3,51 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 智能圖集系統</title>
+  <title>旅行管家 - 文案智能上稿</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
     body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
-    .upload-area { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23CBD5E1FF' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 40px; }
+    textarea { scrollbar-width: none; }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-  <div id="app" class="w-full max-w-xl text-center">
-    <div v-if="loading" class="text-slate-400 font-bold">系統初始化...</div>
+  <div id="app" class="w-full max-w-xl">
+    <div v-if="loading" class="text-center text-slate-400 font-bold">系統初始化...</div>
 
     <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
-        <div class="flex items-center gap-3 mb-8">
-          <span class="text-3xl">🚀</span>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能圖集上稿</h1>
+        <div class="flex items-center gap-3 mb-6">
+          <span class="text-3xl">📝</span>
+          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能文案上稿</h1>
         </div>
 
         <div v-if="!processing && !resultUrl">
-          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all group">
-            <h2 class="text-xl font-bold text-slate-600 group-hover:text-[#174a5a]">選取行程的所有 JPG</h2>
-            <p class="text-slate-400 text-xs mt-2">支援一次選取多張圖片進行排列</p>
-            <input type="file" ref="fileInput" class="hidden" accept="image/jpeg" multiple @change="handleFiles">
-          </div>
-
-          <div v-if="files.length > 0" class="mt-8">
-              <p class="font-bold text-slate-700 mb-4 tracking-wide">已選取 {{ files.length }} 張行程圖片</p>
-              <button @click="uploadFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
-                確認上傳並生成網頁
-              </button>
-          </div>
+          <p class="text-slate-400 text-xs mb-4">請將 NotebookLM 解析出的行程文字貼在下方：</p>
+          <textarea v-model="rawText" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 focus:border-[#174a5a] focus:ring-0 transition-all text-sm leading-relaxed outline-none" placeholder="在此貼入行程內容..."></textarea>
+          
+          <button @click="submitText" :disabled="!rawText" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all disabled:opacity-30">
+            開始合成文章網頁
+          </button>
         </div>
 
-        <div v-if="processing" class="py-16">
+        <div v-if="processing" class="py-16 text-center">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="text-slate-800 font-black">AI 正在抓取標題並重組圖集...</p>
-          <p class="text-slate-400 text-[10px] mt-2">正在處理中，請稍候</p>
+          <p class="text-slate-800 font-black">AI 正在合成圖片與文章...</p>
+          <p class="text-slate-400 text-xs mt-2">這包含結構化與自動媒合圖庫</p>
         </div>
 
-        <div v-if="resultUrl" class="py-10">
-          <div class="text-6xl mb-6">🎉</div>
-          <h3 class="text-xl font-black text-slate-800 mb-6">圖集網頁已就緒</h3>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-teal-900/20 mb-4">預覽生成的行程網頁</button>
-          <button @click="reset" class="text-slate-400 font-bold text-sm">繼續處理下一個</button>
+        <div v-if="resultUrl" class="py-10 text-center">
+          <div class="text-6xl mb-6">✨</div>
+          <h3 class="text-xl font-black text-slate-800 mb-6">行程網站合成成功</h3>
+          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">預覽圖文行程</button>
+          <button @click="reset" class="text-slate-400 font-bold">上傳下一份文案</button>
         </div>
     </div>
   </div>
@@ -57,43 +51,30 @@
     const liffId = "2008729640-bptxTkoO";
 
     createApp({
-      data() {
-        return { loading: true, files: [], processing: false, resultUrl: null }
-      },
+      data() { return { loading: true, rawText: '', processing: false, resultUrl: null } },
       async mounted() {
-        try {
-          await liff.init({ liffId });
-          if (!liff.isLoggedIn()) { liff.login(); return; }
-          this.loading = false;
-        } catch (e) { alert("LIFF 載入失敗"); }
+        await liff.init({ liffId });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        this.loading = false;
       },
       methods: {
-        handleFiles(e) { this.files = Array.from(e.target.files); },
-        async uploadFiles() {
+        async submitText() {
           this.processing = true;
-          const filePromises = this.files.map(file => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve({ data: reader.result.split(',')[1], type: file.type });
-            });
-          });
-          const base64Files = await Promise.all(filePromises);
           try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-pdf', {
+            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-text', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ files: base64Files })
+              body: JSON.stringify({ text: this.rawText })
             });
             const data = await res.json();
             if (data.success) {
               this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
-            } else { alert("解析失敗：" + data.msg); }
-          } catch (e) { alert("連線超時，請檢查網路"); }
+            } else { alert("合成失敗：" + data.msg); }
+          } catch (e) { alert("連線超時"); }
           finally { this.processing = false; }
         },
         openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
-        reset() { this.files = []; this.resultUrl = null; }
+        reset() { this.rawText = ''; this.resultUrl = null; }
       }
     }).mount('#app');
   </script>
