@@ -1,15 +1,36 @@
+/**
+ * WordPress Webhook 轉發處理器
+ * 確保將 LINE 的原始訊號完整轉發至舊有 WP 系統
+ */
 export async function handleWPProxy(request, body, env) {
-  const signature = request.headers.get("X-Line-Signature");
+  const wpUrl = env.WP_WEBHOOK_URL;
+
+  if (!wpUrl) {
+    console.error("WP_WEBHOOK_URL is not defined in environment variables.");
+    return new Response("WP Proxy Config Missing", { status: 200 });
+  }
+
+  // 取得 LINE 原始簽章，確保 WP 端驗證不會失敗
+  const signature = request.headers.get("X-Line-Signature") || "";
+
   try {
-    return await fetch(env.WP_WEBHOOK_URL, {
+    const response = await fetch(wpUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Line-Signature": signature || ""
+        "X-Line-Signature": signature
       },
       body: JSON.stringify(body)
     });
+
+    // 取得 WP 回傳結果並轉發回 LINE (通常是 200 OK)
+    const resText = await response.text();
+    return new Response(resText, { 
+      status: response.status,
+      headers: { "Content-Type": "application/json" }
+    });
   } catch (e) {
-    console.error("WP Proxy Fail:", e);
+    console.error("WP Proxy Error:", e.message);
+    return new Response("WP Proxy Error", { status: 200 });
   }
 }
