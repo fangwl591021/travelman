@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelKeeper - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-[#174a5a] text-white h-screen sticky top-0 flex flex-col p-6">
+            <div class="text-2xl font-black mb-10 flex items-center gap-3">
+                <i class="fa-solid fa-compass text-teal-400"></i>
+                <span>TravelKeeper</span>
+            </div>
+            <nav class="flex-1 space-y-2">
+                <a href="#" class="block p-3 bg-white/10 rounded-xl font-bold"><i class="fa-solid fa-chart-line mr-3"></i>Dashboard</a>
+                <a href="#" class="block p-3 hover:bg-white/5 rounded-xl"><i class="fa-solid fa-map-location-dot mr-3"></i>Itinerary</a>
+                <a href="#" class="block p-3 hover:bg-white/5 rounded-xl"><i class="fa-solid fa-user-tag mr-3"></i>Agents</a>
+                <a href="#" class="block p-3 hover:bg-white/5 rounded-xl"><i class="fa-solid fa-clipboard-list mr-3"></i>Transactions</a>
+            </nav>
+            <div class="text-xs text-white/40 mt-auto pt-6 border-t border-white/10">
+                Cloud Version 2.5.0
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-10">
+            <header class="flex justify-between items-center mb-10">
+                <h2 class="text-2xl font-black text-slate-800">System Overview</h2>
+                <div class="flex items-center gap-4">
+                    <span class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-slate-500 font-medium">
+                        <i class="fa-solid fa-calendar mr-2"></i>2024 March
+                    </span>
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                </div>
+            </header>
+
+            <!-- Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase mb-2 tracking-widest">Revenue</p>
+                    <h3 class="text-2xl font-black text-slate-800">$1,280,000</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase mb-2 tracking-widest">Members</p>
+                    <h3 class="text-2xl font-black text-slate-800">482</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase mb-2 tracking-widest">Shares</p>
+                    <h3 class="text-2xl font-black text-slate-800">1,592</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase mb-2 tracking-widest">AI OCR</p>
+                    <h3 class="text-2xl font-black text-slate-800">85</h3>
+                </div>
+            </div>
+
+            <!-- Activity Logs (ACTMASTER) -->
+            <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="font-black text-lg text-slate-800">Activity Tracking (ACTMASTER)</h4>
+                    <button class="text-sm text-[#174a5a] font-bold">View All</button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">User U821...39 registered [Tokyo Sakura]</p>
+                                <p class="text-[10px] text-slate-400">Agent Ref: REF-8821A</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400">3 mins ago</span>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-eye"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">User U112...05 viewing [Bangkok Trip]</p>
+                                <p class="text-[10px] text-slate-400">Source: ShareTargetPicker Card</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-slate-400">12 mins ago</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
