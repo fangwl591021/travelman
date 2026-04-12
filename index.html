@@ -10,26 +10,25 @@
 </head>
 <body class="bg-[#f1f5f9] min-h-screen flex items-center justify-center p-4">
   <div id="app" class="w-full max-w-xl">
-    <div v-if="loading" class="text-center text-slate-400 font-bold">系統載入中...</div>
-    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12">
+    <div v-if="loading" class="text-center text-slate-400 font-bold animate-pulse">系統載入中...</div>
+    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
         <h1 class="text-3xl font-black text-slate-800 mb-6 flex items-center gap-2">📝 <span>智能文案上稿</span></h1>
         
         <div v-if="!processing && !finalUrl">
-          <textarea v-model="text" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 outline-none focus:border-[#174a5a] transition-all text-sm" placeholder="請在此貼入 NotebookLM 解析後的行程文字..."></textarea>
+          <textarea v-model="text" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 outline-none focus:border-[#174a5a] transition-all text-sm leading-relaxed" placeholder="請在此貼入 NotebookLM 解析後的行程文字..."></textarea>
           <button @click="generate" :disabled="!text" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl active:scale-95 disabled:opacity-30 transition-all">開始合成文章網頁</button>
         </div>
 
         <div v-if="processing" class="py-16 text-center">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="font-black text-slate-800">AI 正在合成圖文資料...</p>
+          <p class="font-bold text-slate-800">AI 正在抓取圖庫並合成...</p>
         </div>
 
         <div v-if="finalUrl" class="py-10 text-center">
           <div class="text-6xl mb-6">✨</div>
-          <h3 class="text-xl font-black text-slate-800 mb-2">合成成功！</h3>
-          <p class="text-slate-400 text-xs mb-8">網頁已生成，不需資料庫即可直接訪問。</p>
+          <h3 class="text-xl font-black text-slate-800 mb-6">網頁合成成功！</h3>
           <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">立即預覽圖文行程</button>
-          <button @click="finalUrl = ''" class="text-slate-400 font-bold text-sm underline">再傳一份文案</button>
+          <button @click="finalUrl = ''" class="text-slate-400 font-bold text-sm">再傳一份文案</button>
         </div>
     </div>
   </div>
@@ -41,11 +40,8 @@
     createApp({
       data() { return { loading: true, text: '', processing: false, finalUrl: '' } },
       async mounted() {
-        try {
-          await liff.init({ liffId });
-          if (!liff.isLoggedIn()) { liff.login(); return; }
-          this.loading = false;
-        } catch (e) { alert("LIFF 載入失敗"); }
+        await liff.init({ liffId });
+        this.loading = false;
       },
       methods: {
         async generate() {
@@ -59,11 +55,11 @@
             const result = await res.json();
             if (result.success) {
               const jsonStr = JSON.stringify(result.data);
-              // 改用新編碼方式確保不出現 undefined，改傳送參數 d
+              // 強健的 Unicode 轉 Base64 邏輯，避免中文字碼報錯
               const base64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
               this.finalUrl = `https://fangwl591021.github.io/travelman/travel_website.html?d=${base64}`;
             } else { alert("合成失敗：" + result.msg); }
-          } catch (e) { alert("網路連線錯誤"); }
+          } catch (e) { alert("連線超時"); }
           finally { this.processing = false; }
         },
         openSite() { liff.openWindow({ url: this.finalUrl, external: true }); }
