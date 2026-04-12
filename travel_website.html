@@ -3,58 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>精選行程預覽</title>
+    <title>旅遊行程預覽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'PingFang TC', sans-serif; background-color: #ffffff; }
-        .hero-mask { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 70%); }
+        body { font-family: 'PingFang TC', sans-serif; background: #fff; }
+        .hero-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%); }
+        .magazine-img { box-shadow: 0 40px 80px -12px rgba(0,0,0,0.15); border-radius: 40px; }
     </style>
 </head>
 <body class="text-slate-900">
     <div id="app">
-        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-400 font-bold">載入行程中...</div>
-
+        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-400 font-bold">載入中...</div>
         <div v-else-if="course">
             <!-- Hero -->
-            <div class="relative h-[75vh] overflow-hidden bg-slate-900">
+            <div class="relative h-[80vh] overflow-hidden bg-slate-900">
                 <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${course.title}`" class="w-full h-full object-cover opacity-80">
-                <div class="absolute inset-0 hero-mask"></div>
-                <div class="absolute bottom-12 left-6 right-6 max-w-5xl mx-auto text-white">
-                    <p class="text-teal-400 font-black tracking-[0.2em] mb-4 uppercase">{{ course.days }} DAYS TOUR</p>
-                    <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight">{{ course.title }}</h1>
-                    <div class="flex items-baseline gap-4">
-                        <span class="text-4xl font-black">${{ Number(course.price).toLocaleString() }}</span>
-                        <span class="opacity-40 text-xs">Starting from</span>
-                    </div>
+                <div class="absolute inset-0 hero-gradient"></div>
+                <div class="absolute bottom-16 left-6 right-6 max-w-5xl mx-auto text-white">
+                    <p class="text-teal-400 font-black tracking-widest mb-4 uppercase">{{ course.days }} DAYS TOUR</p>
+                    <h1 class="text-4xl md:text-7xl font-black mb-8 leading-tight">{{ course.title }}</h1>
+                    <span class="text-4xl font-black" v-if="course.price > 0">NT$ {{ Number(course.price).toLocaleString() }} 起</span>
                 </div>
             </div>
 
             <!-- Content -->
-            <div class="max-w-3xl mx-auto px-6 py-20">
-                <p class="text-xl md:text-2xl text-slate-400 leading-relaxed italic mb-24 text-center">{{ course.desc }}</p>
-
-                <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-32">
-                    <div class="flex items-center gap-4 mb-8">
-                        <span class="text-4xl font-black text-slate-200">0{{ idx + 1 }}</span>
-                        <h2 class="text-2xl font-black text-slate-800">{{ day.route }}</h2>
+            <div class="max-w-4xl mx-auto px-6 py-24 pb-40">
+                <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-40">
+                    <div class="flex items-center gap-6 mb-12">
+                        <div class="w-14 h-14 bg-slate-900 text-white flex items-center justify-center rounded-2xl font-black text-xl shadow-2xl">0{{ idx + 1 }}</div>
+                        <h2 class="text-2xl md:text-5xl font-black text-slate-800 tracking-tighter">{{ day.route }}</h2>
                     </div>
-                    <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${encodeURIComponent(day.kw || 'travel')}`" class="w-full h-80 object-cover rounded-[2.5rem] shadow-2xl mb-10">
-                    <div class="space-y-4 mb-10">
-                        <p v-for="p in day.infos" :key="p" class="text-slate-600 leading-relaxed">{{ p }}</p>
+                    <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${encodeURIComponent(day.kw || 'travel')}`" class="w-full h-80 md:h-[600px] object-cover magazine-img mb-16">
+                    <div class="space-y-6 mb-16 px-4">
+                        <p v-for="p in day.infos" :key="p" class="text-slate-500 leading-loose md:text-xl">{{ p }}</p>
                     </div>
-                    <div class="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex flex-wrap gap-6 text-sm">
-                        <div class="flex-1 min-w-[100px]"><p class="text-[10px] text-slate-300 font-bold uppercase mb-2">早/午/晚</p>
-                        <p class="font-bold text-slate-700">{{ day.meals.breakfast }}/{{ day.meals.lunch }}/{{ day.meals.dinner }}</p></div>
-                        <div class="flex-1 min-w-[200px]"><p class="text-[10px] text-slate-300 font-bold uppercase mb-2">住宿</p>
-                        <p class="font-bold text-[#174a5a]">{{ day.hotel || '豪華酒店' }}</p></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100">
+                            <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">美食響宴</p>
+                            <div class="space-y-3 font-bold text-slate-700">
+                                <div class="flex justify-between"><span>早</span><span>{{ day.b || '酒店內' }}</span></div>
+                                <div class="flex justify-between"><span>午</span><span>{{ day.l || '在地餐' }}</span></div>
+                                <div class="flex justify-between"><span>晚</span><span>{{ day.d || '精選餐' }}</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-[#174a5a] p-10 rounded-[2.5rem] text-white">
+                            <p class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6">奢華住宿</p>
+                            <p class="font-black text-2xl">{{ day.hotel || '豪華飯店' }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- CTA -->
-            <div class="fixed bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 z-50 flex justify-center">
-                <button class="w-full max-w-md bg-slate-900 text-white py-5 rounded-2xl font-black shadow-2xl">立即預約諮詢</button>
+            <div class="fixed bottom-0 left-0 w-full p-8 bg-white/80 backdrop-blur-3xl border-t border-slate-100 flex justify-center z-50">
+                <button class="w-full max-w-md bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl shadow-4xl active:scale-95 transition-all">立即洽詢報名</button>
             </div>
         </div>
     </div>
@@ -64,15 +67,13 @@
         createApp({
             data() { return { loading: true, course: null } },
             async mounted() {
-                const params = new URLSearchParams(window.location.search);
-                const id = params.get('id');
+                const id = new URLSearchParams(window.location.search).get('id');
                 if (!id) return;
                 try {
-                    const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/courses`);
-                    const courses = await res.json();
-                    this.course = courses.find(c => c.itinerary && JSON.stringify(c).includes(id)) || courses[0];
-                } catch (e) { console.error(e); }
-                finally { this.loading = false; }
+                    const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=${id}`);
+                    this.course = await res.json();
+                    document.title = this.course.title;
+                } catch (e) { console.error(e); } finally { this.loading = false; }
             }
         }).mount('#app');
     </script>
