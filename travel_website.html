@@ -3,50 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅行管家 - 精選行程</title>
+    <title>旅行管家 - 行程預覽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'PingFang TC', sans-serif; background-color: #f8fafc; }
-        .course-card img { height: 280px; width: 100%; object-fit: cover; }
+        body { font-family: 'PingFang TC', sans-serif; background-color: #0f172a; color: white; }
+        .dm-image { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
     <div id="app">
-        <!-- 列表頁 -->
-        <div v-if="!currentCourse" class="max-w-7xl mx-auto px-6 py-16">
-            <h1 class="text-4xl font-black text-slate-800 mb-10 text-center">精選旅遊行程</h1>
-            <div v-if="loading" class="text-center py-20 text-slate-400">正在載入行程...</div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div v-for="c in courses" :key="c.id" @click="viewDetail(c.id)" class="course-card bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group">
-                    <img :src="c.cover_image">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-slate-800 mb-4 line-clamp-2">{{ c.title }}</h3>
-                        <div class="flex justify-between items-center mt-6">
-                            <span class="text-slate-400 text-sm font-bold">{{ c.days || '行程圖集' }}</span>
-                            <span class="text-red-500 font-black text-2xl">${{ formatPrice(c.price) }}</span>
+        <!-- 載入中 -->
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-500 font-bold">載入行程內容...</div>
+
+        <!-- 行程列表 (首頁) -->
+        <div v-else-if="!currentCourse" class="max-w-7xl mx-auto px-6 py-16">
+            <h1 class="text-4xl font-black text-white mb-12 text-center">精選旅遊行程</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div v-for="c in courses" :key="c.id" @click="viewDetail(c.id)" class="bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl hover:scale-[1.02] transition-all cursor-pointer group border border-slate-700">
+                    <img :src="c.cover_image" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-white mb-4 line-clamp-2 leading-relaxed">{{ c.title }}</h3>
+                        <div class="flex justify-between items-center mt-8">
+                            <span class="text-teal-400 font-bold text-sm tracking-widest uppercase">圖集展示模式</span>
+                            <span class="text-white font-black text-2xl" v-if="c.price > 0">${{ formatPrice(c.price) }}</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 詳情頁 (圖集渲染模式) -->
-        <div v-else class="bg-black min-h-screen">
-            <div class="fixed top-0 left-0 w-full p-4 z-50 flex justify-between items-center bg-black/50 backdrop-blur-md">
-                <button @click="currentCourse = null" class="text-white font-bold px-4 py-2 rounded-full border border-white/20">← 返回</button>
-                <div class="text-white font-bold truncate max-w-[200px]">{{ currentCourse.title }}</div>
-                <button class="bg-red-500 text-white font-bold px-6 py-2 rounded-full shadow-lg">立即預約</button>
+        <!-- 詳情頁 (圖集渲染) -->
+        <div v-else class="relative pb-24">
+            <!-- 導覽列 -->
+            <div class="fixed top-0 left-0 w-full p-6 z-50 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5">
+                <button @click="backToList" class="text-white font-bold px-6 py-2 rounded-full border border-white/20 hover:bg-white/10 transition-all">← 返回行程</button>
+                <div class="hidden md:block text-white font-black truncate max-w-sm">{{ currentCourse.title }}</div>
+                <button class="bg-red-600 text-white font-black px-8 py-2 rounded-full shadow-2xl shadow-red-900/40 active:scale-95 transition-all">立即報名</button>
             </div>
 
-            <!-- 核心改動：直接按順序渲染所有圖片 -->
-            <div class="max-w-3xl mx-auto pt-24 pb-20 px-0">
+            <!-- 瀑布流圖片容器 -->
+            <div class="max-w-4xl mx-auto pt-28 px-4 md:px-0 space-y-4">
                 <div v-if="currentCourse.images && currentCourse.images.length > 0">
-                    <img v-for="(img, idx) in currentCourse.images" :key="idx" :src="img" class="w-full h-auto block mb-0 shadow-2xl">
+                    <img v-for="(img, idx) in currentCourse.images" :key="idx" :src="img" class="dm-image w-full h-auto block rounded-2xl md:rounded-3xl border border-white/5">
                 </div>
-                <!-- 舊版文字相容 -->
-                <div v-else class="px-6 py-10 bg-white rounded-3xl mt-4 mx-4">
-                    <p class="text-slate-600">{{ currentCourse.description }}</p>
+                <!-- 舊版資料相容 -->
+                <div v-else class="px-8 py-16 bg-slate-900 rounded-[3rem] text-center border border-slate-800">
+                    <h2 class="text-2xl font-black mb-6">{{ currentCourse.title }}</h2>
+                    <p class="text-slate-400 leading-loose">{{ currentCourse.description }}</p>
                 </div>
             </div>
         </div>
@@ -64,13 +68,26 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const courseId = urlParams.get('id');
                     if (courseId) this.viewDetail(courseId);
-                } catch (e) { console.error(e); } finally { this.loading = false; }
+                } catch (e) { console.error("Loading Error:", e); } 
+                finally { this.loading = false; }
             },
             methods: {
                 formatPrice(p) { return Number(p).toLocaleString(); },
                 viewDetail(id) {
                     const c = this.courses.find(item => item.id === id);
-                    if (c) { this.currentCourse = c; window.scrollTo(0, 0); }
+                    if (c) { 
+                        this.currentCourse = c; 
+                        window.scrollTo(0, 0);
+                        document.title = c.title + " - 旅行管家";
+                    }
+                },
+                backToList() {
+                    this.currentCourse = null;
+                    document.title = "旅行管家 - 行程預覽";
+                    // 移除 URL 中的 id
+                    const url = new URL(window.location);
+                    url.searchParams.delete('id');
+                    window.history.pushState({}, '', url);
                 }
             }
         }).mount('#app');
