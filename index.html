@@ -8,54 +8,54 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
-    .upload-area { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23E2E8F0FF' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 40px; }
+    body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
+    .upload-area { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23CBD5E1FF' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 40px; }
   </style>
 </head>
-<body class="bg-[#f1f5f9] min-h-screen flex items-center justify-center p-4">
-  <div id="app" class="w-full max-w-2xl">
-    <div v-if="loading" class="text-center text-slate-400 font-bold">系統載入中...</div>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="w-full max-w-xl">
+    <div v-if="loading" class="text-center text-slate-400">系統初始化...</div>
+
     <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
       
       <div v-if="modeUpload">
         <div class="flex items-center gap-3 mb-8">
           <span class="text-3xl">🚀</span>
-          <h1 class="text-3xl font-black text-slate-800">智能上稿系統</h1>
+          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能上稿系統</h1>
         </div>
 
         <div v-if="!processing && !resultUrl">
-          <div @click="$refs.fileInput.click()" class="upload-area h-80 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all group">
-            <h2 class="text-2xl font-bold text-slate-600 mb-2 group-hover:text-[#174a5a]">點擊上傳旅遊 DM 圖片</h2>
-            <p class="text-slate-400 text-sm">支援一次選取多張圖片進行彙整</p>
-            <!-- 加上 multiple 屬性 -->
-            <input type="file" ref="fileInput" class="hidden" accept="image/*" multiple @change="handleFiles">
+          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50">
+            <h2 class="text-xl font-bold text-slate-600 mb-1">點擊選取多張 JPG</h2>
+            <p class="text-slate-400 text-xs">請一次選取行程的所有分頁圖片</p>
+            <input type="file" ref="fileInput" class="hidden" accept="image/jpeg" multiple @change="handleFiles">
           </div>
 
-          <!-- 顯示選取狀態 -->
-          <div v-if="selectedFiles.length > 0" class="mt-8 flex items-center justify-between bg-slate-50 p-6 rounded-3xl border border-slate-100">
-            <div>
-              <span class="font-bold text-slate-700">已選取 {{ selectedFiles.length }} 張圖片</span>
-              <p class="text-[10px] text-slate-400">系統將自動跨圖合併內容</p>
-            </div>
-            <button @click="uploadAll" class="bg-[#174a5a] text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-teal-900/20 transition-all">開始轉換</button>
+          <div v-if="files.length > 0" class="mt-8">
+              <div class="flex justify-between items-center mb-4">
+                  <span class="font-bold text-slate-700">已選取 {{ files.length }} 張圖片</span>
+                  <button @click="files = []" class="text-xs text-red-400 font-bold underline">重選</button>
+              </div>
+              <button @click="processFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
+                確認上傳並生成網站
+              </button>
           </div>
         </div>
 
-        <!-- 處理中 -->
-        <div v-if="processing" class="py-20 text-center">
+        <div v-if="processing" class="py-16 text-center">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="text-slate-800 font-black">AI 正在跨圖比對內容中...</p>
-          <p class="text-slate-400 text-xs mt-2">這可能需要 20-40 秒</p>
+          <p class="text-slate-800 font-bold">AI 正跨圖解析彙整中...</p>
+          <p class="text-slate-400 text-[10px] mt-2">10 張以上圖片處理約需 30-45 秒</p>
         </div>
 
-        <!-- 結果 -->
-        <div v-if="resultUrl" class="py-10 text-center">
-          <div class="text-6xl mb-6">🎉</div>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-teal-900/20 mb-3">預覽生成的網站</button>
-          <button @click="reset" class="text-slate-400 font-bold py-2">繼續上傳其他行程</button>
+        <div v-if="resultUrl" class="py-8 text-center">
+          <div class="text-5xl mb-6">🎉</div>
+          <h3 class="text-xl font-black text-slate-800 mb-6">專屬行程網站已就緒</h3>
+          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg mb-4">預覽生成網站</button>
+          <button @click="reset" class="text-slate-400 text-sm font-bold">繼續處理下一個</button>
         </div>
       </div>
-      <div v-else class="text-center py-20 text-slate-400">請從 LINE 官方帳號進入上傳頁面</div>
+      <div v-else class="text-center py-20 text-slate-400">請從 LINE 聊天室進入</div>
     </div>
   </div>
 
@@ -68,7 +68,7 @@
         return {
           loading: true,
           modeUpload: false,
-          selectedFiles: [],
+          files: [],
           processing: false,
           resultUrl: null
         }
@@ -77,54 +77,52 @@
         await liff.init({ liffId });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const params = new URLSearchParams(window.location.search);
-        let mode = params.get('mode');
-        if (!mode && params.get('liff.state')) {
-          const stateParams = new URLSearchParams(params.get('liff.state'));
-          mode = stateParams.get('mode');
-        }
-        this.modeUpload = mode === 'upload';
+        const state = params.get('liff.state');
+        this.modeUpload = (params.get('mode') === 'upload' || (state && state.includes('mode=upload')));
         this.loading = false;
       },
       methods: {
         handleFiles(e) {
-          this.selectedFiles = Array.from(e.target.files);
+          this.files = Array.from(e.target.files);
         },
-        async uploadAll() {
+        async processFiles() {
           this.processing = true;
-          const filePromises = this.selectedFiles.map(file => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve({
-                data: reader.result.split(',')[1],
-                type: file.type
+          try {
+            // 將所有檔案轉換為 Base64 陣列
+            const filePromises = this.files.map(file => {
+              return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve({
+                  data: reader.result.split(',')[1],
+                  type: file.type
+                });
               });
             });
-          });
 
-          const base64Files = await Promise.all(filePromises);
+            const base64Files = await Promise.all(filePromises);
 
-          try {
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-pdf', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ files: base64Files })
             });
             const data = await res.json();
+            
             if (data.success) {
               this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
             } else {
               alert("轉換失敗：" + data.msg);
             }
           } catch (e) {
-            alert("連線失敗，請重試");
+            alert("網路錯誤，請檢查檔案大小");
           } finally {
             this.processing = false;
           }
         },
         openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
         reset() {
-          this.selectedFiles = [];
+          this.files = [];
           this.resultUrl = null;
         }
       }
