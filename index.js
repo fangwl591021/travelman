@@ -105,15 +105,17 @@ const adminHTML = `
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // 正規化路徑：移除末尾斜槓並轉小寫，確保 /admin, /admin/, /ADMIN 都能對應
+    const path = url.pathname.replace(/\/$/, "").toLowerCase();
 
-    // 1. 強制優先處理 /admin 路由
-    if (url.pathname === "/admin") {
+    // 1. 強制優先處理後台路由
+    if (path === "/admin") {
       return new Response(adminHTML, {
         headers: { "Content-Type": "text/html; charset=utf-8" }
       });
     }
 
-    // 2. 處理 LINE Webhook (POST)
+    // 2. 處理 LINE Webhook (POST 請求)
     if (request.method === "POST") {
       try {
         const body = await request.json();
@@ -140,10 +142,11 @@ export default {
       }
     }
 
-    // 3. 預設 JSON 回應 (存取根目錄或其他路徑時)
+    // 3. 預設回應 (存取根目錄或其他未定義路徑時)
     return new Response(JSON.stringify({
       status: "active",
       engine: "TravelKeeper-SaaS-Core",
+      path_accessed: url.pathname,
       time: new Date().toISOString()
     }), {
       headers: { "Content-Type": "application/json" }
