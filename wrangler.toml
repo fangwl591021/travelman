@@ -1,0 +1,28 @@
+name = "travelkeeper-saas-worker"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# LINE 設定
+LINE_CHANNEL_ACCESS_TOKEN = ""
+LINE_CHANNEL_SECRET = ""
+LIFF_ID = "2008729640-bptxTkoO"
+
+# AI 設定
+GEMINI_API_KEY = ""
+OPENAI_API_KEY = ""
+
+# Google Sheets ID
+# 客戶/行程表
+SHEET_ID_CRM = "1_EfMGrlKZAZCfhnJNF-3nmjrjJ8tYDlbfaCgu6v06CM"
+# 成交紀錄表
+SHEET_ID_RECORDS = "1ERkXT3kP3T09Qe1VdKiCKy6eOJ4tUhMWxn9wjBUtv4w"
+
+# 外部整合
+WP_WEBHOOK_URL = "https://your-wordpress-site.com/wp-json/line-webhook/v1"
+TG_BOT_TOKEN = ""
+TG_CHAT_ID = ""
+
+# Google Service Account (用於 Sheets API)
+GOOGLE_SERVICE_ACCOUNT_EMAIL = ""
+GOOGLE_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
