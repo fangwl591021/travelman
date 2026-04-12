@@ -3,66 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 智能上稿系統</title>
+  <title>旅行管家 - 行程編輯工作台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
+    input, textarea { outline: none; transition: all 0.2s; }
+    input:focus, textarea:focus { border-color: #174a5a; background-color: #fff !important; }
+  </style>
 </head>
-<body class="bg-[#f1f5f9] min-h-screen flex items-center justify-center p-4">
-  <div id="app" class="w-full max-w-xl">
-    <div v-if="loading" class="text-center text-slate-400 font-bold animate-pulse">系統載入中...</div>
-    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
-        <h1 class="text-3xl font-black text-slate-800 mb-6 flex items-center gap-2">📝 <span>智能文案上稿</span></h1>
-        
-        <div v-if="!processing && !finalUrl">
-          <textarea v-model="text" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 outline-none focus:border-[#174a5a] transition-all text-sm leading-relaxed" placeholder="請在此貼入 NotebookLM 解析後的行程文字..."></textarea>
-          <button @click="generate" :disabled="!text" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl active:scale-95 disabled:opacity-30 transition-all">開始合成文章網頁</button>
+<body class="min-h-screen p-4">
+  <div id="app" class="max-w-3xl mx-auto">
+    
+    <!-- 1. 文案輸入階段 -->
+    <div v-if="step === 'input'" class="bg-white rounded-[2rem] shadow-xl p-8 md:p-12">
+        <h1 class="text-3xl font-black text-slate-800 mb-6">🚀 行程上稿工作台</h1>
+        <p class="text-slate-400 text-sm mb-4">請貼入 NotebookLM 解析後的文案，我們將為您生成編輯草稿：</p>
+        <textarea v-model="rawText" class="w-full h-80 p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-sm" placeholder="在此貼入文案..."></textarea>
+        <button @click="parseDraft" :disabled="!rawText || processing" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg disabled:opacity-50">
+          {{ processing ? 'AI 正在解析中...' : '生成預覽編輯框架' }}
+        </button>
+    </div>
+
+    <!-- 2. 編輯與預覽階段 -->
+    <div v-if="step === 'edit'" class="space-y-6 pb-24">
+        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
+            <h2 class="text-xl font-black mb-6 flex items-center gap-2">🛠️ 行程基本資訊</h2>
+            <div class="space-y-4">
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">行程標題</label>
+                <input v-model="course.title" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">總天數</label>
+                    <input v-model="course.days" type="number" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">價格</label>
+                    <input v-model="course.price" type="number" class="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent text-red-500"></div>
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">感性摘要</label>
+                <textarea v-model="course.desc" class="w-full bg-slate-50 p-4 rounded-xl text-sm border-2 border-transparent" rows="3"></textarea></div>
+            </div>
         </div>
 
-        <div v-if="processing" class="py-16 text-center">
-          <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="font-bold text-slate-800">AI 正在抓取圖庫並合成...</p>
+        <!-- 每日明細編輯 -->
+        <div v-for="(day, idx) in course.itinerary" :key="idx" class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 bg-slate-900 text-white px-4 py-1 text-[10px] font-black">DAY 0{{ idx + 1 }}</div>
+            <div class="mt-4 space-y-4">
+                <input v-model="day.route" class="w-full bg-slate-50 p-3 rounded-xl font-bold text-lg border-2 border-transparent">
+                <div class="grid grid-cols-3 gap-2">
+                    <input v-model="day.meals.breakfast" placeholder="早餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
+                    <input v-model="day.meals.lunch" placeholder="午餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
+                    <input v-model="day.meals.dinner" placeholder="晚餐" class="bg-slate-50 p-3 rounded-lg text-xs border border-slate-100">
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-400">景點描述 (逗號分隔)</label>
+                <textarea v-model="day.infosStr" class="w-full bg-slate-50 p-3 rounded-xl text-xs border border-slate-100" rows="2"></textarea></div>
+                <div><label class="text-[10px] font-bold text-slate-400">入住飯店</label>
+                <input v-model="day.hotel" class="w-full bg-slate-50 p-3 rounded-xl text-xs border border-slate-100"></div>
+                <div><label class="text-[10px] font-bold text-slate-400">圖片關鍵字 (英文)</label>
+                <input v-model="day.kw" class="w-full bg-teal-50 p-3 rounded-xl text-xs border border-teal-100 font-mono"></div>
+            </div>
         </div>
 
-        <div v-if="finalUrl" class="py-10 text-center">
-          <div class="text-6xl mb-6">✨</div>
-          <h3 class="text-xl font-black text-slate-800 mb-6">網頁合成成功！</h3>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">立即預覽圖文行程</button>
-          <button @click="finalUrl = ''" class="text-slate-400 font-bold text-sm">再傳一份文案</button>
+        <!-- 固定在底部的操作列 -->
+        <div class="fixed bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 flex gap-4 z-50">
+            <button @click="step = 'input'" class="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">重新解析</button>
+            <button @click="saveCourse" :disabled="saving" class="flex-[2] bg-[#174a5a] text-white py-4 rounded-2xl font-black shadow-xl disabled:opacity-50">
+                {{ saving ? '正在儲存至資料庫...' : '確認並發布網站' }}
+            </button>
         </div>
     </div>
+
+    <!-- 3. 成功階段 -->
+    <div v-if="step === 'success'" class="bg-white rounded-[3rem] shadow-xl p-12 text-center">
+        <div class="text-6xl mb-6">✅</div>
+        <h2 class="text-2xl font-black mb-8">行程已成功儲存並發布！</h2>
+        <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg mb-4">預覽正式網站</button>
+        <button @click="reset" class="text-slate-400 font-bold underline">上傳下一份行程</button>
+    </div>
+
   </div>
 
   <script>
     const { createApp } = Vue;
-    const liffId = "2008729640-bptxTkoO";
-
     createApp({
-      data() { return { loading: true, text: '', processing: false, finalUrl: '' } },
+      data() {
+        return {
+          step: 'input', processing: false, saving: false,
+          rawText: '', course: {}, finalId: ''
+        }
+      },
       async mounted() {
-        await liff.init({ liffId });
-        this.loading = false;
+        await liff.init({ liffId: "2008729640-bptxTkoO" });
       },
       methods: {
-        async generate() {
+        async parseDraft() {
           this.processing = true;
           try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-text', {
+            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-draft', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: this.text })
+              body: JSON.stringify({ text: this.rawText })
             });
-            const result = await res.json();
-            if (result.success) {
-              const jsonStr = JSON.stringify(result.data);
-              // 強健的 Unicode 轉 Base64 邏輯，避免中文字碼報錯
-              const base64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
-              this.finalUrl = `https://fangwl591021.github.io/travelman/travel_website.html?d=${base64}`;
-            } else { alert("合成失敗：" + result.msg); }
-          } catch (e) { alert("連線超時"); }
+            const data = await res.json();
+            // 轉換為編輯器友善格式
+            data.itinerary = (data.itinerary || []).map(d => ({ ...d, infosStr: (d.infos || []).join('\n'), meals: d.meals || {} }));
+            this.course = data;
+            this.step = 'edit';
+          } catch (e) { alert("AI 解析草稿失敗"); }
           finally { this.processing = false; }
         },
-        openSite() { liff.openWindow({ url: this.finalUrl, external: true }); }
+        async saveCourse() {
+          this.saving = true;
+          // 將編輯過的字串轉回陣列
+          this.course.itinerary.forEach(d => { d.infos = d.infosStr.split('\n').filter(Boolean); });
+          try {
+            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.course)
+            });
+            const data = await res.json();
+            if (data.success) {
+              this.finalId = data.id;
+              this.step = 'success';
+            } else { alert("儲存失敗：" + data.msg); }
+          } catch (e) { alert("網路連線錯誤"); }
+          finally { this.saving = false; }
+        },
+        openSite() { window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${this.finalId}`, '_blank'); },
+        reset() { this.step = 'input'; this.rawText = ''; this.course = {}; }
       }
     }).mount('#app');
   </script>
