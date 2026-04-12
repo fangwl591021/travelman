@@ -3,45 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 文案智能上稿</title>
+  <title>旅行管家 - 智能上稿系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <style>
-    body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
-    textarea { scrollbar-width: none; }
-  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#f1f5f9] min-h-screen flex items-center justify-center p-4">
   <div id="app" class="w-full max-w-xl">
     <div v-if="loading" class="text-center text-slate-400 font-bold">系統初始化...</div>
-
-    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
-        <div class="flex items-center gap-3 mb-6">
-          <span class="text-3xl">📝</span>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能文案上稿</h1>
-        </div>
-
-        <div v-if="!processing && !resultUrl">
-          <p class="text-slate-400 text-xs mb-4">請將 NotebookLM 解析出的行程文字貼在下方：</p>
-          <textarea v-model="rawText" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 focus:border-[#174a5a] focus:ring-0 transition-all text-sm leading-relaxed outline-none" placeholder="在此貼入行程內容..."></textarea>
-          
-          <button @click="submitText" :disabled="!rawText" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all disabled:opacity-30">
-            開始合成文章網頁
-          </button>
+    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12">
+        <h1 class="text-3xl font-black text-slate-800 mb-6 flex items-center gap-2">📝 <span>智能文案上稿</span></h1>
+        
+        <div v-if="!processing && !finalUrl">
+          <p class="text-slate-400 text-xs mb-4 italic">將 NotebookLM 解析出的行程文字貼在下方：</p>
+          <textarea v-model="text" class="w-full h-80 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 outline-none focus:border-[#174a5a] transition-all text-sm leading-relaxed" placeholder="例如：
+第一天：台北/日本
+...
+第八天：日本/台北"></textarea>
+          <button @click="generate" :disabled="!text" class="w-full mt-6 bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl active:scale-95 disabled:opacity-30 transition-all">開始合成文章網頁</button>
         </div>
 
         <div v-if="processing" class="py-16 text-center">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="text-slate-800 font-black">AI 正在合成圖片與文章...</p>
-          <p class="text-slate-400 text-xs mt-2">這包含結構化與自動媒合圖庫</p>
+          <p class="font-black text-slate-800">AI 正在抓取精美圖庫...</p>
         </div>
 
-        <div v-if="resultUrl" class="py-10 text-center">
+        <div v-if="finalUrl" class="py-10 text-center">
           <div class="text-6xl mb-6">✨</div>
-          <h3 class="text-xl font-black text-slate-800 mb-6">行程網站合成成功</h3>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">預覽圖文行程</button>
-          <button @click="reset" class="text-slate-400 font-bold">上傳下一份文案</button>
+          <h3 class="text-xl font-black text-slate-800 mb-2">網頁合成成功！</h3>
+          <p class="text-slate-400 text-xs mb-8">此網頁包含完整圖文，無須資料庫即可永久訪問。</p>
+          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl mb-4">立即預覽圖文行程</button>
+          <button @click="finalUrl = ''" class="text-slate-400 font-bold text-sm">上傳下一份文案</button>
         </div>
     </div>
   </div>
@@ -51,30 +43,34 @@
     const liffId = "2008729640-bptxTkoO";
 
     createApp({
-      data() { return { loading: true, rawText: '', processing: false, resultUrl: null } },
+      data() { return { loading: true, text: '', processing: false, finalUrl: '' } },
       async mounted() {
-        await liff.init({ liffId });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        this.loading = false;
+        try {
+          await liff.init({ liffId });
+          if (!liff.isLoggedIn()) { liff.login(); return; }
+          this.loading = false;
+        } catch (e) { alert("LIFF 載入失敗"); }
       },
       methods: {
-        async submitText() {
+        async generate() {
           this.processing = true;
           try {
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-text', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: this.rawText })
+              body: JSON.stringify({ text: this.text })
             });
-            const data = await res.json();
-            if (data.success) {
-              this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
-            } else { alert("合成失敗：" + data.msg); }
-          } catch (e) { alert("連線超時"); }
+            const result = await res.json();
+            if (result.success) {
+              const jsonStr = JSON.stringify(result.data);
+              // 支援中文的 Base64 編碼
+              const base64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+              this.finalUrl = `https://fangwl591021.github.io/travelman/travel_website.html?d=${base64}`;
+            } else { alert("AI 合成失敗：" + result.msg); }
+          } catch (e) { alert("連線錯誤，請檢查網路狀態"); }
           finally { this.processing = false; }
         },
-        openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
-        reset() { this.rawText = ''; this.resultUrl = null; }
+        openSite() { liff.openWindow({ url: this.finalUrl, external: true }); }
       }
     }).mount('#app');
   </script>
