@@ -16,31 +16,38 @@
   <div id="app" class="w-full max-w-xl text-center">
     <div v-if="loading" class="text-slate-400 font-bold">系統初始化...</div>
 
-    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12">
-        <h1 class="text-3xl font-black text-slate-800 mb-8">🚀 智能圖集上稿</h1>
+    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="text-3xl">🚀</span>
+          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能圖集上稿</h1>
+        </div>
 
         <div v-if="!processing && !resultUrl">
-          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all">
-            <h2 class="text-xl font-bold text-slate-600">點擊選取行程圖片</h2>
-            <p class="text-slate-400 text-xs mt-2">請按順序選取多張 JPG</p>
+          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all group">
+            <h2 class="text-xl font-bold text-slate-600 group-hover:text-[#174a5a]">選取行程的所有 JPG</h2>
+            <p class="text-slate-400 text-xs mt-2">支援一次選取多張圖片進行排列</p>
             <input type="file" ref="fileInput" class="hidden" accept="image/jpeg" multiple @change="handleFiles">
           </div>
 
           <div v-if="files.length > 0" class="mt-8">
-              <p class="font-bold text-slate-700 mb-4">已選取 {{ files.length }} 張圖片</p>
-              <button @click="uploadFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-3xl font-bold shadow-xl">開始建立圖集網頁</button>
+              <p class="font-bold text-slate-700 mb-4 tracking-wide">已選取 {{ files.length }} 張行程圖片</p>
+              <button @click="uploadFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
+                確認上傳並生成網頁
+              </button>
           </div>
         </div>
 
         <div v-if="processing" class="py-16">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="text-slate-800 font-bold">正在將圖片轉化為網頁...</p>
+          <p class="text-slate-800 font-black">AI 正在抓取標題並重組圖集...</p>
+          <p class="text-slate-400 text-[10px] mt-2">正在處理中，請稍候</p>
         </div>
 
         <div v-if="resultUrl" class="py-10">
           <div class="text-6xl mb-6">🎉</div>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-3xl font-bold text-lg mb-4 shadow-lg">預覽圖集網頁</button>
-          <button @click="reset" class="text-slate-400 font-bold">繼續上傳</button>
+          <h3 class="text-xl font-black text-slate-800 mb-6">圖集網頁已就緒</h3>
+          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-teal-900/20 mb-4">預覽生成的行程網頁</button>
+          <button @click="reset" class="text-slate-400 font-bold text-sm">繼續處理下一個</button>
         </div>
     </div>
   </div>
@@ -51,12 +58,14 @@
 
     createApp({
       data() {
-        return { loading: true, modeUpload: false, files: [], processing: false, resultUrl: null }
+        return { loading: true, files: [], processing: false, resultUrl: null }
       },
       async mounted() {
-        await liff.init({ liffId });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        this.loading = false;
+        try {
+          await liff.init({ liffId });
+          if (!liff.isLoggedIn()) { liff.login(); return; }
+          this.loading = false;
+        } catch (e) { alert("LIFF 載入失敗"); }
       },
       methods: {
         handleFiles(e) { this.files = Array.from(e.target.files); },
@@ -79,8 +88,8 @@
             const data = await res.json();
             if (data.success) {
               this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
-            } else { alert("失敗：" + data.msg); }
-          } catch (e) { alert("網路錯誤"); }
+            } else { alert("解析失敗：" + data.msg); }
+          } catch (e) { alert("連線超時，請檢查網路"); }
           finally { this.processing = false; }
         },
         openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
