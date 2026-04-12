@@ -3,72 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 行程轉換工具</title>
+  <title>旅行管家 - 智能上稿系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+    .upload-area { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23E2E8F0FF' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 40px; }
+    .upload-area:hover { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='40' ry='40' stroke='%23174A5AFF' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); }
+  </style>
 </head>
-<body class="bg-[#f8fafc] min-h-screen font-sans p-6 text-slate-800">
-  <div id="app" class="max-w-md mx-auto">
-    <!-- 讀取畫面 -->
-    <div v-if="loading" class="mt-20 text-center animate-pulse text-slate-400">
-      正在連線雲端系統...
-    </div>
+<body class="bg-[#f1f5f9] min-h-screen flex items-center justify-center p-4">
+  <div id="app" class="w-full max-w-2xl">
+    <div v-if="loading" class="text-center text-slate-400 font-bold">系統初始化中...</div>
 
-    <!-- 主畫面 -->
-    <div v-else class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 p-8">
-      <div v-if="!modeUpload">
-          <h1 class="text-3xl font-black text-[#174a5a] mb-6">專屬數位名片</h1>
-          <div class="bg-slate-50 rounded-3xl p-6 mb-8 border border-slate-100">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-[#174a5a] rounded-2xl flex items-center justify-center text-white font-bold text-xl">{{ profile.displayName?.[0] }}</div>
-              <div>
-                <div class="font-bold text-slate-800">{{ profile.displayName }}</div>
-                <div class="text-[10px] font-bold text-[#174a5a] tracking-widest uppercase mt-1">代碼：READY</div>
-              </div>
-            </div>
+    <div v-else class="bg-white rounded-[3rem] shadow-2xl overflow-hidden p-8 md:p-12">
+      
+      <!-- 智能上稿系統介面 -->
+      <div v-if="modeUpload">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="text-3xl">🚀</span>
+          <h1 class="text-3xl font-black text-slate-800 tracking-tight">智能上稿系統</h1>
+        </div>
+
+        <div v-if="!processing && !resultUrl">
+          <div @click="$refs.fileInput.click()" class="upload-area h-80 flex flex-col items-center justify-center cursor-pointer transition-all group">
+            <h2 class="text-2xl font-bold text-slate-600 mb-2 group-hover:text-[#174a5a]">點擊上傳旅遊 DM 圖片</h2>
+            <p class="text-slate-400 text-sm">AI 將自動產生感性導寫文案與高清圖片標籤</p>
+            <input type="file" ref="fileInput" class="hidden" accept="application/pdf,image/*" @change="handleFile">
           </div>
-          <button @click="share" class="w-full bg-[#174a5a] text-white py-4 rounded-2xl font-bold shadow-xl">選擇好友分享行程</button>
+
+          <div v-if="selectedFile" class="mt-8 flex items-center justify-between bg-slate-50 p-6 rounded-3xl border border-slate-100">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">📄</span>
+              <span class="font-bold text-slate-700 truncate max-w-[200px]">{{ selectedFile.name }}</span>
+            </div>
+            <button @click="uploadFile" class="bg-[#174a5a] text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-teal-900/20 transition-all">開始轉換</button>
+          </div>
+        </div>
+
+        <div v-if="processing" class="py-20 text-center">
+          <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
+          <h3 class="text-xl font-black text-slate-800">AI 正在努力拆解中...</h3>
+          <p class="text-slate-400 mt-2">正在分析行程並生成網頁，請勿關閉視窗</p>
+        </div>
+
+        <div v-if="resultUrl" class="py-10 text-center">
+          <div class="text-6xl mb-6">🎉</div>
+          <h3 class="text-2xl font-black text-slate-800 mb-2">網站生成成功！</h3>
+          <div class="flex flex-col gap-3 mt-8">
+            <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-teal-900/20">立即預覽網站</button>
+            <button @click="closeLiff" class="text-slate-400 font-bold py-2">返回聊天室</button>
+          </div>
+        </div>
       </div>
 
-      <!-- PDF 上傳專區 (由 ?mode=upload 觸發) -->
+      <!-- 業務名片模式 -->
       <div v-else>
-        <h1 class="text-2xl font-black text-[#174a5a] mb-2">自動生成行程網站</h1>
-        <p class="text-slate-400 text-xs mb-8">請選擇行程 PDF 或 圖片，AI 將為您自動拆解內容並建立專屬網站。</p>
-        
-        <div v-if="!processing">
-            <div @click="$refs.fileInput.click()" class="border-4 border-dashed border-slate-100 rounded-[2rem] p-10 text-center hover:bg-slate-50 transition-all cursor-pointer">
-                <div class="text-4xl mb-4">📄</div>
-                <div class="font-bold text-slate-400">點擊選擇檔案</div>
-                <div class="text-[10px] text-slate-300 mt-2">支援 PDF, JPG, PNG (最大 5MB)</div>
-                <input type="file" ref="fileInput" class="hidden" accept="application/pdf,image/*" @change="handleFile">
-            </div>
-            <div v-if="selectedFile" class="mt-6 p-4 bg-teal-50 rounded-2xl flex items-center justify-between border border-teal-100">
-                <span class="text-xs font-bold text-teal-700 truncate mr-4">{{ selectedFile.name }}</span>
-                <button @click="uploadFile" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-xs font-bold">開始轉換</button>
-            </div>
+        <h1 class="text-3xl font-black text-slate-800 mb-8">專屬分享名片</h1>
+        <div class="bg-[#174a5a] rounded-[2rem] p-8 text-white mb-8">
+            <div class="text-2xl font-black mb-1">{{ profile.displayName }}</div>
+            <div class="text-teal-400 text-sm font-bold">專業旅遊管家</div>
         </div>
-
-        <div v-else class="text-center py-10">
-            <div class="inline-block animate-spin w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full mb-4"></div>
-            <div class="font-bold text-teal-600">AI 正在努力拆解中...</div>
-            <p class="text-[10px] text-slate-400 mt-2">這可能需要 15-30 秒，請勿關閉視窗</p>
-        </div>
-
-        <!-- 成功結果 -->
-        <div v-if="resultUrl" class="mt-10 p-6 bg-green-50 rounded-3xl border border-green-100 text-center">
-            <div class="text-3xl mb-4">🎉</div>
-            <div class="font-bold text-green-700 mb-4">網站生成成功！</div>
-            <button @click="openSite" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm mb-3">立即預覽網站</button>
-            <button @click="closeLiff" class="text-slate-400 text-xs">返回聊天室</button>
-        </div>
+        <button @click="share" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-xl">選擇好友分享行程</button>
       </div>
+
     </div>
   </div>
 
   <script>
     const { createApp } = Vue;
-    const liffId = "2008729640-bptxTkoO"; // 您的 LIFF ID
+    const liffId = "2008729640-bptxTkoO";
 
     createApp({
       data() {
@@ -78,8 +83,7 @@
           profile: {},
           selectedFile: null,
           processing: false,
-          resultUrl: null,
-          courseId: null
+          resultUrl: null
         }
       },
       async mounted() {
@@ -88,21 +92,26 @@
           if (!liff.isLoggedIn()) { liff.login(); return; }
           this.profile = await liff.getProfile();
           
-          // 檢查是否有上傳模式
           const params = new URLSearchParams(window.location.search);
-          this.modeUpload = params.get('mode') === 'upload';
+          let mode = params.get('mode');
           
+          // 修正：處理 LINE LIFF 特有的參數編碼問題
+          if (!mode && params.get('liff.state')) {
+            const stateParams = new URLSearchParams(params.get('liff.state'));
+            mode = stateParams.get('mode');
+          }
+          
+          this.modeUpload = mode === 'upload';
           this.loading = false;
-        } catch (e) { alert("LIFF 初始化失敗"); }
+        } catch (e) { console.error(e); }
       },
       methods: {
         handleFile(e) {
           const file = e.target.files[0];
-          if (file && file.size > 5 * 1024 * 1024) {
-            alert("檔案太大囉！請選擇 5MB 以下的檔案。");
-            return;
+          if (file) {
+            if (file.size > 5 * 1024 * 1024) { alert("檔案不能超過 5MB"); return; }
+            this.selectedFile = file;
           }
-          this.selectedFile = file;
         },
         async uploadFile() {
           this.processing = true;
@@ -122,22 +131,41 @@
               });
               const data = await res.json();
               if (data.success) {
-                this.courseId = data.courseId;
                 this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
               } else {
-                alert("AI 轉換失敗：" + data.msg);
+                alert("轉換失敗：" + (data.msg || "伺服器錯誤"));
               }
             } catch (e) {
-              alert("伺服器連線失敗");
+              alert("網路連線失敗");
             } finally {
               this.processing = false;
             }
           };
         },
-        openSite() {
-          liff.openWindow({ url: this.resultUrl, external: true });
-        },
-        closeLiff() { liff.closeWindow(); }
+        openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
+        closeLiff() { liff.closeWindow(); },
+        async share() {
+          await liff.shareTargetPicker([{
+            "type": "flex",
+            "altText": "精選行程推薦",
+            "contents": {
+              "type": "bubble",
+              "body": {
+                "type": "box", "layout": "vertical",
+                "contents": [
+                  { "type": "text", "text": "精選行程推薦", "weight": "bold", "size": "xl", "color": "#174a5a" },
+                  { "type": "text", "text": "您的好友分享了專業旅遊管家的精選行程，點擊查看更多細節。", "size": "xs", "color": "#888888", "margin": "md", "wrap": true }
+                ]
+              },
+              "footer": {
+                "type": "box", "layout": "vertical",
+                "contents": [
+                  { "type": "button", "action": { "type": "uri", "label": "立即查看行程", "uri": "https://fangwl591021.github.io/travelman/travel_website.html" }, "style": "primary", "color": "#174a5a" }
+                ]
+              }
+            }
+          }]);
+        }
       }
     }).mount('#app');
   </script>
