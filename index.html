@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 智能上稿系統</title>
+  <title>旅行管家 - 智能圖集系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -13,49 +13,35 @@
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-  <div id="app" class="w-full max-w-xl">
-    <div v-if="loading" class="text-center text-slate-400">系統初始化...</div>
+  <div id="app" class="w-full max-w-xl text-center">
+    <div v-if="loading" class="text-slate-400 font-bold">系統初始化...</div>
 
-    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-slate-50">
-      
-      <div v-if="modeUpload">
-        <div class="flex items-center gap-3 mb-8">
-          <span class="text-3xl">🚀</span>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight">智能上稿系統</h1>
-        </div>
+    <div v-else class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12">
+        <h1 class="text-3xl font-black text-slate-800 mb-8">🚀 智能圖集上稿</h1>
 
         <div v-if="!processing && !resultUrl">
-          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50">
-            <h2 class="text-xl font-bold text-slate-600 mb-1">點擊選取多張 JPG</h2>
-            <p class="text-slate-400 text-xs">請一次選取行程的所有分頁圖片</p>
+          <div @click="$refs.fileInput.click()" class="upload-area h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all">
+            <h2 class="text-xl font-bold text-slate-600">點擊選取行程圖片</h2>
+            <p class="text-slate-400 text-xs mt-2">請按順序選取多張 JPG</p>
             <input type="file" ref="fileInput" class="hidden" accept="image/jpeg" multiple @change="handleFiles">
           </div>
 
           <div v-if="files.length > 0" class="mt-8">
-              <div class="flex justify-between items-center mb-4">
-                  <span class="font-bold text-slate-700">已選取 {{ files.length }} 張圖片</span>
-                  <button @click="files = []" class="text-xs text-red-400 font-bold underline">重選</button>
-              </div>
-              <button @click="processFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-bold shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
-                確認上傳並生成網站
-              </button>
+              <p class="font-bold text-slate-700 mb-4">已選取 {{ files.length }} 張圖片</p>
+              <button @click="uploadFiles" class="w-full bg-[#174a5a] text-white py-5 rounded-3xl font-bold shadow-xl">開始建立圖集網頁</button>
           </div>
         </div>
 
-        <div v-if="processing" class="py-16 text-center">
+        <div v-if="processing" class="py-16">
           <div class="inline-block animate-spin w-12 h-12 border-4 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-          <p class="text-slate-800 font-bold">AI 正跨圖解析彙整中...</p>
-          <p class="text-slate-400 text-[10px] mt-2">10 張以上圖片處理約需 30-45 秒</p>
+          <p class="text-slate-800 font-bold">正在將圖片轉化為網頁...</p>
         </div>
 
-        <div v-if="resultUrl" class="py-8 text-center">
-          <div class="text-5xl mb-6">🎉</div>
-          <h3 class="text-xl font-black text-slate-800 mb-6">專屬行程網站已就緒</h3>
-          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-bold shadow-lg mb-4">預覽生成網站</button>
-          <button @click="reset" class="text-slate-400 text-sm font-bold">繼續處理下一個</button>
+        <div v-if="resultUrl" class="py-10">
+          <div class="text-6xl mb-6">🎉</div>
+          <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-3xl font-bold text-lg mb-4 shadow-lg">預覽圖集網頁</button>
+          <button @click="reset" class="text-slate-400 font-bold">繼續上傳</button>
         </div>
-      </div>
-      <div v-else class="text-center py-20 text-slate-400">請從 LINE 聊天室進入</div>
     </div>
   </div>
 
@@ -65,66 +51,40 @@
 
     createApp({
       data() {
-        return {
-          loading: true,
-          modeUpload: false,
-          files: [],
-          processing: false,
-          resultUrl: null
-        }
+        return { loading: true, modeUpload: false, files: [], processing: false, resultUrl: null }
       },
       async mounted() {
         await liff.init({ liffId });
         if (!liff.isLoggedIn()) { liff.login(); return; }
-        const params = new URLSearchParams(window.location.search);
-        const state = params.get('liff.state');
-        this.modeUpload = (params.get('mode') === 'upload' || (state && state.includes('mode=upload')));
         this.loading = false;
       },
       methods: {
-        handleFiles(e) {
-          this.files = Array.from(e.target.files);
-        },
-        async processFiles() {
+        handleFiles(e) { this.files = Array.from(e.target.files); },
+        async uploadFiles() {
           this.processing = true;
-          try {
-            // 將所有檔案轉換為 Base64 陣列
-            const filePromises = this.files.map(file => {
-              return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve({
-                  data: reader.result.split(',')[1],
-                  type: file.type
-                });
-              });
+          const filePromises = this.files.map(file => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = () => resolve({ data: reader.result.split(',')[1], type: file.type });
             });
-
-            const base64Files = await Promise.all(filePromises);
-
+          });
+          const base64Files = await Promise.all(filePromises);
+          try {
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/upload-pdf', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ files: base64Files })
             });
             const data = await res.json();
-            
             if (data.success) {
               this.resultUrl = `https://fangwl591021.github.io/travelman/travel_website.html?id=${data.courseId}`;
-            } else {
-              alert("轉換失敗：" + data.msg);
-            }
-          } catch (e) {
-            alert("網路錯誤，請檢查檔案大小");
-          } finally {
-            this.processing = false;
-          }
+            } else { alert("失敗：" + data.msg); }
+          } catch (e) { alert("網路錯誤"); }
+          finally { this.processing = false; }
         },
         openSite() { liff.openWindow({ url: this.resultUrl, external: true }); },
-        reset() {
-          this.files = [];
-          this.resultUrl = null;
-        }
+        reset() { this.files = []; this.resultUrl = null; }
       }
     }).mount('#app');
   </script>
