@@ -1,7 +1,7 @@
 import { handleWPProxy } from './wp_proxy_handler.js';
 import { runAgent } from './adk_agent.js';
 
-// 將您喜愛的管理後台樣式直接嵌入變數，確保雲端環境能正確讀取
+// 將管理後台樣式嵌入變數，確保雲端環境 100% 讀取成功
 const adminHTML = `
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -105,13 +105,15 @@ const adminHTML = `
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    // 正規化路徑：移除末尾斜槓並轉小寫，確保 /admin, /admin/, /ADMIN 都能對應
-    const path = url.pathname.replace(/\/$/, "").toLowerCase();
+    const path = url.pathname.toLowerCase();
 
-    // 1. 強制優先處理後台路由
-    if (path === "/admin") {
+    // 1. 強化路由判斷：支援 /admin, /admin/ 或是任何結尾為 admin 的請求
+    if (path === '/admin' || path === '/admin/' || path.endsWith('/admin')) {
       return new Response(adminHTML, {
-        headers: { "Content-Type": "text/html; charset=utf-8" }
+        headers: { 
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-cache"
+        }
       });
     }
 
@@ -142,11 +144,12 @@ export default {
       }
     }
 
-    // 3. 預設回應 (存取根目錄或其他未定義路徑時)
+    // 3. 預設回應：若以上皆不符合，則回傳 JSON
     return new Response(JSON.stringify({
       status: "active",
       engine: "TravelKeeper-SaaS-Core",
       path_accessed: url.pathname,
+      method: request.method,
       time: new Date().toISOString()
     }), {
       headers: { "Content-Type": "application/json" }
