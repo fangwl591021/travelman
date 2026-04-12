@@ -3,61 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅遊行程預覽</title>
+    <title>旅遊行程詳情</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'PingFang TC', sans-serif; background: #fff; }
+        .sidebar-sticky { position: sticky; top: 100px; height: fit-content; }
+        .itinerary-img { box-shadow: 0 40px 80px -20px rgba(0,0,0,0.15); border-radius: 40px; }
         .hero-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%); }
-        .magazine-img { box-shadow: 0 40px 80px -12px rgba(0,0,0,0.15); border-radius: 40px; }
     </style>
 </head>
 <body class="text-slate-900">
     <div id="app">
-        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-400 font-bold">載入中...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 font-bold">
+            <div class="animate-spin mr-3 text-2xl"><i class="fa-solid fa-circle-notch"></i></div>
+            載入行程內容...
+        </div>
+
         <div v-else-if="course">
             <!-- Hero -->
-            <div class="relative h-[80vh] overflow-hidden bg-slate-900">
+            <div class="relative h-[60vh] md:h-[80vh] bg-slate-900">
                 <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${course.title}`" class="w-full h-full object-cover opacity-80">
                 <div class="absolute inset-0 hero-gradient"></div>
-                <div class="absolute bottom-16 left-6 right-6 max-w-5xl mx-auto text-white">
-                    <p class="text-teal-400 font-black tracking-widest mb-4 uppercase">{{ course.days }} DAYS TOUR</p>
-                    <h1 class="text-4xl md:text-7xl font-black mb-8 leading-tight">{{ course.title }}</h1>
-                    <span class="text-4xl font-black" v-if="course.price > 0">NT$ {{ Number(course.price).toLocaleString() }} 起</span>
+                <div class="absolute bottom-12 left-6 right-6 max-w-6xl mx-auto text-white">
+                    <p class="text-teal-400 font-black tracking-widest mb-4 uppercase">PREMIUM EXPERIENCE</p>
+                    <h1 class="text-4xl md:text-7xl font-black mb-6 leading-tight">{{ course.title }}</h1>
                 </div>
             </div>
 
-            <!-- Content -->
-            <div class="max-w-4xl mx-auto px-6 py-24 pb-40">
-                <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-40">
-                    <div class="flex items-center gap-6 mb-12">
-                        <div class="w-14 h-14 bg-slate-900 text-white flex items-center justify-center rounded-2xl font-black text-xl shadow-2xl">0{{ idx + 1 }}</div>
-                        <h2 class="text-2xl md:text-5xl font-black text-slate-800 tracking-tighter">{{ day.route }}</h2>
-                    </div>
-                    <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${encodeURIComponent(day.kw || 'travel')}`" class="w-full h-80 md:h-[600px] object-cover magazine-img mb-16">
-                    <div class="space-y-6 mb-16 px-4">
-                        <p v-for="p in day.infos" :key="p" class="text-slate-500 leading-loose md:text-xl">{{ p }}</p>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100">
-                            <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6">美食響宴</p>
-                            <div class="space-y-3 font-bold text-slate-700">
-                                <div class="flex justify-between"><span>早</span><span>{{ day.b || '酒店內' }}</span></div>
-                                <div class="flex justify-between"><span>午</span><span>{{ day.l || '在地餐' }}</span></div>
-                                <div class="flex justify-between"><span>晚</span><span>{{ day.d || '精選餐' }}</span></div>
+            <!-- 內容區 -->
+            <div class="max-w-6xl mx-auto px-6 py-16 md:grid md:grid-cols-4 md:gap-16">
+                
+                <!-- 左側：行程細節 (佔 3 欄) -->
+                <div class="md:col-span-3">
+                    <p class="text-xl md:text-2xl text-slate-400 leading-relaxed italic mb-24 text-justify font-serif">{{ course.desc }}</p>
+
+                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-40">
+                        <div class="flex items-center gap-4 mb-10">
+                            <span class="text-5xl font-black text-slate-100 tracking-tighter">0{{ idx + 1 }}</span>
+                            <h2 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight">{{ day.route }}</h2>
+                        </div>
+                        <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${encodeURIComponent(day.kw || 'travel')}`" 
+                             class="w-full h-80 md:h-[600px] object-cover itinerary-img mb-16 hover:scale-[1.02] transition-transform duration-700">
+                        
+                        <div class="space-y-8 mb-16 px-4 border-l-4 border-slate-100 pl-8">
+                            <p v-for="p in day.infos" :key="p" class="text-slate-600 leading-loose text-lg text-justify">{{ p }}</p>
+                        </div>
+
+                        <!-- 每日資訊卡 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
+                                <p class="text-[10px] font-black text-slate-300 uppercase mb-6 tracking-widest">用餐計畫</p>
+                                <div class="space-y-4 text-sm font-bold text-slate-700">
+                                    <div class="flex justify-between border-b border-slate-200/50 pb-2"><span>早</span><span>{{ day.b || '酒店內享用' }}</span></div>
+                                    <div class="flex justify-between border-b border-slate-200/50 pb-2"><span>午</span><span>{{ day.l || '在地風味餐' }}</span></div>
+                                    <div class="flex justify-between"><span>晚</span><span>{{ day.d || '精選料理' }}</span></div>
+                                </div>
+                            </div>
+                            <div class="bg-[#174a5a] p-10 rounded-[3rem] text-white shadow-2xl shadow-teal-900/20">
+                                <p class="text-[10px] font-black text-white/30 uppercase mb-6 tracking-widest">下榻酒店</p>
+                                <p class="font-black text-2xl leading-tight mb-2">{{ day.hotel || '豪華精選飯店' }}</p>
+                                <p class="text-[10px] text-white/50 font-bold uppercase tracking-widest">Or Similar Class</p>
                             </div>
                         </div>
-                        <div class="bg-[#174a5a] p-10 rounded-[2.5rem] text-white">
-                            <p class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-6">奢華住宿</p>
-                            <p class="font-black text-2xl">{{ day.hotel || '豪華飯店' }}</p>
-                        </div>
                     </div>
                 </div>
+
+                <!-- 右側：聯繫與價格 (佔 1 欄，僅桌機顯示) -->
+                <aside class="hidden md:block md:col-span-1">
+                    <div class="sidebar-sticky bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-widest">行程最優報價</p>
+                        <div class="text-4xl font-black text-red-500 mb-1">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                        <p class="text-xs text-slate-400 mb-10 font-bold">起 / 每位旅客</p>
+                        
+                        <div class="space-y-6 pt-10 border-t border-slate-100">
+                            <p class="text-sm font-bold text-slate-800 leading-relaxed">有任何疑問？<br>專業旅遊管家線上待命中</p>
+                            <button class="w-full bg-[#06C755] text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-green-900/20 active:scale-95 transition-all">
+                                <i class="fa-brands fa-line text-2xl"></i> LINE 立即諮詢
+                            </button>
+                            <p class="text-[10px] text-center text-slate-300 font-bold">回覆時間：09:00 - 21:00</p>
+                        </div>
+                    </div>
+                </aside>
             </div>
 
-            <!-- CTA -->
-            <div class="fixed bottom-0 left-0 w-full p-8 bg-white/80 backdrop-blur-3xl border-t border-slate-100 flex justify-center z-50">
-                <button class="w-full max-w-md bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl shadow-4xl active:scale-95 transition-all">立即洽詢報名</button>
+            <!-- 手機版底部聯繫欄 -->
+            <div class="fixed bottom-0 left-0 w-full p-6 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 flex justify-between items-center md:hidden">
+                <div>
+                    <div class="text-2xl font-black text-red-500">${{ Number(course.price).toLocaleString() }}</div>
+                    <div class="text-[10px] text-slate-400 font-bold tracking-widest">STARTING PRICE</div>
+                </div>
+                <button class="bg-[#06C755] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-green-900/10 flex items-center gap-2">
+                    <i class="fa-brands fa-line text-xl"></i> LINE 諮詢
+                </button>
             </div>
         </div>
     </div>
@@ -70,10 +109,11 @@
                 const id = new URLSearchParams(window.location.search).get('id');
                 if (!id) return;
                 try {
-                    const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=${id}`);
+                    const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=` + id);
                     this.course = await res.json();
-                    document.title = this.course.title;
-                } catch (e) { console.error(e); } finally { this.loading = false; }
+                    document.title = this.course.title + " - 旅行管家";
+                } catch (e) { console.error("Load Course Error:", e); } 
+                finally { this.loading = false; }
             }
         }).mount('#app');
     </script>
