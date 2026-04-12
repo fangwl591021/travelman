@@ -23,7 +23,6 @@ export async function handleWPProxy(request, body, env) {
       body: JSON.stringify(body)
     });
 
-    // 取得 WP 回傳結果並轉發回 LINE (通常是 200 OK)
     const resText = await response.text();
     return new Response(resText, { 
       status: response.status,
