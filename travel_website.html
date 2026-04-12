@@ -7,51 +7,83 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: 'PingFang TC', sans-serif; background-color: #0f172a; color: white; }
-        .dm-image { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        body { font-family: 'PingFang TC', sans-serif; background-color: #f8fafc; }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%); }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="text-slate-900">
     <div id="app">
-        <!-- 載入中 -->
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-500 font-bold">載入行程內容...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen font-bold text-slate-400">載入文章中...</div>
 
-        <!-- 行程列表 (首頁) -->
+        <!-- 列表頁 (首頁) -->
         <div v-else-if="!currentCourse" class="max-w-7xl mx-auto px-6 py-16">
-            <h1 class="text-4xl font-black text-white mb-12 text-center">精選旅遊行程</h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div v-for="c in courses" :key="c.id" @click="viewDetail(c.id)" class="bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl hover:scale-[1.02] transition-all cursor-pointer group border border-slate-700">
-                    <img :src="c.cover_image" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+            <h1 class="text-4xl font-black text-slate-800 mb-12 text-center">精選圖文行程</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div v-for="c in courses" :key="c.id" @click="viewDetail(c.id)" class="bg-white rounded-[2.5rem] overflow-hidden shadow-xl hover:translate-y-[-8px] transition-all cursor-pointer border border-slate-100">
+                    <div class="relative h-64">
+                        <img :src="c.cover_image" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 hero-gradient"></div>
+                        <div class="absolute bottom-6 left-6 right-6 text-white">
+                            <p class="text-xs font-bold tracking-widest opacity-70 uppercase mb-1">{{ c.days }} DAYS TOUR</p>
+                            <h3 class="text-xl font-black line-clamp-1">{{ c.product_title }}</h3>
+                        </div>
+                    </div>
                     <div class="p-8">
-                        <h3 class="text-xl font-bold text-white mb-4 line-clamp-2 leading-relaxed">{{ c.title }}</h3>
-                        <div class="flex justify-between items-center mt-8">
-                            <span class="text-teal-400 font-bold text-sm tracking-widest uppercase">圖集展示模式</span>
-                            <span class="text-white font-black text-2xl" v-if="c.price > 0">${{ formatPrice(c.price) }}</span>
+                        <p class="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-6">{{ c.description }}</p>
+                        <div class="flex justify-between items-center pt-6 border-t border-slate-50">
+                            <span class="bg-[#174a5a]/5 text-[#174a5a] px-4 py-1 rounded-full text-xs font-bold">查看詳情</span>
+                            <span class="text-red-500 font-black text-2xl" v-if="c.price > 0">${{ Number(c.price).toLocaleString() }}</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 詳情頁 (圖集渲染) -->
-        <div v-else class="relative pb-24">
-            <!-- 導覽列 -->
-            <div class="fixed top-0 left-0 w-full p-6 z-50 flex justify-between items-center bg-black/40 backdrop-blur-xl border-b border-white/5">
-                <button @click="backToList" class="text-white font-bold px-6 py-2 rounded-full border border-white/20 hover:bg-white/10 transition-all">← 返回行程</button>
-                <div class="hidden md:block text-white font-black truncate max-w-sm">{{ currentCourse.title }}</div>
-                <button class="bg-red-600 text-white font-black px-8 py-2 rounded-full shadow-2xl shadow-red-900/40 active:scale-95 transition-all">立即報名</button>
+        <!-- 詳情頁 (圖文雜誌風) -->
+        <div v-else class="bg-white">
+            <!-- 頂部 Hero -->
+            <div class="relative h-[70vh]">
+                <img :src="currentCourse.cover_image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/30"></div>
+                <button @click="backToList" class="absolute top-8 left-8 bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full font-bold">← 返回行程</button>
+                <div class="absolute bottom-16 left-8 right-8 max-w-4xl mx-auto">
+                    <h1 class="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">{{ currentCourse.product_title }}</h1>
+                    <div class="flex gap-4 items-center">
+                        <span class="bg-white text-slate-900 px-6 py-2 rounded-full font-black shadow-xl" v-if="currentCourse.price > 0">${{ Number(currentCourse.price).toLocaleString() }} 起</span>
+                        <span class="text-white/80 font-bold">{{ currentCourse.days }} 天行程</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- 瀑布流圖片容器 -->
-            <div class="max-w-4xl mx-auto pt-28 px-4 md:px-0 space-y-4">
-                <div v-if="currentCourse.images && currentCourse.images.length > 0">
-                    <img v-for="(img, idx) in currentCourse.images" :key="idx" :src="img" class="dm-image w-full h-auto block rounded-2xl md:rounded-3xl border border-white/5">
+            <!-- 內容區 -->
+            <div class="max-w-3xl mx-auto py-16 px-6">
+                <p class="text-xl text-slate-500 leading-relaxed italic mb-20">{{ currentCourse.description }}</p>
+
+                <!-- 每日行程 -->
+                <div class="space-y-24">
+                    <div v-for="day in currentCourse.itinerary" :key="day.day" class="group">
+                        <div class="flex items-center gap-4 mb-8">
+                            <span class="text-5xl font-black text-slate-100 group-hover:text-teal-50 transition-colors">0{{ day.day }}</span>
+                            <h2 class="text-2xl font-black text-slate-800">{{ day.route }}</h2>
+                        </div>
+                        <div class="rounded-[2.5rem] overflow-hidden shadow-2xl mb-10">
+                            <img :src="day.image" class="w-full h-80 object-cover">
+                        </div>
+                        <div class="space-y-4">
+                            <p v-for="desc in day.descriptions" :key="desc" class="text-slate-600 leading-loose">{{ desc }}</p>
+                        </div>
+                        <div class="mt-8 grid grid-cols-3 gap-4 border-t border-slate-100 pt-8">
+                            <div class="text-xs"><p class="text-slate-300 font-bold uppercase mb-2">Breakfast</p><p class="font-bold text-slate-600">{{ day.meals.breakfast || '自理' }}</p></div>
+                            <div class="text-xs"><p class="text-slate-300 font-bold uppercase mb-2">Lunch</p><p class="font-bold text-slate-600">{{ day.meals.lunch || '自理' }}</p></div>
+                            <div class="text-xs"><p class="text-slate-300 font-bold uppercase mb-2">Dinner</p><p class="font-bold text-slate-600">{{ day.meals.dinner || '自理' }}</p></div>
+                        </div>
+                    </div>
                 </div>
-                <!-- 舊版資料相容 -->
-                <div v-else class="px-8 py-16 bg-slate-900 rounded-[3rem] text-center border border-slate-800">
-                    <h2 class="text-2xl font-black mb-6">{{ currentCourse.title }}</h2>
-                    <p class="text-slate-400 leading-loose">{{ currentCourse.description }}</p>
-                </div>
+            </div>
+
+            <!-- 底部按鈕 -->
+            <div class="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs px-6">
+                <button class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-black shadow-2xl shadow-teal-900/40">立即諮詢報名</button>
             </div>
         </div>
     </div>
@@ -64,31 +96,17 @@
                 try {
                     const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/courses');
                     this.courses = await res.json();
-                    
                     const urlParams = new URLSearchParams(window.location.search);
                     const courseId = urlParams.get('id');
                     if (courseId) this.viewDetail(courseId);
-                } catch (e) { console.error("Loading Error:", e); } 
-                finally { this.loading = false; }
+                } catch (e) { } finally { this.loading = false; }
             },
             methods: {
-                formatPrice(p) { return Number(p).toLocaleString(); },
                 viewDetail(id) {
                     const c = this.courses.find(item => item.id === id);
-                    if (c) { 
-                        this.currentCourse = c; 
-                        window.scrollTo(0, 0);
-                        document.title = c.title + " - 旅行管家";
-                    }
+                    if (c) { this.currentCourse = c; window.scrollTo(0, 0); }
                 },
-                backToList() {
-                    this.currentCourse = null;
-                    document.title = "旅行管家 - 行程預覽";
-                    // 移除 URL 中的 id
-                    const url = new URL(window.location);
-                    url.searchParams.delete('id');
-                    window.history.pushState({}, '', url);
-                }
+                backToList() { this.currentCourse = null; }
             }
         }).mount('#app');
     </script>
