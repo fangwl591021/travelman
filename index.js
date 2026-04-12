@@ -1,7 +1,7 @@
 import { handleWPProxy } from './wp_proxy_handler.js';
 import { runAgent } from './adk_agent.js';
 
-// 嵌入您喜歡的後台介面 (顏色 #174a5a, 框架與字體大小已固定)
+// 嵌入您喜愛的管理後台 HTML (固定顏色 #174a5a, 框架與文字大小)
 const adminHTML = `
 <!DOCTYPE html>
 <html lang="zh-TW">
@@ -14,7 +14,6 @@ const adminHTML = `
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
     <div class="flex">
-        <!-- 側邊導覽 -->
         <aside class="w-64 bg-[#174a5a] text-white h-screen sticky top-0 flex flex-col p-6 shadow-2xl">
             <div class="text-2xl font-black mb-10 flex items-center gap-3">
                 <i class="fa-solid fa-compass text-teal-400"></i>
@@ -29,7 +28,6 @@ const adminHTML = `
             <div class="text-[10px] text-white/30 mt-auto pt-6 border-t border-white/10 tracking-widest uppercase">Cloud SaaS v2.5.0</div>
         </aside>
 
-        <!-- 主要內容 -->
         <main class="flex-1 p-10">
             <header class="flex justify-between items-center mb-10">
                 <div>
@@ -44,7 +42,6 @@ const adminHTML = `
                 </div>
             </header>
 
-            <!-- 數據卡片 -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
                 <div class="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100">
                     <p class="text-slate-400 text-[10px] font-black uppercase mb-3 tracking-widest">總成交額</p>
@@ -55,7 +52,6 @@ const adminHTML = `
                 <div class="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100"><p class="text-slate-400 text-[10px] font-black uppercase mb-3 tracking-widest">AI 解析數</p><h3 class="text-3xl font-black text-slate-800">85</h3></div>
             </div>
 
-            <!-- 活動日誌 (ACTMASTER) -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10">
                 <div class="flex justify-between items-center mb-8">
                     <h4 class="font-black text-xl text-slate-800">即時活動追蹤 (ACTMASTER)</h4>
@@ -81,26 +77,75 @@ const adminHTML = `
 `;
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const method = request.method.toUpperCase();
 
-    // 🔴 終極分流：只要網址裡有 admin 就直接噴 HTML
-    if (method === "GET" && url.href.toLowerCase().includes("admin")) {
+    // 跨域設定 (CORS)
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+
+    // 1. 處理預檢請求 (OPTIONS)
+    if (method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    // 2. PC 端管理後台路由 (優先度最高)
+    if (method === "GET" && url.pathname.includes("admin")) {
       return new Response(adminHTML, {
-        headers: { 
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-cache, no-store, must-revalidate"
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'text/html; charset=utf-8' }
       });
     }
 
-    // 🔵 LINE Webhook 處理 (POST)
-    if (method === "POST") {
+    // 3. 提供前端設定資訊 (LIFF 用)
+    if (url.pathname === '/api/config') {
+      return new Response(JSON.stringify({ LIFF_ID: env.LIFF_ID || "" }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 4. 處理 AI 內容生成請求 (代理至 GAS)
+    if (url.pathname === '/api/process' && method === "POST") {
+      const GAS_URL = env.GAS_URL;
+      if (!GAS_URL) return new Response("GAS_URL not set", { status: 500 });
+
+      try {
+        const clientData = await request.json();
+        const enrichedPayload = {
+          ...clientData,
+          keys: {
+            OPENAI_API_KEY: env.OPENAI_API_KEY,
+            UNSPLASH_API_KEY: env.UNSPLASH_API_KEY,
+            LINE_CHANNEL_ACCESS_TOKEN: env.LINE_CHANNEL_ACCESS_TOKEN,
+            PIXABAY_API_KEY: env.PIXABAY_API_KEY,
+            PEXELS_API_KEY: env.PEXELS_API_KEY
+          }
+        };
+
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(enrichedPayload),
+          headers: { 'Content-Type': 'application/json' },
+          redirect: 'follow' 
+        });
+
+        const resultText = await response.text();
+        return new Response(resultText, {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // 5. 處理 LINE Webhook (POST 請求至根目錄)
+    if (method === "POST" && (url.pathname === "/" || url.pathname === "")) {
       try {
         const body = await request.json();
         const events = body.events || [];
-
         for (const event of events) {
           const userText = event.message?.text || "";
           const isAIIntent = /報名|行程|推薦|活動|查詢|我的|分潤/.test(userText) || 
@@ -113,24 +158,20 @@ export default {
             await handleWPProxy(request, body, env);
           }
         }
-        return new Response("OK", { status: 200 });
+        return new Response("OK", { status: 200, headers: corsHeaders });
       } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { 
-          status: 500, 
-          headers: { "Content-Type": "application/json" } 
-        });
+        return new Response(e.message, { status: 500, headers: corsHeaders });
       }
     }
 
-    // 🟢 預設備援 JSON (這代表路徑沒對上 GET /admin)
-    return new Response(JSON.stringify({
-      status: "active",
-      engine: "TravelKeeper-SaaS-Core",
-      detected_path: url.pathname,
-      full_url: url.href,
-      time: new Date().toISOString()
-    }), {
-      headers: { "Content-Type": "application/json" }
+    // 預設回應 (Health Check)
+    return new Response(JSON.stringify({ 
+      status: 'active', 
+      engine: 'TravelKeeper-SaaS-Core',
+      path: url.pathname
+    }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
-  }
+  },
 };
