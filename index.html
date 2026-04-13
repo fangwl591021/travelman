@@ -8,145 +8,110 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; color: #1e293b; background: #f8fafc; }
-    /* 修正「小氣感」：改為舒適帶背景的輸入框，字體與行高正常化 */
-    .input-box { 
-        width: 100%; 
-        border: 1px solid #cbd5e1; 
-        border-radius: 6px; 
-        padding: 12px 14px; 
-        font-size: 16px; 
-        outline: none; 
-        transition: 0.2s; 
-        background: #fff;
-        color: #334155;
+    body { font-family: -apple-system, "PingFang TC", sans-serif; color: #1e293b; background: #fff; }
+    /* 移除外框，採用底部線條區隔的 LINE OA 原生風格 */
+    .input-line { 
+        width: 100%; border-bottom: 1px solid #e2e8f0; padding: 12px 0; outline: none; 
+        transition: 0.2s; font-size: 16px; color: #0f172a; background: transparent; 
     }
-    .input-box:focus { border-color: #174a5a; box-shadow: 0 0 0 3px rgba(23, 74, 90, 0.1); }
-    .label-hint { 
-        font-size: 14px; 
-        color: #64748b; 
-        margin-top: 20px; 
-        margin-bottom: 6px;
-        display: block; 
-        font-weight: 600; 
-    }
-    .section-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; margin-bottom: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .input-line:focus { border-bottom-color: #06C755; }
+    .label-hint { font-size: 12px; color: #64748b; margin-top: 24px; display: block; }
+    .section-wrap { border-bottom: 8px solid #f8fafc; padding-bottom: 32px; margin-bottom: 32px; }
   </style>
 </head>
-<body class="p-4 md:p-8">
-  <div id="app" class="max-w-3xl mx-auto">
+<body class="p-0 md:p-8">
+  <div id="app" class="max-w-2xl mx-auto bg-white min-h-screen">
     
-    <!-- 第一步：文字解析 -->
-    <div v-if="step === 'input'" class="section-card">
-      <h1 class="text-2xl font-bold mb-4 text-slate-800">行程文案解析</h1>
-      <p class="text-sm text-slate-500 mb-6">請將整理好的行程文案貼入下方，系統將自動擷取並智慧配圖。</p>
-      <textarea v-model="rawText" class="input-box h-80 resize-y leading-relaxed" placeholder="[標題] 夢幻行程..."></textarea>
-      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-slate-900 text-white py-4 rounded-lg font-bold text-lg mt-6 transition-all active:scale-95 disabled:opacity-30">
-        {{ loading ? 'GPT-4o 正在解析...' : '開始解析行程' }}
+    <!-- 第一步：文字輸入 -->
+    <div v-if="step === 'input'" class="p-6">
+      <h1 class="text-xl mb-6 text-slate-800">新增行程文案</h1>
+      <textarea v-model="rawText" class="w-full h-96 border rounded p-4 text-sm outline-none focus:border-slate-400 leading-relaxed" placeholder="請將 NotebookLM 整理後的文字貼在此處..."></textarea>
+      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-[#174a5a] text-white py-4 rounded mt-6 active:scale-95 transition-transform disabled:opacity-50">
+        開始分段解析與搜圖
       </button>
     </div>
 
-    <!-- 第二步：編輯與可視化補圖 -->
-    <div v-if="step === 'edit'" class="pb-32">
-        <div class="section-card">
-            <h2 class="text-lg font-bold text-slate-800 border-b pb-3 mb-4">基本資訊校對</h2>
+    <!-- 載入中：分段進度展示 -->
+    <div v-if="step === 'loading'" class="p-10 text-center py-32">
+        <div class="inline-block animate-spin w-8 h-8 border-2 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
+        <div class="text-lg text-slate-700 mb-4">{{ loadStatus }}</div>
+        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden max-w-xs mx-auto">
+            <div class="bg-[#06C755] h-1.5 transition-all duration-300" :style="{ width: loadProgress + '%' }"></div>
+        </div>
+    </div>
+
+    <!-- 第二步：編輯與確認 -->
+    <div v-if="step === 'edit'" class="pb-24">
+        <div class="section-wrap px-6 pt-6">
+            <h2 class="text-sm text-[#174a5a] mb-2">基本資訊</h2>
             
-            <label class="label-hint !mt-2">行程總標題</label>
-            <input v-model="course.title" class="input-box font-bold !text-lg">
+            <label class="label-hint">行程總標題</label>
+            <input v-model="course.title" class="input-line text-lg">
             
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="label-hint">報價 (純數字)</label>
-                    <input v-model="course.price" type="number" class="input-box text-red-600 font-bold">
-                </div>
-                <div>
-                    <label class="label-hint">天數</label>
-                    <input v-model="course.days" type="number" class="input-box font-medium">
-                </div>
+            <div class="grid grid-cols-2 gap-8">
+                <div><label class="label-hint">報價 (數字)</label><input v-model="course.price" type="number" class="input-line text-red-500"></div>
+                <div><label class="label-hint">天數</label><input v-model="course.days" type="number" class="input-line"></div>
             </div>
             
-            <label class="label-hint">摘要簡介 (約 50 字)</label>
-            <textarea v-model="course.desc" class="input-box h-24 resize-none leading-relaxed"></textarea>
+            <label class="label-hint">摘要簡介</label>
+            <textarea v-model="course.desc" class="input-line h-20 resize-none"></textarea>
             
-            <!-- Banner 可視化配圖 -->
-            <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-lg">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="font-bold text-sm text-slate-700">主視覺配圖 (Banner)</label>
-                    <div class="flex gap-2">
-                        <input v-model="course.searchKw" placeholder="輸入英文或中文地名..." class="border border-slate-300 px-3 py-1.5 text-sm rounded outline-none w-40 focus:border-[#174a5a]">
-                        <button @click="searchImg(course, course.searchKw || course.title)" class="bg-[#174a5a] text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-slate-800 transition">搜尋</button>
-                    </div>
-                </div>
-                <input v-model="course.imgUrl" class="w-full bg-transparent border-none text-xs text-slate-400 outline-none mb-3" placeholder="圖片網址將自動帶入...">
-                <div class="w-full h-48 bg-slate-200 rounded overflow-hidden border border-slate-200">
-                    <img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover">
-                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-sm">尚未載入圖片</div>
-                </div>
+            <label class="label-hint">主視覺圖片搜尋</label>
+            <div class="flex gap-2 mt-2">
+                <input v-model="course.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-2" placeholder="地名">
+                <button @click="searchImg(course, course.searchKw)" class="text-[#06C755] text-sm px-2">重新搜尋</button>
             </div>
+            <img v-if="course.imgUrl" :src="course.imgUrl" class="w-full aspect-video object-cover mt-4 rounded-sm">
         </div>
 
-        <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-card relative">
-            <div class="absolute top-8 right-8 text-slate-200 font-black text-4xl">D{{ idx + 1 }}</div>
-            <h2 class="text-lg font-bold text-slate-800 border-b pb-3 mb-4">第 {{ idx + 1 }} 天行程</h2>
+        <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-wrap px-6">
+            <div class="text-3xl text-slate-200 mb-2">0{{ idx + 1 }}</div>
             
-            <label class="label-hint !mt-2">路線標題</label>
-            <input v-model="day.route" class="input-box font-bold">
+            <label class="label-hint !mt-0">路線標題</label>
+            <input v-model="day.route" class="input-line">
             
-            <div class="grid grid-cols-3 gap-4">
-                <div><label class="label-hint">早餐</label><input v-model="day.b" class="input-box"></div>
-                <div><label class="label-hint">午餐</label><input v-model="day.l" class="input-box"></div>
-                <div><label class="label-hint">晚餐</label><input v-model="day.d" class="input-box"></div>
+            <div class="grid grid-cols-3 gap-6">
+                <div><label class="label-hint">早餐</label><input v-model="day.b" class="input-line text-sm"></div>
+                <div><label class="label-hint">午餐</label><input v-model="day.l" class="input-line text-sm"></div>
+                <div><label class="label-hint">晚餐</label><input v-model="day.d" class="input-line text-sm"></div>
             </div>
             
-            <label class="label-hint">內容描述</label>
-            <textarea v-model="day.infosStr" class="input-box h-40 leading-relaxed resize-none"></textarea>
+            <label class="label-hint">行程說明</label>
+            <textarea v-model="day.infosStr" class="input-line h-32 leading-relaxed resize-none text-sm"></textarea>
             
             <label class="label-hint">入住飯店</label>
-            <input v-model="day.hotel" class="input-box">
+            <input v-model="day.hotel" class="input-line text-sm">
             
-            <!-- 每日可視化配圖 -->
-            <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-lg">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="font-bold text-sm text-slate-700">本日精選配圖</label>
-                    <div class="flex gap-2">
-                        <input v-model="day.searchKw" placeholder="輸入英文或中文地名..." class="border border-slate-300 px-3 py-1.5 text-sm rounded outline-none w-40 focus:border-[#174a5a]">
-                        <button @click="searchImg(day, day.searchKw || day.route)" class="bg-[#174a5a] text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-slate-800 transition">搜尋</button>
-                    </div>
-                </div>
-                <input v-model="day.imgUrl" class="w-full bg-transparent border-none text-xs text-slate-400 outline-none mb-3" placeholder="圖片網址將自動帶入...">
-                <div class="w-full h-56 bg-slate-200 rounded overflow-hidden border border-slate-200">
-                    <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover">
-                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400 text-sm">尚未載入圖片</div>
-                </div>
+            <!-- 單獨搜圖區塊 -->
+            <label class="label-hint">本區圖片搜尋</label>
+            <div class="flex gap-2 mt-2">
+                <input v-model="day.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-2" placeholder="輸入地名">
+                <button @click="searchImg(day, day.searchKw)" class="text-[#06C755] text-sm px-2">重新搜尋</button>
             </div>
+            <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full aspect-video object-cover mt-4 rounded-sm">
         </div>
 
-        <!-- 底部浮動按鈕 -->
-        <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-center z-50 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
-            <div class="w-full max-w-3xl flex gap-4">
-                <button @click="step = 'input'" class="px-6 py-4 rounded-lg font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">重新解析</button>
-                <button @click="saveCourse" :disabled="loading" class="flex-1 bg-slate-900 text-white py-4 rounded-lg font-bold text-lg shadow-lg active:scale-95 transition-all">
-                    {{ loading ? '資料更新中...' : '確認儲存並發布' }}
-                </button>
-            </div>
+        <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t flex gap-4 z-50">
+            <button @click="step = 'input'" class="px-4 text-slate-400 text-sm">重新解析</button>
+            <button @click="saveCourse" :disabled="loading" class="flex-1 bg-[#174a5a] text-white py-3 rounded font-medium active:scale-95 transition-all">
+                {{ loading ? '發布中...' : '確認並儲存發布' }}
+            </button>
         </div>
     </div>
 
     <!-- 第三步：成功 -->
-    <div v-if="step === 'success'" class="section-card text-center py-24">
-      <div class="text-6xl mb-6 text-[#06C755]"><i class="fa-solid fa-circle-check"></i></div>
-      <h2 class="text-2xl font-bold mb-8 text-slate-800">行程發布成功</h2>
-      <div class="flex justify-center gap-4">
-          <button @click="reset" class="px-8 py-3 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition-colors">處理下一份</button>
-          <button @click="openSite" class="bg-[#174a5a] hover:bg-slate-800 text-white px-8 py-3 rounded-lg font-bold transition-colors">查看行程網頁</button>
-      </div>
+    <div v-if="step === 'success'" class="p-10 text-center py-32">
+      <div class="text-4xl text-[#06C755] mb-4">✓</div>
+      <h2 class="text-lg text-slate-800 mb-8">行程發布完成</h2>
+      <button @click="openSite" class="w-full bg-[#174a5a] text-white py-3 rounded mb-4">檢視行程網頁</button>
+      <button @click="reset" class="text-slate-400 text-sm">處理下一份</button>
     </div>
   </div>
 
   <script>
     const { createApp } = Vue;
     createApp({
-      data() { return { step: 'input', loading: false, rawText: '', course: {}, finalId: '' } },
+      data() { return { step: 'input', loading: false, loadStatus: '', loadProgress: 0, rawText: '', course: {}, finalId: '' } },
       async mounted() {
         try {
           await liff.init({ liffId: "2008729640-bptxTkoO" });
@@ -158,7 +123,7 @@
             if (this.course.itinerary) {
                 this.course.itinerary.forEach(d => {
                     d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
-                    d.searchKw = d.searchKw || ''; 
+                    d.searchKw = d.searchKw || d.route; 
                 });
             }
             this.step = 'edit';
@@ -167,7 +132,10 @@
       },
       methods: {
         async parseDraft() {
-          this.loading = true;
+          this.step = 'loading';
+          this.loadProgress = 10;
+          this.loadStatus = '第一階段：正在解析文字結構...';
+          
           try {
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-draft', {
               method: 'POST',
@@ -176,41 +144,54 @@
             });
             const data = await res.json();
             
-            // 初始化並清理變數
-            data.searchKw = data.title.substring(0, 4); // Banner 預設搜圖
+            this.loadProgress = 40;
+            this.loadStatus = '第二階段：分離地名並啟動搜圖...';
+            
+            data.searchKw = data.title.substring(0, 4);
             data.imgUrl = '';
             
             if (data.itinerary) {
               data.itinerary = data.itinerary.map(d => ({ 
                   ...d, 
                   infosStr: Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''),
-                  searchKw: d.searchKw || '', 
+                  searchKw: d.searchKw || d.route.replace(/[^\u4e00-\u9fa5]/g, '').substring(0, 4), 
                   imgUrl: ''
               }));
             }
-            
             this.course = { ...this.course, ...data };
-            this.step = 'edit';
-            
-            // 解析完成後，自動打 API 拿實際的高清圖片網址
-            this.searchImg(this.course, this.course.searchKw);
+
+            // 分段執行：依序搜尋圖片並更新進度條
+            this.loadStatus = `搜尋主視覺：${this.course.searchKw}`;
+            await this.searchImg(this.course, this.course.searchKw);
+            this.loadProgress = 50;
+
             if(this.course.itinerary) {
-                this.course.itinerary.forEach(d => {
-                    // 如果 AI 有產出英文單字就用，沒有就用純中文路線
-                    const keyword = d.searchKw || d.route.replace(/[^\u4e00-\u9fa5]/g, '').substring(0, 4);
-                    this.searchImg(d, keyword);
-                });
+                const stepVal = 50 / this.course.itinerary.length;
+                for(let i=0; i<this.course.itinerary.length; i++) {
+                    const d = this.course.itinerary[i];
+                    this.loadStatus = `抓取 D${i+1} 圖片：${d.searchKw}`;
+                    await this.searchImg(d, d.searchKw);
+                    this.loadProgress += stepVal;
+                }
             }
-          } catch (e) { alert("解析失敗，請確認網路連線"); }
-          finally { this.loading = false; }
+
+            this.loadStatus = '第三階段：網頁組合完成！';
+            this.loadProgress = 100;
+            
+            setTimeout(() => { this.step = 'edit'; }, 600);
+            
+          } catch (e) { 
+              alert("解析失敗，請重試"); 
+              this.step = 'input'; 
+          }
         },
         async searchImg(targetObj, keyword) {
             if (!keyword) return;
             try {
                 const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=${encodeURIComponent(keyword)}`);
                 const data = await res.json();
-                targetObj.imgUrl = data.url; // 將爬回來的絕對網址綁定到物件上
-            } catch (e) { console.error("搜圖失敗"); }
+                targetObj.imgUrl = data.url; 
+            } catch (e) { console.error("搜圖錯誤"); }
         },
         async saveCourse() {
           this.loading = true;
