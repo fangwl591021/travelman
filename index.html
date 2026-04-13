@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>行程編輯系統</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
@@ -31,7 +30,6 @@
         <nav>
             <a href="#" class="menu-item active">● 智能上稿解析</a>
             <a href="https://travelkeeper-saas-worker.fangwl591021.workers.dev/admin" class="menu-item">行程管理中心</a>
-            <a href="#" class="menu-item">數據報表</a>
         </nav>
     </aside>
 
@@ -76,17 +74,22 @@
                     <div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">自訂圖片</button></div>
                 </div>
             </section>
-            <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
-                <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
-                <input v-model="day.route" class="form-input text-base">
-                <div class="grid grid-cols-3 gap-6 mt-6">
-                    <input v-model="day.b" class="form-input text-xs" placeholder="早">
-                    <input v-model="day.l" class="form-input text-xs" placeholder="午">
-                    <input v-model="day.d" class="form-input text-xs" placeholder="晚">
+            
+            <!-- 【關鍵修復】：嚴格檢查 itinerary 是否為陣列 -->
+            <div v-if="course.itinerary && Array.isArray(course.itinerary)">
+                <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
+                    <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
+                    <input v-model="day.route" class="form-input text-base">
+                    <div class="grid grid-cols-3 gap-6 mt-6">
+                        <input v-model="day.b" class="form-input text-xs" placeholder="早">
+                        <input v-model="day.l" class="form-input text-xs" placeholder="午">
+                        <input v-model="day.d" class="form-input text-xs" placeholder="晚">
+                    </div>
+                    <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6"></textarea>
+                    <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
                 </div>
-                <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6"></textarea>
-                <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
             </div>
+
             <div class="fixed bottom-0 left-[240px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
                 <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-xl py-3 rounded text-sm">{{ loading ? '儲存中...' : '確認發佈行程' }}</button>
             </div>
@@ -100,19 +103,20 @@
     const API_BASE = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
 
     createApp({
-      data() { return { step: 'input', inputType: 'text', loading: false, rawText: '', dmBase64: '', dmPreview: '', course: {}, currentTarget: null } },
+      data() { return { step: 'input', inputType: 'text', loading: false, rawText: '', dmBase64: '', dmPreview: '', course: { itinerary: [] }, currentTarget: null } },
       async mounted() {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
             this.loading = true;
             try {
                 const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
-                this.course = await res.json();
-                if (this.course.itinerary) {
-                    this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
+                const data = await res.json();
+                if (data.itinerary && Array.isArray(data.itinerary)) {
+                    data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 }
+                this.course = data;
                 this.step = 'edit';
-            } catch (e) { console.error(e); } finally { this.loading = false; }
+            } catch (e) {} finally { this.loading = false; }
         }
       },
       methods: {
@@ -143,14 +147,15 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!res.ok) throw new Error("Worker Error");
             const data = await res.json();
-            if(data.itinerary) data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : d.infos);
+            // 【核心防禦】：確保 itinerary 存在且為陣列
+            if(!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
+            data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = data;
             await this.searchImg(this.course, this.course.title);
             for(let d of this.course.itinerary) await this.searchImg(d, d.searchKw || d.route);
             this.step = 'edit';
-          } catch (e) { alert("解析失敗: " + e.message); }
+          } catch (e) { alert("解析失敗，請重新嘗試一次。"); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
@@ -168,12 +173,11 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if(w > 800) { h = (h*800)/w; w = 800; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    let w = img.width;
+                    if(w > 800) { canvas.width = 800; canvas.height = (img.height*800)/img.width; }
+                    else { canvas.width = img.width; canvas.height = img.height; }
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     this.currentTarget.imgUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    e.target.value = '';
                 };
                 img.src = ev.target.result;
             };
@@ -181,14 +185,18 @@
         },
         async saveCourse() {
             this.loading = true;
-            this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
-            const res = await fetch(`${API_BASE}/api/save-course`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.course)
-            });
-            const result = await res.json();
-            if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
-            this.loading = false;
+            if (this.course.itinerary && Array.isArray(this.course.itinerary)) {
+                this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/save-course`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.course)
+                });
+                const result = await res.json();
+                if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
+            } catch (e) { alert("儲存失敗"); }
+            finally { this.loading = false; }
         }
       }
     }).mount('#app');
