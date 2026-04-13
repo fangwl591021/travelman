@@ -7,95 +7,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        /* 移除粗體與多餘包框，展現原生排版 */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #262626; line-height: 1.6; margin: 0; padding: 0; background: #f5f5f5; font-weight: normal; }
-        
-        .top-nav { background-color: #003b95; color: white; padding: 16px 24px; font-size: 20px; position: sticky; top: 0; z-index: 40; }
-        
-        .main-container { max-w: 800px; margin: 0 auto; background: #fff; min-height: 100vh; padding-bottom: 120px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
-        
-        .hero { width: 100%; position: relative; }
-        .hero img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-        .hero-info { padding: 24px; border-bottom: 1px solid #e7e7e7; }
-        .hero-title { font-size: 24px; color: #111; margin-bottom: 8px; line-height: 1.3; }
-        .tag-days { display: inline-block; background: #febb02; color: #111; font-size: 12px; padding: 4px 8px; border-radius: 4px; margin-bottom: 12px; }
-        
-        .content-wrap { padding: 24px; }
-        .overview-desc { font-size: 15px; color: #444; background: #f9f9f9; padding: 16px; border-radius: 4px; border-left: 4px solid #003b95; margin-bottom: 32px; }
-        
-        .day-block { margin-bottom: 32px; border: 1px solid #e7e7e7; border-radius: 4px; overflow: hidden; }
-        .day-header { background: #f9f9f9; padding: 16px 20px; border-bottom: 1px solid #e7e7e7; display: flex; align-items: baseline; gap: 12px; }
-        .day-num { font-size: 14px; color: #003b95; }
-        .day-title { font-size: 18px; color: #111; }
-        
-        .day-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-        .day-body { padding: 20px; }
-        .day-desc { font-size: 15px; color: #333; margin-bottom: 24px; text-align: justify; }
-        
-        .info-panel { font-size: 14px; color: #333; }
-        .info-row { display: flex; padding: 8px 0; border-top: 1px solid #eee; }
-        .info-label { width: 60px; color: #666; }
-        .info-val { flex: 1; }
-        
-        .price-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #e7e7e7; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 50; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .price-wrap { display: flex; flex-direction: column; }
-        .price-val { font-size: 24px; color: #d4111e; line-height: 1; }
-        .price-hint { font-size: 12px; color: #666; margin-bottom: 4px; }
-        .btn-book { background-color: #003b95; color: white; padding: 12px 32px; border-radius: 4px; font-size: 16px; text-decoration: none; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #262626; line-height: 1.6; margin: 0; padding: 0; background: #f5f5f5; }
+        .main-container { max-width: 1000px; margin: 0 auto; background: #fff; min-height: 100vh; display: flex; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        .itinerary-content { flex: 1; padding: 40px; border-right: 1px solid #eee; }
+        .price-sidebar { width: 320px; padding: 40px; position: sticky; top: 0; height: fit-content; }
+        .hero-banner { width: 100%; aspect-ratio: 21/9; object-fit: cover; border-radius: 4px; margin-bottom: 32px; }
+        .day-block { margin-bottom: 48px; }
+        .day-header { display: flex; items-baseline; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+        .day-num { font-size: 14px; color: #003b95; font-weight: bold; }
+        .day-title { font-size: 20px; font-weight: 500; color: #111; }
+        .day-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; margin-bottom: 20px; }
+        .info-row { display: flex; padding: 8px 0; border-top: 1px solid #f9f9f9; font-size: 14px; }
+        .info-label { width: 60px; color: #888; }
+        .btn-book { background-color: #003b95; color: white; width: 100%; padding: 14px; border-radius: 4px; font-weight: 500; text-align: center; display: block; margin-top: 24px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div class="top-nav">精選行程</div>
-
-        <div v-if="loading" class="flex items-center justify-center h-64 text-[#003b95]">資料讀取中...</div>
-
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300">讀取中...</div>
         <div v-else-if="course" class="main-container">
-            <div class="hero">
-                <img :src="course.imgUrl || 'https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
-                <div class="hero-info">
-                    <span class="tag-days">{{ course.days }} 天行程</span>
-                    <h1 class="hero-title">{{ course.title }}</h1>
+            <!-- 左邊行程主要內容 -->
+            <div class="itinerary-content">
+                <img :src="course.imgUrl" class="hero-banner">
+                <div class="mb-12">
+                    <span class="inline-block bg-[#febb02] px-2 py-1 text-[10px] font-bold rounded mb-4">{{ course.days }} 天行程</span>
+                    <h1 class="text-3xl font-medium text-slate-800 leading-tight">{{ course.title }}</h1>
+                    <p class="mt-6 text-slate-500 text-base leading-relaxed">{{ course.desc }}</p>
                 </div>
-            </div>
-
-            <div class="content-wrap">
-                <div class="overview-desc">{{ course.desc }}</div>
 
                 <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-block">
                     <div class="day-header">
-                        <span class="day-num">Day {{ idx + 1 }}</span>
-                        <span class="day-title">{{ day.route }}</span>
+                        <span class="day-num">DAY 0{{ idx + 1 }}</span>
+                        <h2 class="day-title">{{ day.route }}</h2>
                     </div>
-                    
                     <img v-if="day.imgUrl" :src="day.imgUrl" class="day-img">
+                    <div class="space-y-4 text-slate-600 text-sm leading-loose text-justify mb-8">
+                        <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded">
+                        <div class="info-row"><span class="info-label">早餐</span><span class="flex-1">{{ day.b || '自理' }}</span></div>
+                        <div class="info-row"><span class="info-label">午餐</span><span class="flex-1">{{ day.l || '特色餐點' }}</span></div>
+                        <div class="info-row"><span class="info-label">晚餐</span><span class="flex-1">{{ day.d || '飯店內用' }}</span></div>
+                        <div class="info-row mt-4 pt-4 border-t border-slate-200"><span class="info-label">住宿</span><span class="flex-1 font-medium text-[#003b95]">{{ day.hotel || '精選飯店或同級' }}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右邊報價與諮詢 (參考截圖 9e3675) -->
+            <aside class="price-sidebar">
+                <div class="p-8 border rounded-lg shadow-sm bg-white">
+                    <div class="text-xs text-slate-400 mb-2 font-medium">每位成人</div>
+                    <div class="text-4xl font-medium text-[#d4111e] mb-1">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                    <div class="text-[10px] text-slate-300 uppercase tracking-widest">Inclusive of all taxes</div>
                     
-                    <div class="day-body">
-                        <div class="day-desc space-y-3">
-                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
-                        </div>
-
-                        <div class="info-panel">
-                            <div class="info-row"><div class="info-label">早餐</div><div class="info-val">{{ day.b || '自理' }}</div></div>
-                            <div class="info-row"><div class="info-label">午餐</div><div class="info-val">{{ day.l || '自理' }}</div></div>
-                            <div class="info-row"><div class="info-label">晚餐</div><div class="info-val">{{ day.d || '自理' }}</div></div>
-                            <div class="info-row"><div class="info-label">住宿</div><div class="info-val text-[#003b95]">{{ day.hotel || '精選飯店或同級' }}</div></div>
-                        </div>
+                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-book">立即諮詢行程</a>
+                    <div class="mt-6 text-[11px] text-slate-400 text-center leading-relaxed">
+                        有任何問題？專屬旅遊管家線上待命中。<br>此報價為限時優惠，售完為止。
                     </div>
                 </div>
-            </div>
-
-            <div class="price-bar">
-                <div class="price-wrap max-w-4xl mx-auto w-full flex justify-between items-center">
-                    <div>
-                        <div class="price-hint">每位成人</div>
-                        <div class="price-val">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                    </div>
-                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-book">
-                        立即諮詢
-                    </a>
-                </div>
-            </div>
+            </aside>
         </div>
     </div>
 
@@ -106,12 +76,10 @@
             async mounted() {
                 const id = new URLSearchParams(window.location.search).get('id');
                 if (!id) return;
-                try {
-                    const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=` + id);
-                    this.course = await res.json();
-                    document.title = this.course.title;
-                    window.scrollTo(0, 0);
-                } catch (e) {} finally { this.loading = false; }
+                const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=' + id);
+                this.course = await res.json();
+                document.title = this.course.title;
+                this.loading = false;
             }
         }).mount('#app');
     </script>
