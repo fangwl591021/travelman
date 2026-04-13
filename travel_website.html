@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行程詳情</title>
+    <title>行程詳情 - 旅行管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
@@ -11,69 +11,40 @@
         .container { max-width: 1000px; margin: 0 auto; display: flex; min-height: 100vh; }
         .main-content { flex: 1; padding: 40px; border-right: 1px solid #f0f0f0; }
         .sidebar { width: 340px; padding: 40px; position: sticky; top: 0; height: fit-content; }
-        .hero-img { width: 100%; aspect-ratio: 21/9; object-fit: cover; border-radius: 4px; margin-bottom: 30px; }
+        .hero-img { width: 100%; aspect-ratio: 21/9; object-fit: cover; border-radius: 4px; margin-bottom: 30px; border: 1px solid #f8f8f8; }
         .day-item { margin-bottom: 50px; border-bottom: 1px solid #f8f8f8; padding-bottom: 30px; }
-        .day-tag { font-size: 11px; color: #003b95; letter-spacing: 0.1em; margin-bottom: 10px; display: block; }
-        .day-photo { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; margin-bottom: 20px; }
-        .day-desc { font-size: 14px; color: #555; text-align: justify; }
-        .info-row { display: flex; font-size: 13px; padding: 8px 0; border-top: 1px solid #fafafa; }
-        .price-box { padding: 30px; border: 1px solid #eee; border-radius: 4px; }
+        .day-tag { font-size: 11px; color: #06c755; letter-spacing: 0.1em; margin-bottom: 10px; display: block; }
+        .day-photo { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f8f8f8; }
+        .info-row { display: flex; font-size: 14px; padding: 10px 0; border-top: 1px solid #fafafa; }
+        .price-box { padding: 30px; border: 1px solid #eee; border-radius: 4px; background: #fff; }
         .price-val { font-size: 32px; color: #d4111e; margin: 10px 0; }
-        .btn-line { background: #003b95; color: #fff; width: 100%; padding: 15px; border-radius: 4px; text-align: center; display: block; text-decoration: none; font-size: 15px; margin-top: 20px; }
+        .btn-line { background: #06c755; color: #fff; width: 100%; padding: 15px; border-radius: 4px; text-align: center; display: block; text-decoration: none; font-size: 15px; margin-top: 20px; transition: 0.2s; }
+        /* WEB1 規格強化：一致文字大小 */
+        .text-lg-fixed { font-size: 18px !important; font-weight: 400 !important; }
+        @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; position: static; padding: 20px; border-top: 1px solid #eee; } .main-content { border-right: none; padding: 20px; } }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic">載入行程細節中...</div>
-        <div v-else-if="course" class="container">
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic text-lg-fixed">正在載入行程內容...</div>
+        <div v-else-if="course && course.title" class="container">
             <main class="main-content">
-                <img :src="course.imgUrl" class="hero-img">
-                <div class="mb-12">
-                    <div class="inline-block bg-[#febb02] px-2 py-0.5 text-[10px] rounded mb-3">{{ course.days }} 天行程</div>
-                    <h1 class="text-2xl text-slate-800">{{ course.title }}</h1>
-                    <p class="mt-4 text-slate-500 text-sm leading-relaxed">{{ course.desc }}</p>
-                </div>
-                <div v-if="Array.isArray(course.itinerary)">
-                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-item">
-                        <span class="day-tag">DAY 0{{ idx + 1 }}</span>
-                        <h2 class="text-xl mb-4 text-slate-700 font-normal">{{ day.route }}</h2>
-                        <img v-if="day.imgUrl" :src="day.imgUrl" class="day-photo">
-                        <div class="day-desc space-y-4">
-                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
-                        </div>
-                        <div class="bg-slate-50 p-5 rounded mt-6 text-sm">
-                            <div class="info-row"><span class="w-16 text-slate-400">早餐</span><span>{{ day.b || '自理' }}</span></div>
-                            <div class="info-row"><span class="w-16 text-slate-400">午餐</span><span>{{ day.l || '特色風味餐' }}</span></div>
-                            <div class="info-row"><span class="w-16 text-slate-400">晚餐</span><span>{{ day.d || '飯店內用' }}</span></div>
-                            <div class="info-row mt-3 pt-3 border-t border-slate-200"><span class="w-16 text-slate-400">住宿</span><span class="text-[#003b95] font-medium">{{ day.hotel || '精選飯店或同級' }}</span></div>
-                        </div>
-                    </div>
-                </div>
+                <img :src="course.imgUrl" class="hero-img" onerror="this.src='https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?w=1200'">
+                <div class="mb-12"><div class="inline-block bg-[#06c755] text-white px-2 py-0.5 text-[11px] rounded mb-3">{{ course.days }} 天行程</div><h1 class="text-lg-fixed text-slate-800 mb-4">{{ course.title }}</h1><p class="mt-4 text-slate-500 text-sm leading-relaxed">{{ course.desc }}</p></div>
+                <div v-if="Array.isArray(course.itinerary)"><div v-for="(day, idx) in course.itinerary" :key="idx" class="day-item"><span class="day-tag">DAY 0{{ idx + 1 }}</span><h2 class="text-lg-fixed mb-4 text-slate-700">{{ day.route }}</h2><img v-if="day.imgUrl" :src="day.imgUrl" class="day-photo" onerror="this.style.display='none'"><div class="day-desc space-y-4"><p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p></div><div class="bg-slate-50 p-5 rounded mt-6"><div class="info-row"><span class="w-20 text-slate-400">早餐</span><span class="text-slate-600">{{ day.b || '自理' }}</span></div><div class="info-row"><span class="w-20 text-slate-400">午餐</span><span class="text-slate-600">{{ day.l || '特色風味餐' }}</span></div><div class="info-row"><span class="w-20 text-slate-400">晚餐</span><span class="text-slate-600">{{ day.d || '飯店內用' }}</span></div><div class="info-row mt-3 pt-3 border-t border-slate-200"><span class="w-20 text-slate-400">住宿飯店</span><span class="text-[#06c755]">{{ day.hotel || '精選飯店或同級' }}</span></div></div></div></div>
             </main>
-            <aside class="sidebar">
-                <div class="price-box">
-                    <div class="text-xs text-slate-400">每位成人</div>
-                    <div class="price-val">NT$ {{ formatPrice(course.price) }}</div>
-                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-line">立即預約諮詢</a>
-                </div>
-            </aside>
+            <aside class="sidebar"><div class="price-box"><div class="text-[11px] text-slate-400 uppercase tracking-widest mb-1">Price per Adult</div><div class="price-val font-normal">NT$ {{ formatPrice(course.price) }}</div><a href="https://line.me/R/ti/p/@096tzptn" target="_blank" class="btn-line">立即預約諮詢</a><p class="text-[10px] text-slate-400 mt-4 text-center">※ 內容由 AI 智能管家自動生成</p></div></aside>
         </div>
-        <div v-else class="text-center py-20 text-slate-400">未找到行程。</div>
+        <div v-else class="text-center py-20 text-slate-400 text-lg-fixed">找不到該行程資料 (ID: {{ courseId }})</div>
     </div>
     <script>
-        const { createApp } = Vue;
+        const { createApp } = Vue; const API_BASE = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
         createApp({
-            data() { return { loading: true, course: null } },
+            data() { return { loading: true, course: null, courseId: null } },
             methods: { formatPrice(p) { return isNaN(Number(p)) ? (p||'0') : Number(p).toLocaleString(); } },
             async mounted() {
-                const id = new URLSearchParams(window.location.search).get('id');
-                if (!id) return;
-                try {
-                    const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
-                    this.course = await res.json();
-                    if (!this.course.itinerary || !Array.isArray(this.course.itinerary)) this.course.itinerary = [];
-                    if (this.course.title) document.title = this.course.title;
-                } catch (e) {} finally { this.loading = false; }
+                const id = new URLSearchParams(window.location.search).get('id'); this.courseId = id; if (!id) { this.loading = false; return; }
+                try { const res = await fetch(`${API_BASE}/api/get-course?id=${id}`); const data = await res.json(); if (data && data.title) { this.course = data; document.title = this.course.title + " - 行程詳情"; } } catch (e) {} finally { this.loading = false; }
             }
         }).mount('#app');
     </script>
