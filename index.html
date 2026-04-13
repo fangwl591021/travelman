@@ -8,69 +8,86 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; color: #333; background: #fff; }
-    .input-line { width: 100%; border-bottom: 1px solid #f0f0f0; padding: 12px 0; outline: none; transition: 0.2s; font-size: 15px; }
+    body { font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; color: #1e293b; background: #fff; }
+    /* 放大輸入框與文字，讓版面顯得大氣 */
+    .input-line { 
+        width: 100%; 
+        border-bottom: 1px solid #e2e8f0; 
+        padding: 16px 0; 
+        outline: none; 
+        transition: 0.2s; 
+        font-size: 18px; 
+        color: #0f172a;
+        background: transparent;
+    }
     .input-line:focus { border-bottom-color: #174a5a; }
-    .label-hint { font-size: 10px; color: #ccc; margin-top: 15px; display: block; font-weight: bold; text-transform: uppercase; }
-    section { margin-bottom: 50px; }
+    /* 放大標籤，提高易讀性 */
+    .label-hint { 
+        font-size: 14px; 
+        color: #94a3b8; 
+        margin-top: 24px; 
+        display: block; 
+        font-weight: 600; 
+    }
+    section { margin-bottom: 60px; }
   </style>
 </head>
 <body class="p-6 md:p-12">
-  <div id="app" class="max-w-2xl mx-auto">
+  <div id="app" class="max-w-3xl mx-auto">
     
     <!-- Step 1: 解析 -->
     <div v-if="step === 'input'">
-      <h1 class="text-xl font-medium mb-10 text-slate-800">行程文案解析上稿</h1>
-      <textarea v-model="rawText" class="w-full h-80 bg-slate-50 rounded-lg p-6 text-sm border-0 outline-none focus:bg-white focus:ring-1 focus:ring-slate-100" placeholder="貼入內容..."></textarea>
-      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-slate-900 text-white py-4 rounded-lg font-medium mt-10 transition-all active:scale-95 disabled:opacity-20">
+      <h1 class="text-2xl font-bold mb-10 text-slate-800">行程文案解析上稿</h1>
+      <textarea v-model="rawText" class="w-full h-96 bg-slate-50 rounded-lg p-6 text-base border-0 outline-none focus:bg-white focus:ring-2 focus:ring-slate-200 leading-relaxed" placeholder="請將 NotebookLM 整理後的文字貼在此處..."></textarea>
+      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-slate-900 text-white py-5 rounded-lg font-bold text-lg mt-10 transition-all active:scale-95 disabled:opacity-20">
         {{ loading ? 'GPT-4o 正在解析...' : '確認解析行程' }}
       </button>
     </div>
 
     <!-- Step 2: 編輯 -->
     <div v-if="step === 'edit'" class="pb-40">
-        <h2 class="text-xs font-bold text-slate-300 border-b pb-2 mb-10 tracking-widest uppercase">Overview</h2>
+        <h2 class="text-sm font-bold text-slate-400 border-b pb-4 mb-10 tracking-widest uppercase">Overview 基本資訊</h2>
         <section>
-          <div><label class="label-hint">行程標題</label><input v-model="course.title" class="input-line !text-lg"></div>
-          <div class="grid grid-cols-2 gap-10">
-            <div><label class="label-hint">報價 (數字)</label><input v-model="course.price" type="number" class="input-line text-red-500 font-medium"></div>
-            <div><label class="label-hint">天數</label><input v-model="course.days" type="number" class="input-line"></div>
+          <div><label class="label-hint">行程標題</label><input v-model="course.title" class="input-line font-bold !text-2xl"></div>
+          <div class="grid grid-cols-2 gap-12">
+            <div><label class="label-hint">報價 (數字)</label><input v-model="course.price" type="number" class="input-line text-red-500 font-bold !text-xl"></div>
+            <div><label class="label-hint">天數</label><input v-model="course.days" type="number" class="input-line !text-xl font-medium"></div>
           </div>
-          <div><label class="label-hint">摘要</label><textarea v-model="course.desc" class="input-line h-16 resize-none"></textarea></div>
+          <div><label class="label-hint">摘要 (約 50 字)</label><textarea v-model="course.desc" class="input-line h-24 resize-none leading-relaxed"></textarea></div>
         </section>
 
-        <section v-for="(day, idx) in course.itinerary" :key="idx" class="relative pt-12 border-t mt-12">
-            <div class="absolute top-0 left-0 text-slate-100 font-bold text-7xl leading-none opacity-50">0{{ idx + 1 }}</div>
-            <div class="space-y-6 relative">
-              <div><label class="label-hint">路線</label><input v-model="day.route" class="input-line font-medium"></div>
-              <div class="grid grid-cols-3 gap-6">
-                <div><label class="label-hint">早</label><input v-model="day.b" class="input-line text-xs"></div>
-                <div><label class="label-hint">午</label><input v-model="day.l" class="input-line text-xs"></div>
-                <div><label class="label-hint">晚</label><input v-model="day.d" class="input-line text-xs"></div>
+        <section v-for="(day, idx) in course.itinerary" :key="idx" class="relative pt-16 border-t mt-16 border-slate-100">
+            <div class="absolute top-4 left-0 text-slate-100 font-black text-7xl leading-none opacity-60">0{{ idx + 1 }}</div>
+            <div class="space-y-6 relative z-10">
+              <div><label class="label-hint">路線</label><input v-model="day.route" class="input-line font-bold !text-xl"></div>
+              <div class="grid grid-cols-3 gap-8">
+                <div><label class="label-hint">早</label><input v-model="day.b" class="input-line"></div>
+                <div><label class="label-hint">午</label><input v-model="day.l" class="input-line"></div>
+                <div><label class="label-hint">晚</label><input v-model="day.d" class="input-line"></div>
               </div>
-              <div><label class="label-hint">內容描述</label><textarea v-model="day.infosStr" class="input-line text-sm h-32 leading-relaxed resize-none"></textarea></div>
-              <div><label class="label-hint">飯店</label><input v-model="day.hotel" class="input-line text-sm"></div>
+              <div><label class="label-hint">內容描述</label><textarea v-model="day.infosStr" class="input-line h-48 leading-relaxed resize-none"></textarea></div>
+              <div><label class="label-hint">飯店</label><input v-model="day.hotel" class="input-line"></div>
               <div>
                   <label class="label-hint text-[#174a5a]">📸 配圖搜尋關鍵字 (建議英文，如 Zhangjiajie Mountain)</label>
-                  <input v-model="day.kw" class="input-line text-sm font-medium text-[#174a5a]">
+                  <input v-model="day.kw" class="input-line font-medium text-[#174a5a]">
               </div>
             </div>
         </section>
 
-        <div class="fixed bottom-0 left-0 w-full p-6 bg-white/95 backdrop-blur-md border-t flex gap-4 z-50">
-            <button @click="step = 'input'" class="flex-1 text-slate-300 text-sm">重來</button>
-            <button @click="saveCourse" :disabled="loading" class="flex-[3] bg-slate-900 text-white py-4 rounded-lg font-medium shadow-xl active:scale-95 transition-all">
-                {{ loading ? '更新中...' : '確認發布' }}
+        <div class="fixed bottom-0 left-0 w-full p-6 bg-white/95 backdrop-blur-md border-t border-slate-100 flex gap-6 z-50">
+            <button @click="step = 'input'" class="flex-1 text-slate-400 font-bold text-base hover:text-slate-600 transition-colors">重新解析</button>
+            <button @click="saveCourse" :disabled="loading" class="flex-[3] bg-slate-900 text-white py-5 rounded-lg font-bold text-lg shadow-2xl active:scale-95 transition-all">
+                {{ loading ? '資料更新中...' : '確認發布' }}
             </button>
         </div>
     </div>
 
     <!-- Step 3: Success -->
     <div v-if="step === 'success'" class="text-center py-40">
-      <div class="text-6xl mb-10">✓</div>
-      <h2 class="text-xl font-medium mb-10 text-slate-700">發布成功</h2>
-      <button @click="openSite" class="w-full bg-slate-900 text-white py-4 rounded-lg font-medium mb-6">查看行程網頁</button>
-      <button @click="reset" class="text-slate-300 text-xs underline">處理下一份行程</button>
+      <div class="text-6xl mb-10 text-green-500">✓</div>
+      <h2 class="text-2xl font-bold mb-12 text-slate-800">行程發布成功</h2>
+      <button @click="openSite" class="w-full bg-slate-900 text-white py-5 rounded-lg font-bold text-lg mb-6 hover:bg-slate-800 transition-colors">查看行程網頁</button>
+      <button @click="reset" class="text-slate-400 text-sm underline hover:text-slate-600">處理下一份行程</button>
     </div>
   </div>
 
@@ -108,7 +125,7 @@
             }
             this.course = { ...this.course, ...data };
             this.step = 'edit';
-          } catch (e) { alert("解析失敗"); }
+          } catch (e) { alert("解析失敗，請確認網路連線"); }
           finally { this.loading = false; }
         },
         async saveCourse() {
