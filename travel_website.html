@@ -3,109 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行程詳情</title>
+    <title>旅遊行程詳情</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #334155; line-height: 1.8; }
-        .sidebar-sticky { position: sticky; top: 20px; }
-        .day-indicator { border-left: 4px solid #1e293b; padding-left: 1.25rem; margin-bottom: 2rem; }
-        .itinerary-img { width: 100%; border-radius: 4px; }
+        .sidebar-fixed { position: sticky; top: 40px; }
+        .day-indicator { border-left: 3px solid #1e293b; padding-left: 1.5rem; margin-bottom: 2rem; }
+        .itinerary-img { width: 100%; height: auto; border-radius: 4px; }
         .hero-mask { background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); }
+        /* 傳統旅遊網站排版：白底、文字導覽、清楚資訊 */
     </style>
 </head>
 <body class="bg-white">
     <div id="app">
-        <!-- 載入中 -->
-        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-300 font-bold">
-            <div class="animate-spin text-2xl mb-4"><i class="fa-solid fa-circle-notch"></i></div>
-            正在加載行程資訊...
+        <!-- Loading -->
+        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-300 font-bold italic">
+            <div class="animate-spin text-3xl mb-4"><i class="fa-solid fa-circle-notch"></i></div>
+            正在載入精彩行程...
         </div>
 
         <div v-else-if="course">
-            <!-- 專業 Banner (滿版大圖) -->
-            <div class="relative h-64 md:h-[60vh] bg-slate-900 overflow-hidden">
+            <!-- 專業全版大圖 -->
+            <div class="relative h-64 md:h-[65vh] bg-slate-900 overflow-hidden">
                 <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1600&auto=format&fit=crop&sig=${course.title}`" class="w-full h-full object-cover opacity-90">
                 <div class="absolute inset-0 hero-mask"></div>
-                <div class="absolute bottom-10 left-6 right-6 max-w-6xl mx-auto text-white">
-                    <div class="text-sm font-bold uppercase tracking-widest mb-2 opacity-70">{{ course.days }} Days Tour Experience</div>
-                    <h1 class="text-3xl md:text-6xl font-black leading-tight tracking-tighter">{{ course.title }}</h1>
+                <div class="absolute bottom-12 left-6 right-6 max-w-6xl mx-auto text-white">
+                    <div class="text-xs font-black uppercase tracking-[0.3em] mb-4 opacity-70">Premium Itinerary</div>
+                    <h1 class="text-3xl md:text-6xl font-black tracking-tight leading-tight">{{ course.title }}</h1>
                 </div>
             </div>
 
-            <!-- 主容器：兩欄編排 -->
-            <div class="max-w-6xl mx-auto px-6 py-12 md:grid md:grid-cols-12 md:gap-16">
+            <!-- 主體：兩欄佈局 (獅子座、雄獅風格) -->
+            <div class="max-w-6xl mx-auto px-6 py-16 md:grid md:grid-cols-12 md:gap-16">
                 
                 <!-- 左側：行程細節 (佔 8 欄) -->
                 <div class="md:col-span-8">
-                    <p class="text-xl text-slate-400 italic mb-20 border-l-4 border-slate-100 pl-8 leading-relaxed">{{ course.desc }}</p>
+                    <p class="text-xl text-slate-400 italic mb-24 border-l-4 border-slate-50 pl-10 leading-relaxed font-serif">{{ course.desc }}</p>
 
-                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-24">
+                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-32">
                         <!-- Day 標示 -->
                         <div class="day-indicator">
-                            <span class="text-[10px] font-black text-slate-300 block mb-2 uppercase tracking-widest">Itinerary Day 0{{ idx + 1 }}</span>
-                            <h2 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-snug">{{ day.route }}</h2>
+                            <span class="text-[10px] font-black text-slate-300 block mb-2 uppercase tracking-widest">ITINERARY DAY 0{{ idx + 1 }}</span>
+                            <h2 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-tight">{{ day.route }}</h2>
                         </div>
                         
-                        <!-- 景點大圖 (不包框，自然鋪平) -->
+                        <!-- 專業補圖顯示 -->
                         <img :src="`https://images.unsplash.com/photo-1500000000000?q=80&w=1200&auto=format&fit=crop&sig=${encodeURIComponent(day.kw || 'travel')}`" 
                              class="itinerary-img mb-12 shadow-sm">
                         
-                        <!-- 文字詳情 -->
-                        <div class="space-y-8 mb-12 text-slate-600 text-lg">
-                            <p v-for="p in day.infos" :key="p" class="text-justify leading-loose">{{ p }}</p>
+                        <!-- 文字內容 -->
+                        <div class="space-y-8 mb-16 text-slate-600 text-lg font-medium">
+                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p" class="text-justify leading-loose">{{ p }}</p>
                         </div>
 
-                        <!-- 表格化餐食與住宿 -->
-                        <div class="bg-slate-50 p-8 md:p-10 border border-slate-100 rounded-lg">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <!-- 表格化資訊 (不要包框感) -->
+                        <div class="bg-slate-50 p-10 md:p-12 border-y border-slate-100">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                                 <div class="space-y-4">
-                                    <div class="font-black text-xs text-slate-400 uppercase tracking-widest mb-4">Meal Arrangement</div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-2 text-sm"><span class="font-bold">早 BREAKFAST</span><span>{{ day.b || '酒店內享用' }}</span></div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-2 text-sm"><span class="font-bold">午 LUNCH</span><span>{{ day.l || '在地風味餐' }}</span></div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-2 text-sm"><span class="font-bold">晚 DINNER</span><span>{{ day.d || '精選中式合菜' }}</span></div>
+                                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Dining Arrangement</div>
+                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">早</span><span>{{ day.b || '酒店享用' }}</span></div>
+                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">午</span><span>{{ day.l || '特色風味餐' }}</span></div>
+                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">晚</span><span>{{ day.d || '精選美饌' }}</span></div>
                                 </div>
-                                <div>
-                                    <div class="font-black text-xs text-slate-400 uppercase tracking-widest mb-4">Accommodation</div>
-                                    <p class="font-bold text-slate-800 text-lg leading-tight mb-2">{{ day.hotel || '頂級星級飯店' }}</p>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Or Similar Standard</p>
+                                <div class="flex flex-col justify-center">
+                                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Accommodation</div>
+                                    <p class="font-black text-slate-800 text-2xl leading-tight mb-2">{{ day.hotel || '頂級精選飯店' }}</p>
+                                    <p class="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">Or Class Similar Equivalent</p>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- 分隔線 -->
-                        <div class="mt-20 border-t border-slate-100"></div>
                     </div>
                 </div>
 
-                <!-- 右側：固定報價側邊欄 (佔 4 欄) -->
+                <!-- 右側：固定報價與聯繫 (佔 4 欄，電腦版) -->
                 <aside class="hidden md:block md:col-span-4">
-                    <div class="sidebar-sticky bg-white border border-slate-200 p-10 rounded-lg shadow-sm">
-                        <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-widest text-center">Travel Program Package</p>
-                        <div class="text-center mb-10">
-                            <div class="text-5xl font-black text-red-600 mb-2">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                            <p class="text-[10px] text-slate-400 font-black uppercase">Starting From / Per Person</p>
+                    <div class="sidebar-fixed bg-white border border-slate-200 p-10 rounded-lg shadow-sm text-center">
+                        <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-[0.2em]">Package Rate</p>
+                        <div class="mb-10">
+                            <div class="text-5xl font-black text-red-600 mb-2">TWD {{ Number(course.price).toLocaleString() }}</div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase">Starting From / Per Person</p>
                         </div>
                         
-                        <div class="space-y-6 pt-10 border-t border-slate-100">
-                            <p class="text-sm font-bold text-slate-700 leading-relaxed">有任何報名需求或問題？<br>專屬旅遊管家線上待命中。</p>
-                            <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="w-full bg-[#06C755] text-white py-5 rounded-lg font-black text-xl flex items-center justify-center gap-4 hover:opacity-90 transition-all shadow-xl shadow-green-900/10">
+                        <div class="space-y-6 pt-10 border-t border-slate-100 text-left">
+                            <p class="text-sm font-black text-slate-800 leading-relaxed">有任何報名或規劃疑問？<br>專屬旅遊管家線上待命中。</p>
+                            <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="w-full bg-[#06C755] text-white py-5 rounded font-black text-lg flex items-center justify-center gap-4 hover:opacity-90 transition-all shadow-xl shadow-green-900/10">
                                 <i class="fa-brands fa-line text-2xl"></i> LINE 立即諮詢
                             </a>
-                            <p class="text-[10px] text-slate-300 font-bold text-center tracking-widest uppercase">Response Time: 09:00 - 20:00</p>
+                            <p class="text-[10px] text-slate-300 font-bold text-center tracking-widest uppercase">Service Time: 09:00 - 21:00</p>
                         </div>
                     </div>
                 </aside>
             </div>
 
-            <!-- 手機版底部聯繫欄 -->
-            <div class="fixed bottom-0 left-0 w-full p-6 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 flex justify-between items-center md:hidden shadow-2xl">
-                <div>
-                    <div class="text-3xl font-black text-red-600">${{ Number(course.price).toLocaleString() }}</div>
-                    <div class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Per Person</div>
+            <!-- 手機版底部導航欄 -->
+            <div class="fixed bottom-0 left-0 w-full p-5 bg-white/95 backdrop-blur-2xl border-t border-slate-100 z-50 flex justify-between items-center md:hidden">
+                <div class="pl-2">
+                    <div class="text-2xl font-black text-red-600">${{ Number(course.price).toLocaleString() }} <span class="text-[10px] text-slate-400">起</span></div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ course.days }} 天行程</div>
                 </div>
-                <button class="bg-[#06C755] text-white px-10 py-4 rounded-xl font-black flex items-center gap-3">
+                <button class="bg-[#06C755] text-white px-8 py-3 rounded font-black flex items-center gap-3 shadow-lg">
                     <i class="fa-brands fa-line text-xl"></i> LINE 諮詢
                 </button>
             </div>
