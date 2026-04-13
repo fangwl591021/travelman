@@ -15,7 +15,7 @@
     .section-block { border-bottom: 8px solid #f2f2f2; padding: 24px 20px; }
     
     .form-group { margin-bottom: 24px; }
-    .form-label { display: block; font-size: 14px; font-weight: bold; color: #333; margin-bottom: 8px; }
+    .form-label { display: block; font-size: 14px; color: #333; margin-bottom: 8px; }
     .form-input { width: 100%; border: none; border-bottom: 1px solid #e0e0e0; padding: 12px 0; font-size: 16px; color: #111; border-radius: 0; outline: none; transition: 0.2s; background: transparent; }
     .form-input:focus { border-bottom-color: #003b95; }
     textarea.form-input { resize: none; line-height: 1.6; }
@@ -26,17 +26,17 @@
     .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.7); color: white; padding: 6px 12px; font-size: 13px; border-radius: 4px; cursor: pointer; border: none; backdrop-filter: blur(4px); transition: 0.2s; }
     .btn-upload:hover { background: rgba(0,0,0,0.9); }
     
-    .btn-primary { background-color: #003b95; color: #fff; border: none; width: 100%; padding: 16px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background-color: #003b95; color: #fff; border: none; width: 100%; padding: 16px; font-size: 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
     .btn-primary:active { transform: scale(0.98); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    .btn-action-yellow { background-color: #febb02; color: #111; border: none; padding: 14px 24px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; width: 100%; }
+    .btn-action-yellow { background-color: #febb02; color: #111; border: none; padding: 14px 24px; font-size: 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; width: 100%; }
     .btn-action-yellow:active { transform: scale(0.98); }
     
-    .tab-btn { background: transparent; border: none; padding: 12px 0; font-size: 16px; font-weight: bold; color: #888; cursor: pointer; border-bottom: 2px solid transparent; margin-right: 24px; }
+    .tab-btn { background: transparent; border: none; padding: 12px 0; font-size: 16px; color: #888; cursor: pointer; border-bottom: 2px solid transparent; margin-right: 24px; }
     .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
 
-    .upload-area { border: 2px dashed #cbd5e1; border-radius: 8px; text-align: center; padding: 40px 20px; cursor: pointer; transition: 0.2s; background: #fafafa; }
+    .upload-area { border: 1px dashed #cbd5e1; text-align: center; padding: 40px 20px; cursor: pointer; transition: 0.2s; background: #fafafa; }
     .upload-area:hover { border-color: #003b95; background: #f0f4f8; }
 
     .flex-row { display: flex; gap: 16px; }
@@ -62,7 +62,7 @@
       <!-- 模式 1：文字輸入 -->
       <div v-if="inputType === 'text'">
         <div class="text-sm text-slate-500 mb-6">貼入您的行程文案，系統將自動為您整理欄位並搜尋搭配圖片。</div>
-        <textarea v-model="rawText" class="form-input h-80 mb-6 border !border-slate-200 p-4 rounded" placeholder="請將行程文案貼在此處..."></textarea>
+        <textarea v-model="rawText" class="form-input h-80 mb-6 border !border-slate-200 p-4" placeholder="請將行程文案貼在此處..."></textarea>
       </div>
 
       <!-- 模式 2：DM 圖片上傳 -->
@@ -70,12 +70,12 @@
         <div class="text-sm text-slate-500 mb-6">上傳您的旅遊 DM 圖片 (PPT截圖)，AI 將自動為您擴寫豐富的行程細節。</div>
         <div v-if="!dmPreview" @click="$refs.dmUploader.click()" class="upload-area mb-6">
             <div class="text-4xl text-slate-300 mb-3"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-            <div class="text-base font-bold text-[#003b95]">點擊選擇或拍攝 DM 圖片</div>
+            <div class="text-base text-[#003b95]">點擊選擇或拍攝 DM 圖片</div>
             <div class="text-sm text-slate-400 mt-1">支援 JPG, PNG 格式</div>
         </div>
         <div v-else class="mb-6 position-relative">
-            <img :src="dmPreview" class="w-full object-contain bg-slate-100 border border-slate-200 rounded max-h-80">
-            <button @click="$refs.dmUploader.click()" class="mt-3 text-sm font-bold text-[#003b95] underline bg-transparent border-none cursor-pointer">重新選擇圖片</button>
+            <img :src="dmPreview" class="w-full object-contain bg-slate-100 border border-slate-200 max-h-80">
+            <button @click="$refs.dmUploader.click()" class="mt-3 text-sm text-[#003b95] underline bg-transparent border-none cursor-pointer">重新選擇圖片</button>
         </div>
       </div>
 
@@ -87,26 +87,26 @@
     <!-- 進度條 -->
     <div v-if="step === 'loading'" class="p-10 text-center py-32">
         <div class="inline-block animate-spin w-8 h-8 border-2 border-[#003b95] border-t-transparent rounded-full mb-6"></div>
-        <div class="text-base font-bold text-[#003b95] mb-4">{{ loadStatus }}</div>
-        <div class="w-full bg-slate-200 h-1.5 overflow-hidden max-w-xs mx-auto rounded-full">
-            <div class="bg-[#febb02] h-1.5 transition-all duration-300" :style="{ width: loadProgress + '%' }"></div>
+        <div class="text-base text-[#003b95] mb-4">{{ loadStatus }}</div>
+        <div class="w-full bg-slate-200 h-1 overflow-hidden max-w-xs mx-auto">
+            <div class="bg-[#febb02] h-1 transition-all duration-300" :style="{ width: loadProgress + '%' }"></div>
         </div>
     </div>
 
     <!-- 編輯畫面 -->
     <div v-if="step === 'edit'">
         <div class="section-block">
-            <div class="text-lg font-bold text-[#003b95] mb-6">基本資訊</div>
+            <div class="text-lg text-[#003b95] mb-6">基本資訊</div>
             
             <div class="form-group">
                 <label class="form-label">行程標題</label>
-                <input v-model="course.title" class="form-input text-lg font-bold">
+                <input v-model="course.title" class="form-input text-lg">
             </div>
             
             <div class="flex-row">
                 <div class="form-group flex-1">
                     <label class="form-label">報價 (數字)</label>
-                    <input v-model="course.price" type="number" class="form-input text-red-600 font-bold">
+                    <input v-model="course.price" type="number" class="form-input text-red-600">
                 </div>
                 <div class="form-group flex-1">
                     <label class="form-label">天數</label>
@@ -122,8 +122,8 @@
             <div class="form-group mt-8">
                 <label class="form-label">主視覺圖片 (Banner)</label>
                 <div class="flex gap-2 mb-3">
-                    <input v-model="course.searchKw" class="form-input !py-1 !text-sm border !border-slate-200 rounded px-2" placeholder="輸入地名重新搜圖">
-                    <button @click="searchImg(course, course.searchKw)" class="bg-[#f2f2f2] px-4 py-1 rounded text-sm font-bold">搜圖</button>
+                    <input v-model="course.searchKw" class="form-input !py-2 !text-sm" placeholder="輸入地名重新搜圖">
+                    <button @click="searchImg(course, course.searchKw)" class="bg-[#e7e7e7] px-4 py-2 text-sm">搜圖</button>
                 </div>
                 <div class="img-container">
                     <img v-if="course.imgUrl" :src="course.imgUrl" class="img-preview" onerror="this.src='https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
@@ -133,11 +133,11 @@
         </div>
 
         <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
-            <div class="text-xl font-bold text-[#003b95] mb-6">第 {{ idx + 1 }} 天</div>
+            <div class="text-xl text-[#003b95] mb-6">第 {{ idx + 1 }} 天</div>
             
             <div class="form-group">
                 <label class="form-label">路線</label>
-                <input v-model="day.route" class="form-input font-bold">
+                <input v-model="day.route" class="form-input">
             </div>
             
             <div class="flex-row">
@@ -168,8 +168,8 @@
             <div class="form-group mt-8">
                 <label class="form-label">本日配圖</label>
                 <div class="flex gap-2 mb-3">
-                    <input v-model="day.searchKw" class="form-input !py-1 !text-sm border !border-slate-200 rounded px-2" placeholder="輸入地名重新搜圖">
-                    <button @click="searchImg(day, day.searchKw)" class="bg-[#f2f2f2] px-4 py-1 rounded text-sm font-bold">搜圖</button>
+                    <input v-model="day.searchKw" class="form-input !py-2 !text-sm" placeholder="輸入地名重新搜圖">
+                    <button @click="searchImg(day, day.searchKw)" class="bg-[#e7e7e7] px-4 py-2 text-sm">搜圖</button>
                 </div>
                 <div class="img-container">
                     <img v-if="day.imgUrl" :src="day.imgUrl" class="img-preview" onerror="this.src='https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
@@ -180,7 +180,7 @@
 
         <!-- 底部報價發布列 -->
         <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-200 flex gap-4 z-50 items-center justify-between">
-            <button @click="step = 'input'" class="px-2 text-slate-500 text-sm bg-transparent border-none font-bold">重新解析</button>
+            <button @click="step = 'input'" class="px-2 text-slate-500 text-sm bg-transparent border-none">重新解析</button>
             <div class="flex-1 max-w-[200px]">
                 <button @click="saveCourse" :disabled="loading" class="btn-action-yellow">
                     {{ loading ? '發布中...' : '確認發布' }}
@@ -192,9 +192,9 @@
     <!-- 成功畫面 -->
     <div v-if="step === 'success'" class="p-10 text-center py-32">
       <div class="text-6xl text-[#003b95] mb-6">✓</div>
-      <h2 class="text-2xl text-slate-800 mb-10 font-bold">行程發布完成</h2>
+      <h2 class="text-2xl text-slate-800 mb-10">行程發布完成</h2>
       <button @click="openSite" class="btn-action-yellow mb-6">檢視行程網頁</button>
-      <button @click="reset" class="text-[#003b95] font-bold text-sm bg-transparent border-none underline">繼續處理下一份</button>
+      <button @click="reset" class="text-[#003b95] text-sm bg-transparent border-none underline">繼續處理下一份</button>
     </div>
   </div>
 
@@ -205,14 +205,13 @@
     createApp({
       data() { return { 
           step: 'input', 
-          inputType: 'text', // 'text' 或 'image'
+          inputType: 'text', 
           loading: false, 
           loadStatus: '', 
           loadProgress: 0, 
           rawText: '', 
           dmBase64: '',
           dmPreview: '',
-          dmMimeType: '',
           course: {}, 
           finalId: '', 
           currentUploadTarget: null 
@@ -236,11 +235,10 @@
         } catch (e) {}
       },
       methods: {
-        // 處理 DM 圖片上傳 (用於解析)
+        // 處理 DM 圖片上傳 (強制轉換為 image/jpeg 給 Google 審查)
         processDmUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            this.dmMimeType = file.type;
             
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -249,7 +247,7 @@
                     const canvas = document.createElement('canvas');
                     let w = img.width;
                     let h = img.height;
-                    const maxW = 1200; // 壓縮 DM 圖片，避免 Gemini 負載過大
+                    const maxW = 1000; // 壓縮 DM 圖片，確保不超過 API 負載限制
                     
                     if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
                     
@@ -258,9 +256,10 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
                     
+                    // 【修正核心】: 統一強制轉成 image/jpeg，確保送給 Google 的 Base64 與 MimeType 100% 吻合
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
                     this.dmPreview = compressedBase64;
-                    this.dmBase64 = compressedBase64.split(',')[1]; // 去除 data URI 標頭
+                    this.dmBase64 = compressedBase64.split(',')[1]; 
                     event.target.value = '';
                 };
                 img.src = e.target.result;
@@ -284,7 +283,8 @@
                 payload = { text: this.rawText };
             } else {
                 endpoint = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-image';
-                payload = { imageBase64: this.dmBase64, mimeType: this.dmMimeType || 'image/jpeg' };
+                // 這裡的 mimeType 必須固定為 image/jpeg，因為我們上面 Canvas 強制轉成了 jpeg
+                payload = { imageBase64: this.dmBase64, mimeType: 'image/jpeg' };
             }
 
             const res = await fetch(endpoint, {
@@ -293,7 +293,7 @@
               body: JSON.stringify(payload)
             });
             const data = await res.json();
-            if (data.error) throw new Error(data.msg);
+            if (data.error) throw new Error(data.msg); // 如果有錯，會把 Google 拒絕的詳細原因印出來
             
             this.loadProgress = 40;
             this.loadStatus = '解析完成，準備搜尋圖片...';
