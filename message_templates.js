@@ -1,8 +1,7 @@
 /**
- * 旅行管家 - 訊息樣式庫 (v7.0.0 真實數據整合)
+ * 旅行管家 - 訊息樣式庫 (v7.1.2)
  */
 export const flexLib = {
-  // 將動態行程資料轉換為 LINE 輪播卡片
   productCarousel: (products) => ({
     type: "carousel",
     contents: products.map(p => ({
@@ -19,7 +18,7 @@ export const flexLib = {
         type: "box",
         layout: "vertical",
         contents: [
-          { type: "text", text: p.title, weight: "regular", size: "sm", wrap: true, maxLines: 2 },
+          { type: "text", text: p.title, size: "sm", wrap: true, maxLines: 2 },
           { 
             type: "box", layout: "baseline", margin: "md",
             contents: [
