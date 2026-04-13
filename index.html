@@ -8,124 +8,138 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #111; margin: 0; padding: 0; }
-    .page-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 40px; min-height: 100vh; }
-    .sidebar { width: 260px; padding: 40px 24px; border-right: 8px solid #f4f4f4; background: #fff; position: sticky; top: 0; height: 100vh; }
-    .main-content { flex-grow: 1; padding: 40px 40px 120px 0; }
-    .section-block { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid #eee; }
-    .form-label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; }
-    .form-input { width: 100%; border: none; border-bottom: 1px solid #e0e0e0; padding: 12px 0; font-size: 16px; outline: none; background: transparent; }
+    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #333; margin: 0; }
+    .sidebar { width: 240px; border-right: 1px solid #eee; height: 100vh; position: fixed; left: 0; top: 0; padding: 30px 20px; background: #fff; z-index: 50; }
+    .main-content { margin-left: 240px; padding: 40px; max-width: 900px; }
+    .menu-item { padding: 12px 16px; font-size: 14px; color: #666; border-radius: 4px; display: block; text-decoration: none; margin-bottom: 4px; }
+    .menu-item.active { background: #f0f7ff; color: #003b95; font-weight: 500; }
+    .section-block { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid #f1f1f1; }
+    .form-label { display: block; font-size: 13px; color: #888; margin-bottom: 8px; }
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #e0e0e0; padding: 10px 0; font-size: 16px; outline: none; background: transparent; transition: 0.2s; }
     .form-input:focus { border-bottom-color: #003b95; }
-    .tab-btn { padding: 10px 0; font-size: 14px; color: #888; margin-right: 24px; border-bottom: 2px solid transparent; }
-    .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
-    .img-box { width: 100%; aspect-ratio: 16/9; background: #f9f9f9; border-radius: 4px; overflow: hidden; position: relative; margin-top: 16px; border: 1px solid #eee; }
-    .btn-yellow { background: #febb02; color: #111; width: 100%; padding: 16px; border-radius: 4px; font-weight: 500; font-size: 16px; }
-    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; }
+    .img-box { width: 100%; aspect-ratio: 16/9; background: #f9f9f9; border-radius: 4px; overflow: hidden; position: relative; margin-top: 12px; border: 1px solid #f1f1f1; }
+    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+    .tab-btn { padding: 10px 0; font-size: 14px; color: #888; margin-right: 24px; border-bottom: 2px solid transparent; cursor: pointer; }
+    .tab-btn.active { color: #003b95; border-bottom-color: #003b95; font-weight: 500; }
   </style>
 </head>
 <body>
-  <div id="app" class="page-container">
-    
-    <!-- 左邊儀表板導覽 (參考截圖 9e39f2, 9e372f) -->
+  <div id="app">
+    <!-- 左側邊欄儀表板 (符合截圖 9e980c) -->
     <aside class="sidebar">
-        <div class="text-sm font-bold text-slate-300 mb-10 tracking-[0.2em]">TRAVEL KEEPER</div>
-        <div class="space-y-6">
-            <div class="flex items-center gap-3 text-[#003b95]"><span class="w-2 h-2 rounded-full bg-[#003b95]"></span> 智能上稿解析</div>
-            <a href="https://travelkeeper-saas-worker.fangwl591021.workers.dev/admin" class="flex items-center gap-3 text-slate-400 hover:text-[#003b95]">行程管理中心</a>
-            <div class="flex items-center gap-3 text-slate-400">數據報表</div>
-            <div class="flex items-center gap-3 text-slate-400">系統設定</div>
-        </div>
+        <div class="text-[11px] text-slate-300 font-bold tracking-[0.2em] mb-10 uppercase">Travel Keeper</div>
+        <nav>
+            <a href="#" class="menu-item active">● 智能上稿解析</a>
+            <a href="https://travelkeeper-saas-worker.fangwl591021.workers.dev/admin" class="menu-item">行程管理中心</a>
+            <a href="#" class="menu-item">數據報表</a>
+            <a href="#" class="menu-item">系統設定</a>
+        </nav>
     </aside>
 
-    <!-- 右邊編輯內容 -->
     <main class="main-content">
+        <!-- 解析階段 -->
         <div v-if="step === 'input'">
-            <h1 class="text-2xl text-[#003b95] mb-8">新增旅遊行程</h1>
+            <h1 class="text-2xl text-slate-800 mb-8">新增旅遊行程</h1>
             <div class="flex border-b mb-8">
-                <button @click="inputType='text'" :class="['tab-btn', inputType==='text' ? 'active' : '']">文字解析</button>
-                <button @click="inputType='image'" :class="['tab-btn', inputType==='image' ? 'active' : '']">DM 圖片解析</button>
+                <div @click="inputType='text'" :class="['tab-btn', inputType==='text' ? 'active' : '']">文字解析</div>
+                <div @click="inputType='image'" :class="['tab-btn', inputType==='image' ? 'active' : '']">DM 圖片解析</div>
             </div>
 
             <div v-if="inputType === 'text'">
-                <textarea v-model="rawText" class="w-full h-80 border p-6 rounded-lg outline-none focus:border-slate-300 bg-slate-50" placeholder="貼入行程文字..."></textarea>
+                <textarea v-model="rawText" class="w-full h-80 border p-6 rounded outline-none focus:border-slate-300 bg-slate-50 text-sm leading-relaxed" placeholder="貼入行程文字..."></textarea>
             </div>
             <div v-else>
-                <div @click="$refs.dmUploader.click()" class="border-2 border-dashed border-slate-200 rounded-lg h-80 flex flex-col items-center justify-center bg-slate-50 cursor-pointer">
+                <div @click="$refs.dmUploader.click()" class="border-2 border-dashed border-slate-200 rounded h-80 flex flex-col items-center justify-center bg-slate-50 cursor-pointer">
                     <div v-if="!dmPreview" class="text-center">
-                        <div class="text-4xl text-slate-300 mb-2">📸</div>
-                        <div class="text-sm text-slate-400">點擊上傳 DM 圖片</div>
+                        <div class="text-4xl mb-2">📸</div>
+                        <div class="text-sm text-slate-400">點擊上傳 DM 圖片 (PPT截圖)</div>
                     </div>
                     <img v-else :src="dmPreview" class="h-full object-contain p-4">
                 </div>
                 <input type="file" ref="dmUploader" class="hidden" @change="processDmUpload">
             </div>
 
-            <button @click="startParsing" :disabled="loading" class="btn-yellow mt-10">
-                {{ loading ? 'GPT-4o 正在努力解析與擴寫...' : '開始智能解析' }}
+            <button @click="startParsing" :disabled="loading" class="w-full bg-[#febb02] text-[#111] py-4 rounded mt-10 font-medium text-base">
+                {{ loading ? 'GPT-4o 正在解析與擴寫內容...' : '開始智能解析' }}
             </button>
         </div>
 
-        <div v-if="step === 'edit'">
-            <h1 class="text-xl text-[#003b95] mb-10 pb-4 border-b">行程詳細校對</h1>
+        <!-- 編輯校對階段 -->
+        <div v-if="step === 'edit'" class="pb-32">
+            <h1 class="text-xl text-slate-800 mb-10 pb-4 border-b">行程詳細校對</h1>
             
-            <!-- 基本資訊 -->
-            <div class="section-block">
+            <section class="section-block">
                 <label class="form-label">行程標題</label>
-                <input v-model="course.title" class="form-input text-xl font-medium">
+                <input v-model="course.title" class="form-input text-lg">
                 <div class="grid grid-cols-2 gap-10 mt-6">
-                    <div><label class="form-label">報價 (數字)</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
+                    <div><label class="form-label">報價 (數字)</label><input v-model="course.price" type="number" class="form-input text-red-600 font-medium"></div>
                     <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
                 </div>
                 <div class="mt-6">
+                    <label class="form-label">行程摘要</label>
+                    <textarea v-model="course.desc" class="form-input h-20 resize-none"></textarea>
+                </div>
+                <div class="mt-8">
                     <label class="form-label">主視覺圖片</label>
                     <div class="img-box">
                         <img :src="course.imgUrl" class="w-full h-full object-cover">
-                        <button @click="triggerUpload(course)" class="btn-upload">上傳新照片</button>
+                        <button @click="triggerUpload(course)" class="btn-upload">上傳照片</button>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- 每日行程 -->
             <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
-                <div class="text-sm text-[#003b95] font-bold mb-4">DAY {{ idx + 1 }}</div>
+                <div class="text-xs text-[#003b95] font-bold mb-4 uppercase tracking-widest">Day {{ idx + 1 }}</div>
                 <label class="form-label">路線</label>
-                <input v-model="day.route" class="form-input">
+                <input v-model="day.route" class="form-input font-medium">
+                
                 <div class="grid grid-cols-3 gap-6 mt-6">
                     <div><label class="form-label">早</label><input v-model="day.b" class="form-input text-sm"></div>
                     <div><label class="form-label">午</label><input v-model="day.l" class="form-input text-sm"></div>
                     <div><label class="form-label">晚</label><input v-model="day.d" class="form-input text-sm"></div>
                 </div>
+                
                 <div class="mt-6">
-                    <label class="form-label">行程擴寫細節</label>
+                    <label class="form-label">內容細節 (AI 已自動擴寫)</label>
                     <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 rounded text-sm leading-relaxed outline-none"></textarea>
                 </div>
+                
                 <div class="mt-6">
+                    <label class="form-label">入住飯店</label>
+                    <input v-model="day.hotel" class="form-input text-sm">
+                </div>
+
+                <div class="mt-8">
                     <label class="form-label">本日配圖</label>
                     <div class="img-box">
                         <img :src="day.imgUrl" class="w-full h-full object-cover">
-                        <button @click="triggerUpload(day)" class="btn-upload">上傳新照片</button>
+                        <button @click="triggerUpload(day)" class="btn-upload">上傳照片</button>
                     </div>
                 </div>
             </div>
 
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t border-slate-100 flex justify-center z-50">
+            <!-- 固定底部按鈕 -->
+            <div class="fixed bottom-0 left-[240px] right-0 p-4 bg-white/95 border-t border-slate-100 flex justify-center z-50">
                 <div class="w-full max-w-3xl flex gap-4">
-                    <button @click="step='input'" class="px-10 py-3 text-slate-400">重新解析</button>
-                    <button @click="saveCourse" :disabled="loading" class="btn-yellow flex-1">
-                        {{ loading ? '發佈中...' : '確認並儲存發佈' }}
+                    <button @click="step='input'" class="px-8 py-3 text-slate-400 text-sm">重新解析</button>
+                    <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white flex-1 py-3 rounded font-medium">
+                        {{ loading ? '正在儲存發佈...' : '確認儲存並發佈' }}
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- 成功階段 -->
         <div v-if="step === 'success'" class="text-center py-40">
             <div class="text-6xl text-[#003b95] mb-6">✓</div>
-            <h1 class="text-2xl mb-10">行程已成功發佈</h1>
-            <button @click="openSite" class="btn-yellow max-w-sm">查看前台行程頁</button>
+            <h1 class="text-2xl text-slate-800 mb-10 font-medium">行程已成功發佈</h1>
+            <button @click="openSite" class="bg-[#febb02] text-[#111] px-10 py-3 rounded font-medium mb-4">查看正式行程網頁</button>
+            <br>
+            <button @click="reset" class="text-slate-400 text-sm underline">處理下一份行程</button>
         </div>
     </main>
 
-    <!-- 隱藏的上傳元件 -->
+    <!-- 共用的隱藏上傳元件 -->
     <input type="file" ref="fileUploader" class="hidden" @change="processImageUpload">
   </div>
 
@@ -136,6 +150,29 @@
           step: 'input', inputType: 'text', loading: false, rawText: '', 
           dmBase64: '', dmPreview: '', course: {}, finalId: '', currentTarget: null 
       } },
+      async mounted() {
+        // 【關鍵修復】：將 ID 讀取與資料載入邏輯提前，不再依賴 LIFF 初始化成功
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (id) {
+            this.loading = true;
+            try {
+                const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=` + id);
+                const data = await res.json();
+                this.course = data;
+                if (this.course.itinerary) {
+                    this.course.itinerary.forEach(d => {
+                        d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
+                    });
+                }
+                this.step = 'edit';
+            } catch (e) { console.error("載入行程失敗", e); }
+            finally { this.loading = false; }
+        }
+        
+        try {
+          await liff.init({ liffId: "2008729640-bptxTkoO" });
+        } catch (e) { console.warn("LIFF 初始化跳過或失敗，不影響 PC 編輯模式"); }
+      },
       methods: {
         processDmUpload(e) {
             const file = e.target.files[0];
@@ -145,7 +182,7 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    if(w > 1000) { h = (h*1000)/w; w = 1000; }
+                    if(w > 1200) { h = (h*1200)/w; w = 1200; }
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     this.dmPreview = canvas.toDataURL('image/jpeg', 0.8);
@@ -168,13 +205,11 @@
             if(data.error) throw new Error(data.msg);
             
             if(data.itinerary) {
-                data.itinerary.forEach(d => {
-                    d.infosStr = Array.isArray(d.infos) ? d.infos.join('\\n') : d.infos;
-                });
+                data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : d.infos);
             }
             this.course = data;
             
-            // 自動搜圖
+            // 自動搜尋第一階段圖片
             await this.searchImg(this.course, this.course.title);
             for(let d of this.course.itinerary) {
                 await this.searchImg(d, d.searchKw || d.route);
@@ -184,13 +219,16 @@
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=' + encodeURIComponent(kw));
-            const data = await res.json();
-            obj.imgUrl = data.url;
+            try {
+                const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=' + encodeURIComponent(kw));
+                const data = await res.json();
+                obj.imgUrl = data.url;
+            } catch (e) {}
         },
         triggerUpload(obj) { this.currentTarget = obj; this.$refs.fileUploader.click(); },
         processImageUpload(e) {
             const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const img = new Image();
@@ -201,6 +239,7 @@
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     this.currentTarget.imgUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    e.target.value = '';
                 };
                 img.src = ev.target.result;
             };
@@ -208,7 +247,7 @@
         },
         async saveCourse() {
             this.loading = true;
-            this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\\n').filter(Boolean));
+            this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
             const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.course)
@@ -218,7 +257,7 @@
             this.loading = false;
         },
         openSite() { window.open('https://fangwl591021.github.io/travelman/travel_website.html?id=' + this.finalId); },
-        reset() { location.reload(); }
+        reset() { location.href = "index.html"; }
       }
     }).mount('#app');
   </script>
