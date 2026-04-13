@@ -1,218 +1,169 @@
+/**
+ * 旅行管家 - 核心引擎 (v6.2.0 Pexels 專用與極簡版)
+ */
+
+const adminHTML = `
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>行程上稿編輯器</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <style>
-    body { font-family: -apple-system, "PingFang TC", sans-serif; color: #1e293b; background: #fff; }
-    /* 移除外框，採用底部線條區隔的 LINE OA 原生風格 */
-    .input-line { 
-        width: 100%; border-bottom: 1px solid #e2e8f0; padding: 12px 0; outline: none; 
-        transition: 0.2s; font-size: 16px; color: #0f172a; background: transparent; 
-    }
-    .input-line:focus { border-bottom-color: #06C755; }
-    .label-hint { font-size: 12px; color: #64748b; margin-top: 24px; display: block; }
-    .section-wrap { border-bottom: 8px solid #f8fafc; padding-bottom: 32px; margin-bottom: 32px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行程管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: -apple-system, "PingFang TC", sans-serif; color: #111; background: #fff; }
+        .row-item { border-bottom: 1px solid #eee; padding: 16px 0; }
+        .row-item:hover { background: #fafafa; }
+    </style>
 </head>
-<body class="p-0 md:p-8">
-  <div id="app" class="max-w-2xl mx-auto bg-white min-h-screen">
-    
-    <!-- 第一步：文字輸入 -->
-    <div v-if="step === 'input'" class="p-6">
-      <h1 class="text-xl mb-6 text-slate-800">新增行程文案</h1>
-      <textarea v-model="rawText" class="w-full h-96 border rounded p-4 text-sm outline-none focus:border-slate-400 leading-relaxed" placeholder="請將 NotebookLM 整理後的文字貼在此處..."></textarea>
-      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-[#174a5a] text-white py-4 rounded mt-6 active:scale-95 transition-transform disabled:opacity-50">
-        開始分段解析與搜圖
-      </button>
-    </div>
-
-    <!-- 載入中：分段進度展示 -->
-    <div v-if="step === 'loading'" class="p-10 text-center py-32">
-        <div class="inline-block animate-spin w-8 h-8 border-2 border-[#174a5a] border-t-transparent rounded-full mb-6"></div>
-        <div class="text-lg text-slate-700 mb-4">{{ loadStatus }}</div>
-        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden max-w-xs mx-auto">
-            <div class="bg-[#06C755] h-1.5 transition-all duration-300" :style="{ width: loadProgress + '%' }"></div>
-        </div>
-    </div>
-
-    <!-- 第二步：編輯與確認 -->
-    <div v-if="step === 'edit'" class="pb-24">
-        <div class="section-wrap px-6 pt-6">
-            <h2 class="text-sm text-[#174a5a] mb-2">基本資訊</h2>
-            
-            <label class="label-hint">行程總標題</label>
-            <input v-model="course.title" class="input-line text-lg">
-            
-            <div class="grid grid-cols-2 gap-8">
-                <div><label class="label-hint">報價 (數字)</label><input v-model="course.price" type="number" class="input-line text-red-500"></div>
-                <div><label class="label-hint">天數</label><input v-model="course.days" type="number" class="input-line"></div>
-            </div>
-            
-            <label class="label-hint">摘要簡介</label>
-            <textarea v-model="course.desc" class="input-line h-20 resize-none"></textarea>
-            
-            <label class="label-hint">主視覺圖片搜尋</label>
-            <div class="flex gap-2 mt-2">
-                <input v-model="course.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-2" placeholder="地名">
-                <button @click="searchImg(course, course.searchKw)" class="text-[#06C755] text-sm px-2">重新搜尋</button>
-            </div>
-            <img v-if="course.imgUrl" :src="course.imgUrl" class="w-full aspect-video object-cover mt-4 rounded-sm">
+<body class="p-4 md:p-8 max-w-3xl mx-auto">
+    <div id="app">
+        <div class="flex justify-between items-center border-b border-slate-200 pb-4 mb-4">
+            <div class="text-lg">行程管理中心</div>
+            <a href="https://fangwl591021.github.io/travelman/index.html" class="text-[#06C755] text-sm">新增行程</a>
         </div>
 
-        <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-wrap px-6">
-            <div class="text-3xl text-slate-200 mb-2">0{{ idx + 1 }}</div>
-            
-            <label class="label-hint !mt-0">路線標題</label>
-            <input v-model="day.route" class="input-line">
-            
-            <div class="grid grid-cols-3 gap-6">
-                <div><label class="label-hint">早餐</label><input v-model="day.b" class="input-line text-sm"></div>
-                <div><label class="label-hint">午餐</label><input v-model="day.l" class="input-line text-sm"></div>
-                <div><label class="label-hint">晚餐</label><input v-model="day.d" class="input-line text-sm"></div>
+        <div v-if="loading" class="py-10 text-slate-400 text-sm">資料讀取中...</div>
+        <div v-else>
+            <div v-for="c in courses" :key="c.id" class="row-item flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1">
+                    <div class="text-[10px] text-slate-400 mb-1">{{ c.id }}</div>
+                    <div class="text-base text-slate-800">{{ c.title }}</div>
+                    <div class="text-xs text-slate-500 mt-1">{{ c.days }} 天行程 ｜ NT$ {{ Number(c.price).toLocaleString() }}</div>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="text-slate-500">預覽</a>
+                    <a :href="'https://fangwl591021.github.io/travelman/index.html?id=' + c.id" class="text-[#06C755]">編修</a>
+                    <button @click="deleteItem(c.id, c.title)" class="text-red-400">刪除</button>
+                </div>
             </div>
-            
-            <label class="label-hint">行程說明</label>
-            <textarea v-model="day.infosStr" class="input-line h-32 leading-relaxed resize-none text-sm"></textarea>
-            
-            <label class="label-hint">入住飯店</label>
-            <input v-model="day.hotel" class="input-line text-sm">
-            
-            <!-- 單獨搜圖區塊 -->
-            <label class="label-hint">本區圖片搜尋</label>
-            <div class="flex gap-2 mt-2">
-                <input v-model="day.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-2" placeholder="輸入地名">
-                <button @click="searchImg(day, day.searchKw)" class="text-[#06C755] text-sm px-2">重新搜尋</button>
-            </div>
-            <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full aspect-video object-cover mt-4 rounded-sm">
-        </div>
-
-        <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t flex gap-4 z-50">
-            <button @click="step = 'input'" class="px-4 text-slate-400 text-sm">重新解析</button>
-            <button @click="saveCourse" :disabled="loading" class="flex-1 bg-[#174a5a] text-white py-3 rounded font-medium active:scale-95 transition-all">
-                {{ loading ? '發布中...' : '確認並儲存發布' }}
-            </button>
+            <div v-if="courses.length === 0" class="py-10 text-slate-400 text-sm">目前無資料。</div>
         </div>
     </div>
-
-    <!-- 第三步：成功 -->
-    <div v-if="step === 'success'" class="p-10 text-center py-32">
-      <div class="text-4xl text-[#06C755] mb-4">✓</div>
-      <h2 class="text-lg text-slate-800 mb-8">行程發布完成</h2>
-      <button @click="openSite" class="w-full bg-[#174a5a] text-white py-3 rounded mb-4">檢視行程網頁</button>
-      <button @click="reset" class="text-slate-400 text-sm">處理下一份</button>
-    </div>
-  </div>
-
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() { return { step: 'input', loading: false, loadStatus: '', loadProgress: 0, rawText: '', course: {}, finalId: '' } },
-      async mounted() {
-        try {
-          await liff.init({ liffId: "2008729640-bptxTkoO" });
-          const id = new URLSearchParams(window.location.search).get('id');
-          if (id) {
-            const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=${id}`);
-            const data = await res.json();
-            this.course = { ...data, id };
-            if (this.course.itinerary) {
-                this.course.itinerary.forEach(d => {
-                    d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
-                    d.searchKw = d.searchKw || d.route; 
-                });
-            }
-            this.step = 'edit';
-          }
-        } catch (e) {}
-      },
-      methods: {
-        async parseDraft() {
-          this.step = 'loading';
-          this.loadProgress = 10;
-          this.loadStatus = '第一階段：正在解析文字結構...';
-          
-          try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-draft', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: this.rawText })
-            });
-            const data = await res.json();
-            
-            this.loadProgress = 40;
-            this.loadStatus = '第二階段：分離地名並啟動搜圖...';
-            
-            data.searchKw = data.title.substring(0, 4);
-            data.imgUrl = '';
-            
-            if (data.itinerary) {
-              data.itinerary = data.itinerary.map(d => ({ 
-                  ...d, 
-                  infosStr: Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''),
-                  searchKw: d.searchKw || d.route.replace(/[^\u4e00-\u9fa5]/g, '').substring(0, 4), 
-                  imgUrl: ''
-              }));
-            }
-            this.course = { ...this.course, ...data };
-
-            // 分段執行：依序搜尋圖片並更新進度條
-            this.loadStatus = `搜尋主視覺：${this.course.searchKw}`;
-            await this.searchImg(this.course, this.course.searchKw);
-            this.loadProgress = 50;
-
-            if(this.course.itinerary) {
-                const stepVal = 50 / this.course.itinerary.length;
-                for(let i=0; i<this.course.itinerary.length; i++) {
-                    const d = this.course.itinerary[i];
-                    this.loadStatus = `抓取 D${i+1} 圖片：${d.searchKw}`;
-                    await this.searchImg(d, d.searchKw);
-                    this.loadProgress += stepVal;
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() { return { courses: [], loading: true } },
+            mounted() { this.fetchData(); },
+            methods: {
+                async fetchData() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch('/api/courses');
+                        this.courses = await res.json();
+                    } catch (e) { console.error(e); } finally { this.loading = false; }
+                },
+                async deleteItem(id, title) {
+                    if (!confirm('永久刪除「' + title + '」？')) return;
+                    try {
+                        const res = await fetch('/api/delete-course?id=' + encodeURIComponent(id), { method: 'POST' });
+                        if ((await res.json()).success) this.fetchData();
+                    } catch (e) { alert('連線失敗'); }
                 }
             }
-
-            this.loadStatus = '第三階段：網頁組合完成！';
-            this.loadProgress = 100;
-            
-            setTimeout(() => { this.step = 'edit'; }, 600);
-            
-          } catch (e) { 
-              alert("解析失敗，請重試"); 
-              this.step = 'input'; 
-          }
-        },
-        async searchImg(targetObj, keyword) {
-            if (!keyword) return;
-            try {
-                const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=${encodeURIComponent(keyword)}`);
-                const data = await res.json();
-                targetObj.imgUrl = data.url; 
-            } catch (e) { console.error("搜圖錯誤"); }
-        },
-        async saveCourse() {
-          this.loading = true;
-          if (this.course.itinerary) {
-            this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
-          }
-          try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(this.course)
-            });
-            const result = await res.json();
-            if (result.success) { this.finalId = result.id; this.step = 'success'; }
-          } catch (e) { alert("儲存失敗"); }
-          finally { this.loading = false; }
-        },
-        openSite() { if (this.finalId) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${this.finalId}`, '_blank'); },
-        reset() { location.href = "index.html"; }
-      }
-    }).mount('#app');
-  </script>
+        }).mount('#app');
+    </script>
 </body>
 </html>
+`;
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname.toLowerCase();
+    const corsHeaders = { 
+        'Access-Control-Allow-Origin': '*', 
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 
+        'Access-Control-Allow-Headers': 'Content-Type' 
+    };
+
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+    if (path === '/admin') return new Response(adminHTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+
+    // 1. 搜圖 API：全面改用 Pexels
+    if (path === '/api/search-image') {
+        const q = url.searchParams.get('q') || 'landscape';
+        // 同時支援標準命名與用戶可能的命名
+        const pexelsKey = env.PEXELS_API_KEY || env['pexels._api'] || env.PEXELS_API; 
+        const defaultImg = 'https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200';
+
+        try {
+            if (pexelsKey) {
+                const pexelsRes = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=15&locale=zh-TW`, {
+                    headers: { 'Authorization': pexelsKey }
+                });
+                if (pexelsRes.ok) {
+                    const pData = await pexelsRes.json();
+                    if (pData.photos && pData.photos.length > 0) {
+                        const photo = pData.photos[Math.floor(Math.random() * Math.min(3, pData.photos.length))];
+                        return new Response(JSON.stringify({ url: photo.src.large2x || photo.src.large }), { headers: corsHeaders });
+                    }
+                }
+            }
+            // 如果 Pexels API 沒設定或搜不到，強制給預設美圖，絕不破圖
+            return new Response(JSON.stringify({ url: defaultImg }), { headers: corsHeaders });
+        } catch (e) {
+            return new Response(JSON.stringify({ url: defaultImg }), { headers: corsHeaders });
+        }
+    }
+
+    // 2. AI 解析
+    if (path === '/api/parse-draft' && request.method === "POST") {
+      try {
+        const { text } = await request.json();
+        const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${env.OPENAI_API_KEY}` },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [{ 
+              role: "system", 
+              content: "將旅遊文案轉為 JSON：{title, price(數字), desc, days(數字), itinerary:[{day, route, infos(陣列), b, l, d, hotel, searchKw}]}. 'searchKw' 請從路線中萃取最核心的『單一景點地名』(如: 張家界、澳門) 供 Pexels 搜圖。只回傳 JSON。" 
+            }, { role: "user", content: text }],
+            response_format: { type: "json_object" }
+          })
+        });
+        const aiData = await aiRes.json();
+        return new Response(aiData.choices[0].message.content, { headers: corsHeaders });
+      } catch (e) { return new Response(JSON.stringify({ error: "解析失敗" }), { status: 200, headers: corsHeaders }); }
+    }
+
+    // 3. 儲存
+    if (path === '/api/save-course' && request.method === "POST") {
+      try {
+        const course = await request.json();
+        const id = course.id || "TR-" + Date.now();
+        course.id = id;
+        await env.TRAVEL_DB.put(id, JSON.stringify(course));
+        return new Response(JSON.stringify({ success: true, id }), { headers: corsHeaders });
+      } catch (e) { return new Response(JSON.stringify({ success: false }), { status: 200, headers: corsHeaders }); }
+    }
+
+    // 4. 刪除
+    if (path === '/api/delete-course' && request.method === "POST") {
+      const id = url.searchParams.get('id');
+      if (id) await env.TRAVEL_DB.delete(id);
+      return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+    }
+
+    // 5. 列表與單筆
+    if (path === '/api/courses') {
+      try {
+        const list = await env.TRAVEL_DB.list();
+        const courses = await Promise.all(list.keys.map(async k => {
+            const v = await env.TRAVEL_DB.get(k.name);
+            const j = JSON.parse(v); j.id = k.name; return j;
+        }));
+        return new Response(JSON.stringify(courses), { headers: corsHeaders });
+      } catch (e) { return new Response("[]", { headers: corsHeaders }); }
+    }
+
+    if (path === '/api/get-course') {
+      const data = await env.TRAVEL_DB.get(url.searchParams.get('id'));
+      return new Response(data || "{}", { headers: corsHeaders });
+    }
+
+    return new Response("TravelKeeper v6.2.0 Online");
+  }
+};
