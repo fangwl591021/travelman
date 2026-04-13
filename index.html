@@ -2,113 +2,152 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>行程編輯器</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>行程上稿編輯器</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, "PingFang TC", sans-serif; color: #111; background: #fff; margin: 0; padding: 0; }
-    .input-line { 
-        width: 100%; border: none; border-bottom: 1px solid #eee; padding: 12px 0; outline: none; 
-        transition: 0.2s; font-size: 16px; color: #111; background: transparent; border-radius: 0;
-    }
-    .input-line:focus { border-bottom-color: #06C755; }
-    .label-hint { font-size: 12px; color: #888; margin-top: 16px; display: block; }
-    .section-wrap { border-bottom: 8px solid #f4f4f4; padding: 24px 20px; }
+    /* 遵循 LINE OA 原生資訊流格式，不包框、不濫用粗體、字體正常大小 */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; color: #111; margin: 0; padding: 0; }
+    .page-container { padding-bottom: 100px; max-w: 800px; margin: 0 auto; }
+    .section-block { border-bottom: 10px solid #f4f4f4; padding: 24px 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 14px; color: #888; margin-bottom: 6px; }
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #e0e0e0; padding: 10px 0; font-size: 16px; color: #111; background: transparent; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-bottom-color: #06C755; }
+    textarea.form-input { resize: none; line-height: 1.6; padding-top: 10px; }
+    .img-preview { width: 100%; aspect-ratio: 16/9; object-fit: cover; background-color: #f9f9f9; margin-top: 12px; border-radius: 4px; border: 1px solid #eee; }
+    .btn-primary { background-color: #06C755; color: #fff; border: none; width: 100%; padding: 16px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { color: #06C755; background: transparent; border: none; font-size: 14px; cursor: pointer; padding: 4px 8px; }
+    .flex-row { display: flex; gap: 16px; }
+    .flex-1 { flex: 1; }
   </style>
 </head>
 <body>
-  <div id="app" class="max-w-2xl mx-auto min-h-screen pb-24">
+  <div id="app" class="page-container">
     
-    <!-- 第一步：文字輸入 -->
+    <!-- 解析畫面 -->
     <div v-if="step === 'input'" class="p-6">
       <div class="text-xl mb-6 text-slate-800 font-medium">新增行程文案</div>
-      <textarea v-model="rawText" class="w-full h-96 border border-slate-200 p-4 text-sm outline-none focus:border-[#06C755] leading-relaxed" placeholder="請將 NotebookLM 整理後的文字貼在此處..."></textarea>
-      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-[#06C755] text-white py-4 mt-6 active:scale-95 transition-transform disabled:opacity-50 text-base">
+      <textarea v-model="rawText" class="w-full h-96 border border-slate-200 p-4 text-base outline-none focus:border-[#06C755] leading-relaxed rounded-md" placeholder="請將 NotebookLM 整理後的文字貼在此處..."></textarea>
+      <button @click="parseDraft" :disabled="!rawText || loading" class="btn-primary mt-6">
         開始解析與自動配圖
       </button>
     </div>
 
-    <!-- 載入中：分段進度展示 (修復畫面卡住問題) -->
+    <!-- 進度條 (確保 UI 有時間更新) -->
     <div v-if="step === 'loading'" class="p-10 text-center py-32">
         <div class="inline-block animate-spin w-8 h-8 border-2 border-[#06C755] border-t-transparent rounded-full mb-6"></div>
         <div class="text-base text-slate-700 mb-4">{{ loadStatus }}</div>
-        <div class="w-full bg-slate-100 h-1 overflow-hidden max-w-xs mx-auto">
+        <div class="w-full bg-slate-100 h-1 overflow-hidden max-w-xs mx-auto rounded-full">
             <div class="bg-[#06C755] h-1 transition-all duration-300" :style="{ width: loadProgress + '%' }"></div>
         </div>
     </div>
 
-    <!-- 第二步：編輯與確認 (極簡無框設計) -->
+    <!-- 編輯畫面 -->
     <div v-if="step === 'edit'">
-        <div class="section-wrap">
-            <div class="text-sm text-[#06C755] font-medium mb-2">基本資訊</div>
+        <div class="section-block">
+            <div class="text-sm text-[#06C755] font-bold mb-4">基本資訊</div>
             
-            <label class="label-hint">行程總標題</label>
-            <input v-model="course.title" class="input-line text-lg">
-            
-            <div class="flex gap-6 mt-2">
-                <div class="flex-1"><label class="label-hint">報價 (數字)</label><input v-model="course.price" type="number" class="input-line text-red-500"></div>
-                <div class="flex-1"><label class="label-hint">天數</label><input v-model="course.days" type="number" class="input-line"></div>
+            <div class="form-group">
+                <label class="form-label">行程總標題</label>
+                <input v-model="course.title" class="form-input text-lg font-medium">
             </div>
             
-            <label class="label-hint">摘要簡介</label>
-            <textarea v-model="course.desc" class="input-line h-20 resize-none"></textarea>
-            
-            <label class="label-hint">主視覺圖片搜尋 (支援中文)</label>
-            <div class="flex gap-2 mt-1">
-                <input v-model="course.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-1" placeholder="地名">
-                <button @click="searchImg(course, course.searchKw)" class="text-[#06C755] text-sm px-2">搜尋</button>
+            <div class="flex-row">
+                <div class="form-group flex-1">
+                    <label class="form-label">報價 (數字)</label>
+                    <input v-model="course.price" type="number" class="form-input text-red-500 font-medium">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">天數</label>
+                    <input v-model="course.days" type="number" class="form-input">
+                </div>
             </div>
-            <img v-if="course.imgUrl" :src="course.imgUrl" class="w-full aspect-video object-cover mt-4">
+            
+            <div class="form-group">
+                <label class="form-label">摘要簡介</label>
+                <textarea v-model="course.desc" class="form-input h-24"></textarea>
+            </div>
+            
+            <!-- 主視覺搜圖：隱藏了網址文字，改為直接看圖 -->
+            <div class="form-group mt-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="form-label !mb-0">主視覺圖片搜尋 (輸入地名)</label>
+                    <button @click="searchImg(course, course.searchKw)" class="btn-secondary">搜尋圖片</button>
+                </div>
+                <input v-model="course.searchKw" class="form-input" placeholder="例如：夢幻仙境">
+                <img v-if="course.imgUrl" :src="course.imgUrl" class="img-preview" onerror="this.src='https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
+            </div>
         </div>
 
-        <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-wrap">
-            <div class="text-2xl text-slate-300 mb-2 font-medium">0{{ idx + 1 }}</div>
+        <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
+            <div class="text-2xl text-slate-300 mb-6 font-medium">0{{ idx + 1 }}</div>
             
-            <label class="label-hint !mt-0">路線標題</label>
-            <input v-model="day.route" class="input-line font-medium">
-            
-            <div class="flex gap-4 mt-2">
-                <div class="flex-1"><label class="label-hint">早餐</label><input v-model="day.b" class="input-line text-sm"></div>
-                <div class="flex-1"><label class="label-hint">午餐</label><input v-model="day.l" class="input-line text-sm"></div>
-                <div class="flex-1"><label class="label-hint">晚餐</label><input v-model="day.d" class="input-line text-sm"></div>
+            <div class="form-group">
+                <label class="form-label">路線標題</label>
+                <input v-model="day.route" class="form-input font-medium">
             </div>
             
-            <label class="label-hint">行程說明</label>
-            <textarea v-model="day.infosStr" class="input-line h-32 leading-relaxed resize-none text-sm"></textarea>
-            
-            <label class="label-hint">入住飯店</label>
-            <input v-model="day.hotel" class="input-line text-sm">
-            
-            <label class="label-hint">本區圖片搜尋</label>
-            <div class="flex gap-2 mt-1">
-                <input v-model="day.searchKw" class="flex-1 border-b border-slate-200 outline-none text-sm px-1" placeholder="輸入地名">
-                <button @click="searchImg(day, day.searchKw)" class="text-[#06C755] text-sm px-2">搜尋</button>
+            <div class="flex-row">
+                <div class="form-group flex-1">
+                    <label class="form-label">早餐</label>
+                    <input v-model="day.b" class="form-input text-sm">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">午餐</label>
+                    <input v-model="day.l" class="form-input text-sm">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">晚餐</label>
+                    <input v-model="day.d" class="form-input text-sm">
+                </div>
             </div>
-            <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full aspect-video object-cover mt-4">
+            
+            <div class="form-group">
+                <label class="form-label">行程說明</label>
+                <textarea v-model="day.infosStr" class="form-input h-32 text-sm"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">入住飯店</label>
+                <input v-model="day.hotel" class="form-input text-sm">
+            </div>
+            
+            <div class="form-group mt-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="form-label !mb-0">本區圖片搜尋</label>
+                    <button @click="searchImg(day, day.searchKw)" class="btn-secondary">搜尋圖片</button>
+                </div>
+                <input v-model="day.searchKw" class="form-input text-sm" placeholder="輸入地名">
+                <img v-if="day.imgUrl" :src="day.imgUrl" class="img-preview" onerror="this.src='https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
+            </div>
         </div>
 
+        <!-- 固定底部按鈕 -->
         <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 border-t border-slate-100 flex gap-4 z-50">
-            <button @click="step = 'input'" class="px-4 text-slate-500 text-sm">重新解析</button>
-            <button @click="saveCourse" :disabled="loading" class="flex-1 bg-[#06C755] text-white py-3 text-base active:scale-95 transition-all">
+            <button @click="step = 'input'" class="px-4 text-slate-500 text-sm bg-transparent border-none">重新解析</button>
+            <button @click="saveCourse" :disabled="loading" class="btn-primary flex-1">
                 {{ loading ? '發布中...' : '確認發布' }}
             </button>
         </div>
     </div>
 
-    <!-- 第三步：成功 -->
+    <!-- 成功畫面 -->
     <div v-if="step === 'success'" class="p-10 text-center py-32">
-      <div class="text-4xl text-[#06C755] mb-4">✓</div>
-      <h2 class="text-lg text-slate-800 mb-8">行程發布完成</h2>
-      <button @click="openSite" class="w-full bg-[#06C755] text-white py-3 mb-4 text-base">檢視網頁</button>
-      <button @click="reset" class="text-slate-400 text-sm">處理下一份</button>
+      <div class="text-5xl text-[#06C755] mb-6">✓</div>
+      <h2 class="text-xl text-slate-800 mb-10 font-medium">行程發布完成</h2>
+      <button @click="openSite" class="btn-primary mb-4">檢視行程網頁</button>
+      <button @click="reset" class="text-slate-400 text-sm bg-transparent border-none underline">處理下一份</button>
     </div>
   </div>
 
   <script>
     const { createApp } = Vue;
-    // 等待工具函數，用於強制瀏覽器更新畫面
+    // 強制 UI 更新用的延遲函數
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
     createApp({
@@ -118,10 +157,10 @@
           await liff.init({ liffId: "2008729640-bptxTkoO" });
           const id = new URLSearchParams(window.location.search).get('id');
           if (id) {
-            const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=${id}`);
+            const res = await fetch('/api/get-course?id=' + id);
             const data = await res.json();
             this.course = { ...data, id };
-            if (this.course.itinerary) {
+            if (Array.isArray(this.course.itinerary)) {
                 this.course.itinerary.forEach(d => {
                     d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
                     d.searchKw = d.searchKw || d.route; 
@@ -136,10 +175,10 @@
           this.step = 'loading';
           this.loadProgress = 10;
           this.loadStatus = '解析文字結構中...';
-          await delay(100); // 強制 Vue 渲染進度條畫面
+          await delay(100); 
           
           try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-draft', {
+            const res = await fetch('/api/parse-draft', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: this.rawText })
@@ -153,23 +192,26 @@
             data.searchKw = data.title.substring(0, 4);
             data.imgUrl = '';
             
-            if (data.itinerary) {
+            // 增強防呆，避免 AI 回傳非陣列
+            if (Array.isArray(data.itinerary)) {
               data.itinerary = data.itinerary.map(d => ({ 
                   ...d, 
                   infosStr: Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''),
-                  searchKw: d.searchKw || d.route.replace(/[^\u4e00-\u9fa5]/g, '').substring(0, 4), 
+                  searchKw: d.searchKw || (d.route ? d.route.replace(/[^\u4e00-\u9fa5]/g, '').substring(0, 4) : '風景'), 
                   imgUrl: ''
               }));
+            } else {
+              data.itinerary = [];
             }
             this.course = { ...this.course, ...data };
 
-            // 分段執行搜圖，並持續更新進度條
+            // 執行搜圖並更新進度
             this.loadStatus = `搜尋圖片：${this.course.searchKw}`;
             await this.searchImg(this.course, this.course.searchKw);
             this.loadProgress = 50;
             await delay(50);
 
-            if(this.course.itinerary) {
+            if(this.course.itinerary.length > 0) {
                 const stepVal = 50 / this.course.itinerary.length;
                 for(let i=0; i<this.course.itinerary.length; i++) {
                     const d = this.course.itinerary[i];
@@ -194,18 +236,18 @@
         async searchImg(targetObj, keyword) {
             if (!keyword) return;
             try {
-                const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=${encodeURIComponent(keyword)}`);
+                const res = await fetch('/api/search-image?q=' + encodeURIComponent(keyword));
                 const data = await res.json();
                 targetObj.imgUrl = data.url; 
             } catch (e) { console.error("搜圖錯誤"); }
         },
         async saveCourse() {
           this.loading = true;
-          if (this.course.itinerary) {
+          if (Array.isArray(this.course.itinerary)) {
             this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
           }
           try {
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
+            const res = await fetch('/api/save-course', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(this.course)
