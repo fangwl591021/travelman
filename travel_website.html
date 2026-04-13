@@ -24,7 +24,7 @@
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic">載入行程中...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic">載入行程資料中...</div>
         <div v-else-if="course" class="container">
             <main class="main-content">
                 <img :src="course.imgUrl" class="hero-img">
@@ -33,43 +33,59 @@
                     <h1 class="text-2xl text-slate-800">{{ course.title }}</h1>
                     <p class="mt-4 text-slate-500 text-sm leading-relaxed">{{ course.desc }}</p>
                 </div>
-                <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-item">
-                    <span class="day-tag">DAY 0{{ idx + 1 }}</span>
-                    <h2 class="text-xl mb-4">{{ day.route }}</h2>
-                    <img v-if="day.imgUrl" :src="day.imgUrl" class="day-photo">
-                    <div class="day-desc space-y-4">
-                        <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
-                    </div>
-                    <div class="bg-slate-50 p-5 rounded mt-6">
-                        <div class="info-row"><span class="w-16 text-slate-400">早餐</span><span>{{ day.b || '自理' }}</span></div>
-                        <div class="info-row"><span class="w-16 text-slate-400">午餐</span><span>{{ day.l || '特色餐點' }}</span></div>
-                        <div class="info-row"><span class="w-16 text-slate-400">晚餐</span><span>{{ day.d || '飯店內用' }}</span></div>
-                        <div class="info-row mt-3 pt-3 border-t border-slate-200"><span class="w-16 text-slate-400">住宿</span><span class="text-[#003b95]">{{ day.hotel || '精選飯店' }}</span></div>
+
+                <!-- 【關鍵修復】：加入 v-if="course.itinerary" 與防錯邏輯 -->
+                <div v-if="course.itinerary && Array.isArray(course.itinerary)">
+                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-item">
+                        <span class="day-tag">DAY 0{{ idx + 1 }}</span>
+                        <h2 class="text-xl mb-4 text-slate-700">{{ day.route }}</h2>
+                        <img v-if="day.imgUrl" :src="day.imgUrl" class="day-photo">
+                        <div class="day-desc space-y-4">
+                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-5 rounded mt-6">
+                            <div class="info-row"><span class="w-16 text-slate-400">早餐</span><span>{{ day.b || '自理' }}</span></div>
+                            <div class="info-row"><span class="w-16 text-slate-400">午餐</span><span>{{ day.l || '特色餐點' }}</span></div>
+                            <div class="info-row"><span class="w-16 text-slate-400">晚餐</span><span>{{ day.d || '飯店內用' }}</span></div>
+                            <div class="info-row mt-3 pt-3 border-t border-slate-200"><span class="w-16 text-slate-400">住宿</span><span class="text-[#003b95] font-medium">{{ day.hotel || '精選飯店或同級' }}</span></div>
+                        </div>
                     </div>
                 </div>
             </main>
+
             <aside class="sidebar">
                 <div class="price-box">
                     <div class="text-xs text-slate-400">每位成人</div>
                     <div class="price-val">NT$ {{ formatPrice(course.price) }}</div>
-                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-line">立刻諮詢</a>
+                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-line">立即諮詢</a>
                 </div>
             </aside>
         </div>
+        <div v-else class="text-center py-20 text-slate-400">找不到該行程資料。</div>
     </div>
+
     <script>
         const { createApp } = Vue;
         createApp({
             data() { return { loading: true, course: null } },
-            methods: { formatPrice(p) { return isNaN(Number(p)) ? p : Number(p).toLocaleString(); } },
+            methods: {
+                formatPrice(p) {
+                    if (isNaN(Number(p))) return p || "0";
+                    return Number(p).toLocaleString();
+                }
+            },
             async mounted() {
                 const id = new URLSearchParams(window.location.search).get('id');
-                if (!id) return;
+                if (!id) { this.loading = false; return; }
                 try {
+                    // 指向 Worker 的正確 API 路徑
                     const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=' + id);
                     this.course = await res.json();
-                    document.title = this.course.title;
-                } catch (e) {} finally { this.loading = false; }
+                    if (this.course && this.course.title) {
+                        document.title = this.course.title;
+                    }
+                } catch (e) { console.error("Fetch Data Error"); }
+                finally { this.loading = false; }
             }
         }).mount('#app');
     </script>
