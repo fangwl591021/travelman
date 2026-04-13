@@ -19,46 +19,46 @@
         .info-row { display: flex; font-size: 13px; padding: 8px 0; border-top: 1px solid #fafafa; }
         .price-box { padding: 30px; border: 1px solid #eee; border-radius: 4px; }
         .price-val { font-size: 32px; color: #d4111e; margin: 10px 0; }
-        .btn-line { background: #003b95; color: #fff; width: 100%; padding: 15px; border-radius: 4px; text-align: center; display: block; text-decoration: none; font-size: 15px; margin-top: 20px; }
+        .btn-line { background: #003b95; color: #fff; width: 100%; padding: 15px; border-radius: 4px; text-align: center; display: block; text-decoration: none; font-size: 15px; margin-top: 20px; font-weight: 400; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic">正在載入行程詳情...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 italic font-normal">載入資料中...</div>
         <div v-else-if="course" class="container">
             <main class="main-content">
                 <img :src="course.imgUrl" class="hero-img">
                 <div class="mb-12">
-                    <div class="inline-block bg-[#febb02] px-2 py-0.5 text-[10px] rounded mb-3">{{ course.days }} 天行程</div>
-                    <h1 class="text-2xl text-slate-800">{{ course.title }}</h1>
-                    <p class="mt-4 text-slate-500 text-sm leading-relaxed">{{ course.desc }}</p>
+                    <div class="inline-block bg-[#febb02] px-2 py-0.5 text-[10px] rounded mb-3 font-normal">{{ course.days }} 天行程</div>
+                    <h1 class="text-2xl text-slate-800 font-normal">{{ course.title }}</h1>
+                    <p class="mt-4 text-slate-500 text-sm leading-relaxed font-normal">{{ course.desc }}</p>
                 </div>
                 <div v-if="Array.isArray(course.itinerary)">
                     <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-item">
-                        <span class="day-tag">DAY 0{{ idx + 1 }}</span>
+                        <span class="day-tag font-normal">DAY 0{{ idx + 1 }}</span>
                         <h2 class="text-xl mb-4 text-slate-700 font-normal">{{ day.route }}</h2>
                         <img v-if="day.imgUrl" :src="day.imgUrl" class="day-photo">
-                        <div class="day-desc space-y-4">
+                        <div class="day-desc space-y-4 font-normal">
                             <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
                         </div>
                         <div class="bg-slate-50 p-5 rounded mt-6 text-sm">
-                            <div class="info-row"><span class="w-16 text-slate-400">早餐</span><span>{{ day.b || '自理' }}</span></div>
-                            <div class="info-row"><span class="w-16 text-slate-400">午餐</span><span>{{ day.l || '在地風味料理' }}</span></div>
-                            <div class="info-row"><span class="w-16 text-slate-400">晚餐</span><span>{{ day.d || '飯店內用' }}</span></div>
-                            <div class="info-row mt-3 pt-3 border-t border-slate-200"><span class="w-16 text-slate-400">住宿</span><span class="text-[#003b95]">{{ day.hotel || '精選飯店或同級' }}</span></div>
+                            <div class="info-row font-normal"><span class="w-16 text-slate-400">早餐</span><span>{{ day.b || '自理' }}</span></div>
+                            <div class="info-row font-normal"><span class="w-16 text-slate-400">午餐</span><span>{{ day.l || '在地風味料理' }}</span></div>
+                            <div class="info-row font-normal"><span class="w-16 text-slate-400">晚餐</span><span>{{ day.d || '飯店內用' }}</span></div>
+                            <div class="info-row font-normal mt-3 pt-3 border-t border-slate-200"><span class="w-16 text-slate-400">住宿</span><span class="text-[#003b95] font-normal">{{ day.hotel || '精選飯店或同級' }}</span></div>
                         </div>
                     </div>
                 </div>
             </main>
             <aside class="sidebar">
                 <div class="price-box">
-                    <div class="text-xs text-slate-400">每位成人</div>
-                    <div class="price-val">NT$ {{ formatPrice(course.price) }}</div>
-                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-line">立即預約諮詢</a>
+                    <div class="text-xs text-slate-400 font-normal">每位成人</div>
+                    <div class="price-val font-normal">NT$ {{ formatPrice(course.price) }}</div>
+                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-line font-normal">立即預約諮詢</a>
                 </div>
             </aside>
         </div>
-        <div v-else class="text-center py-20 text-slate-400">找不到該行程。</div>
+        <div v-else class="text-center py-20 text-slate-400 font-normal">未找到行程。</div>
     </div>
     <script>
         const { createApp } = Vue;
