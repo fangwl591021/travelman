@@ -17,7 +17,7 @@
     .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; outline: none; background: transparent; }
     .form-input:focus { border-bottom-color: #003b95; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fafafa; border-radius: 4px; overflow: hidden; position: relative; margin-top: 10px; }
-    .btn-upload { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.4); color: white; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer; }
+    .btn-upload { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.4); color: white; padding: 4px 10px; font-size: 10px; border-radius: 4px; }
     .tab-btn { padding: 10px 0; font-size: 13px; color: #aaa; margin-right: 24px; border-bottom: 2px solid transparent; cursor: pointer; }
     .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
     .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; cursor: pointer; }
@@ -36,7 +36,7 @@
     <main class="main-content">
         <!-- 輸入階段 -->
         <div v-if="step === 'input'">
-            <div class="text-lg text-slate-800 mb-8 font-normal">新增行程項目</div>
+            <div class="text-lg text-slate-800 mb-8">新增行程</div>
             <div class="flex border-b mb-8">
                 <div @click="inputType='text'" :class="['tab-btn', inputType==='text' ? 'active' : '']">文字解析</div>
                 <div @click="inputType='image'" :class="['tab-btn', inputType==='image' ? 'active' : '']">DM 圖片解析</div>
@@ -54,30 +54,30 @@
 
         <!-- 編輯階段 -->
         <div v-if="step === 'edit'" class="pb-32">
-            <div class="text-lg text-slate-800 mb-8 pb-3 border-b font-normal">行程校對 (100% 資料補全)</div>
+            <div class="text-lg text-slate-800 mb-8 pb-3 border-b">行程校對 (100% 資料補全)</div>
             <section class="section-block">
-                <label class="form-label font-normal">總標題</label><input v-model="course.title" class="form-input text-lg">
+                <label class="form-label">總標題</label><input v-model="course.title" class="form-input text-lg">
                 <div class="grid grid-cols-2 gap-8 mt-6">
-                    <div><label class="form-label font-normal">報價 (數字)</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
-                    <div><label class="form-label font-normal">天數</label><input v-model="course.days" type="number" class="form-input"></div>
+                    <div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
+                    <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
                 </div>
-                <div class="mt-6"><label class="form-label font-normal">首頁主視覺</label><div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">更換</button></div></div>
+                <div class="mt-6"><label class="form-label">首頁主視覺</label><div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">更換</button></div></div>
             </section>
             
-            <div v-for="(day, idx) in (course.itinerary || [])" :key="idx" class="section-block">
-                <div class="text-[10px] text-[#003b95] mb-3 uppercase tracking-widest font-normal">Day {{ idx + 1 }}</div>
-                <input v-model="day.route" class="form-input text-base font-normal">
+            <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
+                <div class="text-[10px] text-[#003b95] mb-3 uppercase tracking-widest">Day {{ idx + 1 }}</div>
+                <input v-model="day.route" class="form-input text-base">
                 <div class="grid grid-cols-3 gap-4 mt-6">
                     <input v-model="day.b" class="form-input text-xs" placeholder="早">
                     <input v-model="day.l" class="form-input text-xs" placeholder="午">
                     <input v-model="day.d" class="form-input text-xs" placeholder="晚">
                 </div>
-                <textarea v-model="day.infosStr" class="w-full h-32 border-none bg-slate-50 p-4 text-sm outline-none mt-4 leading-relaxed" placeholder="詳細描述..."></textarea>
+                <textarea v-model="day.infosStr" class="w-full h-32 border-none bg-slate-50 p-4 text-sm outline-none mt-4 leading-relaxed"></textarea>
                 <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換</button></div>
             </div>
 
             <div class="fixed bottom-0 left-[220px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
-                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-lg py-3 rounded text-sm font-normal">{{ loading ? '儲存中...' : '確認發佈' }}</button>
+                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-lg py-3 rounded text-sm">{{ loading ? '發佈中...' : '確認發佈' }}</button>
             </div>
         </div>
     </main>
@@ -118,16 +118,24 @@
             });
             const data = await res.json();
             
-            // 【核心修復】：資料結構強行初始化，解決截圖中空白的問題
-            if(!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
-            data.itinerary.forEach(d => {
+            // 【核心校正】：確保資料結構完整，解決空白問題
+            const parsedCourse = {
+                title: data.title || "未命名行程",
+                price: data.price || 0,
+                days: data.days || 1,
+                desc: data.desc || "",
+                itinerary: Array.isArray(data.itinerary) ? data.itinerary : []
+            };
+
+            parsedCourse.itinerary.forEach(d => {
                 d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
-                d.b = d.b || '精選特色餐'; d.l = d.l || '風味料理'; d.d = d.d || '飯店內用';
+                d.b = d.b || '精選美食'; d.l = d.l || '在地風味'; d.d = d.d || '飯店料理';
+                d.imgUrl = ''; // 先初始化
             });
             
-            this.course = data;
-            
-            // 【修復核心】：循序抓圖，確保每一張圖片都正確寫入
+            this.course = parsedCourse;
+
+            // 【修復核心】：循序搜圖，保證 100% 寫入
             await this.searchImg(this.course, this.course.title);
             for(const d of this.course.itinerary) {
                 await this.searchImg(d, (d.searchKw || d.route));
@@ -162,14 +170,12 @@
         },
         async saveCourse() {
             this.loading = true;
-            if(this.course.itinerary) {
-                this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
-            }
+            this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
             try {
                 const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
                 const result = await res.json();
                 if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
-            } catch (e) { alert("資料儲存失敗"); }
+            } catch (e) { alert("資料同步失敗"); }
             finally { this.loading = false; }
         }
       }
