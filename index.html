@@ -52,7 +52,7 @@
     <input type="file" ref="fileUploader" class="hidden" accept="image/jpeg, image/png, image/webp" @change="processImageUpload">
     <input type="file" ref="dmUploader" class="hidden" accept="image/jpeg, image/png, image/webp" @change="processDmUpload">
 
-    <!-- 解析畫面：加入雙頁籤 -->
+    <!-- 解析畫面：雙頁籤設計 -->
     <div v-if="step === 'input'" class="p-6">
       <div class="flex mb-6 border-b border-slate-200">
         <button @click="inputType = 'text'" :class="['tab-btn', inputType === 'text' ? 'active' : '']">文字貼上</button>
@@ -156,7 +156,7 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">行程說明 (已自動擴寫)</label>
+                <label class="form-label">行程說明</label>
                 <textarea v-model="day.infosStr" class="form-input h-32 text-sm"></textarea>
             </div>
             
@@ -235,7 +235,7 @@
         } catch (e) {}
       },
       methods: {
-        // 處理 DM 圖片上傳 (強制轉換為 image/jpeg 給 Google 審查)
+        // 處理 DM 圖片上傳 (強制轉換為 image/jpeg)
         processDmUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -247,7 +247,7 @@
                     const canvas = document.createElement('canvas');
                     let w = img.width;
                     let h = img.height;
-                    const maxW = 1000; // 壓縮 DM 圖片，確保不超過 API 負載限制
+                    const maxW = 1000;
                     
                     if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
                     
@@ -256,7 +256,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
                     
-                    // 【修正核心】: 統一強制轉成 image/jpeg，確保送給 Google 的 Base64 與 MimeType 100% 吻合
                     const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
                     this.dmPreview = compressedBase64;
                     this.dmBase64 = compressedBase64.split(',')[1]; 
@@ -283,7 +282,6 @@
                 payload = { text: this.rawText };
             } else {
                 endpoint = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/parse-image';
-                // 這裡的 mimeType 必須固定為 image/jpeg，因為我們上面 Canvas 強制轉成了 jpeg
                 payload = { imageBase64: this.dmBase64, mimeType: 'image/jpeg' };
             }
 
@@ -293,7 +291,7 @@
               body: JSON.stringify(payload)
             });
             const data = await res.json();
-            if (data.error) throw new Error(data.msg); // 如果有錯，會把 Google 拒絕的詳細原因印出來
+            if (data.error) throw new Error(data.msg);
             
             this.loadProgress = 40;
             this.loadStatus = '解析完成，準備搜尋圖片...';
@@ -349,7 +347,7 @@
             } catch (e) { console.error("搜圖錯誤"); }
         },
         
-        // === 圖片上傳壓縮引擎 (手動修改配圖用) ===
+        // 圖片上傳壓縮引擎 (手動修改配圖)
         triggerUpload(targetObj) {
             this.currentUploadTarget = targetObj;
             this.$refs.fileUploader.click();
@@ -365,7 +363,7 @@
                     const canvas = document.createElement('canvas');
                     let w = img.width;
                     let h = img.height;
-                    const maxW = 800; // 壓縮至 800px 寬以節省 KV 空間
+                    const maxW = 800;
                     
                     if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
                     
