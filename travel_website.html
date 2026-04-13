@@ -7,80 +7,96 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: -apple-system, "PingFang TC", sans-serif; color: #111; line-height: 1.6; margin: 0; padding: 0; background: #fff; }
-        /* 移除多餘包框，純淨留白 */
-        .hero { width: 100%; height: 45vh; position: relative; background: #f4f4f4; }
-        .hero img { width: 100%; height: 100%; object-fit: cover; }
-        .hero-mask { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 80%); }
-        .hero-content { position: absolute; bottom: 20px; left: 20px; right: 20px; color: white; max-w: 700px; margin: 0 auto; }
+        /* Booking.com 專業訂房/行程網風格：白、海軍藍、黃 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #262626; line-height: 1.6; margin: 0; padding: 0; background: #f5f5f5; }
         
-        .content-wrap { max-w: 700px; margin: 0 auto; padding: 30px 20px; }
-        .day-block { margin-bottom: 50px; border-bottom: 1px solid #eee; padding-bottom: 40px; }
-        .day-block:last-child { border-bottom: none; }
+        .top-nav { background-color: #003b95; color: white; padding: 16px 24px; font-size: 20px; font-weight: bold; position: sticky; top: 0; z-index: 40; }
         
-        .day-title { font-size: 20px; font-weight: 500; color: #111; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-        .day-num { font-size: 14px; color: #06C755; font-weight: bold; }
+        .main-container { max-w: 800px; margin: 0 auto; background: #fff; min-height: 100vh; padding-bottom: 120px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
         
-        .day-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-bottom: 16px; }
-        .day-desc { font-size: 15px; color: #444; margin-bottom: 24px; text-align: justify; }
+        .hero { width: 100%; position: relative; }
+        .hero img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .hero-info { padding: 24px; border-bottom: 1px solid #e7e7e7; }
+        .hero-title { font-size: 24px; font-weight: bold; color: #111; margin-bottom: 8px; line-height: 1.3; }
+        .tag-days { display: inline-block; background: #febb02; color: #111; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-bottom: 12px; }
         
-        /* 資訊區塊：無線條包覆，單純底線 */
-        .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
-        .info-label { width: 60px; color: #888; }
-        .info-val { flex: 1; color: #111; }
+        .content-wrap { padding: 24px; }
+        .overview-desc { font-size: 15px; color: #444; background: #f9f9f9; padding: 16px; border-radius: 4px; border-left: 4px solid #003b95; margin-bottom: 32px; }
         
-        .price-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #eee; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 50; }
+        .day-block { margin-bottom: 32px; border: 1px solid #e7e7e7; border-radius: 4px; overflow: hidden; }
+        .day-header { background: #f9f9f9; padding: 16px 20px; border-bottom: 1px solid #e7e7e7; display: flex; align-items: baseline; gap: 12px; }
+        .day-num { font-size: 14px; color: #003b95; font-weight: bold; }
+        .day-title { font-size: 18px; font-weight: bold; color: #111; }
+        
+        .day-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .day-body { padding: 20px; }
+        .day-desc { font-size: 15px; color: #333; margin-bottom: 24px; text-align: justify; }
+        
+        .info-panel { font-size: 14px; color: #333; }
+        .info-row { display: flex; padding: 8px 0; border-top: 1px solid #eee; }
+        .info-label { width: 60px; color: #666; font-weight: bold; }
+        .info-val { flex: 1; font-weight: 500; }
+        
+        .price-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #e7e7e7; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 50; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .price-wrap { display: flex; flex-direction: column; }
+        .price-val { font-size: 24px; color: #d4111e; font-weight: bold; line-height: 1; }
+        .price-hint { font-size: 12px; color: #666; margin-bottom: 4px; }
+        .btn-book { background-color: #003b95; color: white; padding: 12px 32px; border-radius: 4px; font-size: 16px; font-weight: bold; text-decoration: none; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-400 text-sm">讀取中...</div>
+        <div class="top-nav">精選行程</div>
 
-        <div v-else-if="course">
+        <div v-if="loading" class="flex items-center justify-center h-64 text-[#003b95] font-bold">資料讀取中...</div>
+
+        <div v-else-if="course" class="main-container">
             <div class="hero">
                 <img :src="course.imgUrl || 'https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1200'">
-                <div class="hero-mask"></div>
-                <div class="hero-content">
-                    <h1 class="text-2xl font-medium leading-snug">{{ course.title }}</h1>
-                    <div class="text-xs opacity-80 mt-1">{{ course.days }} 天行程</div>
+                <div class="hero-info">
+                    <span class="tag-days">{{ course.days }} 天行程</span>
+                    <h1 class="hero-title">{{ course.title }}</h1>
                 </div>
             </div>
 
             <div class="content-wrap">
-                <p class="text-base text-slate-500 mb-12 leading-relaxed">{{ course.desc }}</p>
+                <div class="overview-desc">{{ course.desc }}</div>
 
                 <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-block">
-                    <div class="day-title">
-                        <span class="day-num">D{{ idx + 1 }}</span>
-                        <span>{{ day.route }}</span>
+                    <div class="day-header">
+                        <span class="day-num">Day {{ idx + 1 }}</span>
+                        <span class="day-title">{{ day.route }}</span>
                     </div>
                     
                     <img v-if="day.imgUrl" :src="day.imgUrl" class="day-img">
                     
-                    <div class="day-desc space-y-3">
-                        <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
-                    </div>
+                    <div class="day-body">
+                        <div class="day-desc space-y-3">
+                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
+                        </div>
 
-                    <div>
-                        <div class="info-row"><div class="info-label">早餐</div><div class="info-val">{{ day.b || '自理' }}</div></div>
-                        <div class="info-row"><div class="info-label">午餐</div><div class="info-val">{{ day.l || '自理' }}</div></div>
-                        <div class="info-row"><div class="info-label">晚餐</div><div class="info-val">{{ day.d || '自理' }}</div></div>
-                        <div class="info-row mt-2 pt-2 border-t border-slate-100"><div class="info-label">住宿</div><div class="info-val">{{ day.hotel || '溫馨旅宿' }}</div></div>
+                        <div class="info-panel">
+                            <div class="info-row"><div class="info-label">早餐</div><div class="info-val">{{ day.b || '自理' }}</div></div>
+                            <div class="info-row"><div class="info-label">午餐</div><div class="info-val">{{ day.l || '自理' }}</div></div>
+                            <div class="info-row"><div class="info-label">晚餐</div><div class="info-val">{{ day.d || '自理' }}</div></div>
+                            <div class="info-row"><div class="info-label">住宿</div><div class="info-val text-[#003b95]">{{ day.hotel || '精選飯店或同級' }}</div></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 固定報價與聯絡列 -->
+            <!-- Booking 風格固定報價列 -->
             <div class="price-bar">
-                <div>
-                    <div class="text-xl text-red-500 font-medium">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                    <div class="text-[10px] text-slate-400">每位成人</div>
+                <div class="price-wrap max-w-4xl mx-auto w-full flex justify-between items-center">
+                    <div>
+                        <div class="price-hint">每位成人</div>
+                        <div class="price-val">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                    </div>
+                    <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="btn-book">
+                        立即諮詢
+                    </a>
                 </div>
-                <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="bg-[#06C755] text-white px-5 py-2 rounded text-sm font-medium">
-                    LINE 諮詢
-                </a>
             </div>
-            <div class="h-20"></div>
         </div>
     </div>
 
