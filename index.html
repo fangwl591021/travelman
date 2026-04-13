@@ -26,7 +26,7 @@
 <body>
   <div id="app">
     <aside class="sidebar">
-        <div class="text-[9px] text-slate-300 tracking-[0.2em] mb-10 uppercase font-normal">Travel Keeper</div>
+        <div class="text-[9px] text-slate-300 tracking-[0.2em] mb-10 uppercase">Travel Keeper</div>
         <nav>
             <a href="#" class="menu-item active">智能上稿解析</a>
             <a href="https://travelkeeper-saas-worker.fangwl591021.workers.dev/admin" class="menu-item">行程管理中心</a>
@@ -121,14 +121,12 @@
                 d.b = d.b || '精選美食'; d.l = d.l || '在地風味'; d.d = d.d || '飯店料理';
             });
             this.course = data;
-            
-            // 【修復核心】：改為循序執行，確保圖片能精準抓取
             await this.searchImg(this.course, this.course.title);
             for(const d of this.course.itinerary) {
                 await this.searchImg(d, (d.searchKw || d.route));
             }
             this.step = 'edit';
-          } catch (e) { alert("解析超時，請點擊確認重試。"); }
+          } catch (e) { alert("解析發生問題，請點擊確認重試。"); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
