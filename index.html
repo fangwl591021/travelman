@@ -3,30 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 全功能中控台 (WEB1-v1.0)</title>
+  <title>旅行管家 - 管理中心 (WEB1-v1.9)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* 全站文字大小 18px 統大法 */
-    body { font-family: -apple-system, sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.5; }
+    /* WEB1-v1.9 文字 18px 統大法：全站文字大小一致，視覺大氣 */
+    body { font-family: -apple-system, sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.6; font-weight: 400; }
     .header { height: 60px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; left: 0; right: 0; background: #fff; z-index: 500; }
-    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 25px; cursor: pointer; }
+    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; }
     .nav-link.active { color: #06c755; border-bottom: 2px solid #06c755; padding-bottom: 5px; }
+    
     .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; }
     .main-content { margin-left: 220px; margin-top: 60px; padding: 40px; }
-    .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 12px 0; font-size: 18px; outline: none; background: transparent; }
+    
+    .menu-item { padding: 18px 20px; font-size: 18px; color: #555; display: flex; align-items: center; text-decoration: none; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+    .menu-item.active { background: #fff; color: #06c755; }
+    .menu-icon { width: 24px; font-size: 18px; margin-right: 15px; color: #9ca3af; }
+    
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 15px 0; font-size: 18px; outline: none; background: transparent; }
     .form-input:focus { border-bottom-color: #06c755; }
-    .item-row { border-bottom: 1px solid #f3f4f6; padding: 25px 0; display: flex; justify-content: space-between; align-items: center; }
-    .btn-action { background: #febb02; color: #111; padding: 16px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; }
+    .form-label { font-size: 18px; color: #94a3b8; margin-bottom: 10px; display: block; }
+    
+    .item-row { border-bottom: 1px solid #f3f4f6; padding: 30px 0; display: flex; justify-content: space-between; align-items: center; }
+    .btn-action { background: #febb02; color: #111; padding: 20px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; }
+    
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
-    .region-tag { color: #06c755; margin-right: 10px; }
+    .id-tag { color: #bbb; font-family: monospace; font-size: 18px; }
+    .region-badge { color: #06c755; margin-right: 15px; font-size: 18px; }
+    h2 { font-size: 18px !important; font-weight: 400 !important; }
   </style>
 </head>
 <body>
   <div id="app">
-    <div v-if="loading" class="loading-overlay">與資料庫同步中...</div>
-    
+    <div v-if="loading" class="loading-overlay italic">與雲端系統同步中...</div>
     <header class="header">
         <div class="flex items-center">
             <div class="text-[#06c755] font-normal tracking-tighter">旅遊管家</div>
@@ -36,50 +46,39 @@
             </nav>
         </div>
     </header>
-
     <aside class="sidebar">
-        <div class="p-6 border-b">Dashboard</div>
+        <div class="p-6 border-b text-slate-400">Dashboard</div>
         <nav>
-            <a @click="view = 'list'" :class="['p-5 block border-b', view === 'list' ? 'bg-white text-[#06c755]' : '']"><i class="fa-solid fa-list-ul mr-3"></i>行程管理清單</a>
-            <a @click="view = 'parse'" :class="['p-5 block border-b', view === 'parse' || view === 'edit' ? 'bg-white text-[#06c755]' : '']"><i class="fa-solid fa-wand-magic-sparkles mr-3"></i>AI 智能解析</a>
+            <a @click="view = 'list'" :class="['menu-item', view === 'list' ? 'active' : '']"><i class="fa-solid fa-list-ul menu-icon"></i>行程管理清單</a>
+            <a @click="view = 'parse'" :class="['menu-item', view === 'parse' || view === 'edit' ? 'active' : '']"><i class="fa-solid fa-wand-magic-sparkles menu-icon"></i>AI 智能解析</a>
         </nav>
     </aside>
-
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
-            <!-- 1. 清單 -->
             <div v-if="view === 'list'">
-                <div class="flex justify-between items-end mb-8 pb-4 border-b"><h2>已發布項目清單</h2><button @click="view = 'parse'" class="text-[#06c755] underline">新增項目</button></div>
+                <div class="flex justify-between items-end mb-10 pb-4 border-b"><h2>已發布行程清單</h2><button @click="view = 'parse'" class="text-[#06c755] underline">新增項目</button></div>
                 <div v-for="c in courses" :key="c.id" class="item-row">
                     <div class="flex-1">
-                        <div class="text-[#bbb] font-mono">{{ c.id }}</div>
-                        <div class="py-2 font-normal"><span class="region-tag">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div>
-                        <div class="text-slate-400">{{ c.days }} DAYS ｜ <span class="text-red-500">NT$ {{ formatPrice(c.price) }}</span></div>
+                        <div class="id-tag uppercase">{{ c.id }}</div>
+                        <div class="py-3 font-normal"><span class="region-badge">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div>
+                        <div class="text-slate-400 font-normal">{{ c.days }} DAYS ｜ <span class="text-red-500">NT$ {{ formatPrice(c.price) }}</span></div>
                     </div>
-                    <div class="flex gap-6 text-[#003b95] font-normal"><a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="underline">預覽</a><span @click="loadEdit(c.id)" class="cursor-pointer underline">編輯</span><span @click="deleteItem(c.id)" class="text-red-300 cursor-pointer underline">刪除</span></div>
+                    <div class="flex gap-10 text-[#003b95]"><a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="underline">預覽</a><span @click="loadEdit(c.id)" class="cursor-pointer underline">編輯</span><span @click="deleteItem(c.id)" class="text-red-300 cursor-pointer underline">刪除</span></div>
                 </div>
             </div>
-
-            <!-- 2. 解析 -->
             <div v-if="view === 'parse'">
-                <div class="mb-8 font-normal pb-4 border-b">智能解析行程文案</div>
-                <textarea v-model="rawText" class="w-full h-80 border-none p-4 bg-slate-50 outline-none font-normal" placeholder="貼入說明文案..."></textarea>
+                <div class="mb-10 pb-4 border-b font-normal">智能解析行程文案</div>
+                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px] font-normal" placeholder="請貼入說明文案..."></textarea>
                 <button @click="startParsing" :disabled="loading" class="btn-action mt-10">開始 AI 分類與解析</button>
             </div>
-
-            <!-- 3. 編輯 -->
-            <div v-if="view === 'edit'" class="pb-32">
-                <div class="mb-10 pb-3 border-b font-normal">行程校對 (100% 資料補全)</div>
-                <section class="mb-12">
-                    <div class="mb-6"><label class="text-[#94a3b8]">地區分類</label>
-                        <select v-model="course.region" class="form-input">
-                            <option v-for="r in ['亞洲','歐洲','美洲','大洋洲','非洲','中東','南極']" :value="r">{{r}}</option>
-                        </select>
-                    </div>
-                    <div><label class="text-[#94a3b8]">行程總標題</label><input v-model="course.title" class="form-input"></div>
-                    <div class="grid grid-cols-2 gap-8 mt-6"><div><label class="text-[#94a3b8]">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div><div><label class="text-[#94a3b8]">天數</label><input v-model="course.days" type="number" class="form-input"></div></div>
+            <div v-if="view === 'edit'" class="pb-40">
+                <div class="mb-12 pb-4 border-b font-normal">行程校對 (100% 資料補全)</div>
+                <section class="space-y-10">
+                    <div><label class="form-label">地區分類 (AI 自動偵測，可修正)</label><select v-model="course.region" class="form-input"><option v-for="r in ['亞洲','歐洲','美洲','大洋洲','非洲','中東','南極']" :value="r">{{r}}</option></select></div>
+                    <div><label class="form-label">行程總標題</label><input v-model="course.title" class="form-input"></div>
+                    <div class="grid grid-cols-2 gap-10"><div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div><div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div></div>
                 </section>
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 border-t flex justify-center z-50"><button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-4 rounded">確認儲存並發佈</button></div>
+                <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50"><button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-5 rounded font-normal">確認儲存並發佈</button></div>
             </div>
         </div>
     </main>
@@ -87,7 +86,7 @@
   <script>
     const { createApp } = Vue; const API_BASE = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
     createApp({
-      data() { return { view: 'list', inputType: 'text', loading: false, courses: [], rawText: '', course: { itinerary: [] } } },
+      data() { return { view: 'list', loading: false, courses: [], rawText: '', course: { itinerary: [] } } },
       async mounted() { this.fetchList(); },
       methods: {
         formatPrice(p) { return isNaN(Number(p)) ? (p||'0') : Number(p).toLocaleString(); },
