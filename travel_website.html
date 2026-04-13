@@ -6,15 +6,14 @@
     <title>行程詳情</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #444; background: #fff; line-height: 1.8; }
+        body { font-family: -apple-system, sans-serif; color: #333; background: #fff; line-height: 1.8; }
         .sidebar { position: sticky; top: 40px; height: fit-content; }
         .day-marker { border-left: 2px solid #111; padding-left: 20px; margin-bottom: 40px; }
         .hero { height: 60vh; background: #111; overflow: hidden; position: relative; }
         .hero img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
         .hero-text { position: absolute; bottom: 40px; left: 0; width: 100%; padding: 0 24px; color: #fff; }
-        .img-box { border-radius: 2px; overflow: hidden; margin-bottom: 24px; }
+        .img-box { border-radius: 2px; overflow: hidden; margin-bottom: 24px; background: #f8f9fa; min-height: 200px; }
         .img-box img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
         .info-table { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 30px 0; margin-top: 20px; }
     </style>
@@ -26,7 +25,8 @@
         <div v-else-if="course">
             <!-- Hero -->
             <div class="hero">
-                <img :src="'https://images.unsplash.com/photo-1500000000000?q=80&w=1600&auto=format&fit=crop&sig=' + course.title">
+                <img :src="'https://images.unsplash.com/featured/1600x900/?landscape,nature,' + encodeURIComponent(course.title)" 
+                     onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?q=80&w=1600&auto=format&fit=crop'">
                 <div class="hero-text max-w-6xl mx-auto">
                     <div class="text-[10px] uppercase tracking-[0.4em] mb-3 opacity-60">TK Selection / Itinerary</div>
                     <h1 class="text-3xl md:text-5xl font-medium leading-tight tracking-tighter">{{ course.title }}</h1>
@@ -46,10 +46,10 @@
                             <h2 class="text-2xl md:text-4xl text-slate-800 tracking-tight leading-snug">{{ day.route }}</h2>
                         </div>
                         
-                        <!-- 搜圖加強版 -->
+                        <!-- 【修正重點】完全聽從編輯器中設定的 day.kw，若無則降級使用 day.route -->
                         <div class="img-box">
-                            <img :src="'https://images.unsplash.com/featured/?' + encodeURIComponent(day.kw || 'landscape')" 
-                                 onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=60&w=1200'">
+                            <img :src="'https://images.unsplash.com/featured/1200x600/?' + encodeURIComponent(day.kw || day.route || 'landscape') + '&sig=' + idx" 
+                                 onerror="this.style.display='none'">
                         </div>
                         
                         <div class="space-y-8 mb-16 text-slate-600 text-lg">
@@ -84,7 +84,7 @@
                         <div class="space-y-4 pt-12 border-t border-slate-50">
                             <p class="text-sm text-slate-400 leading-relaxed text-left">有任何問題？專屬旅遊管家線上待命中。</p>
                             <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="w-full bg-[#06C755] text-white py-5 rounded-sm font-bold flex items-center justify-center gap-3">
-                                <i class="fa-brands fa-line text-2xl"></i> LINE 立即諮詢
+                                LINE 立即諮詢
                             </a>
                         </div>
                     </div>
