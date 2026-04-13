@@ -1,37 +1,51 @@
+/**
+ * 旅行管家 - 訊息樣式庫 (v7.0.0 真實數據整合)
+ */
 export const flexLib = {
+  // 將動態行程資料轉換為 LINE 輪播卡片
   productCarousel: (products) => ({
     type: "carousel",
     contents: products.map(p => ({
       type: "bubble",
       size: "micro",
-      hero: { type: "image", url: "https://fangwl591021.github.io/travelman/assets/sample.jpg", size: "full", aspectRatio: "4:3", aspectMode: "cover" },
+      hero: {
+        type: "image",
+        url: p.imgUrl || "https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?w=640",
+        size: "full",
+        aspectRatio: "4:3",
+        aspectMode: "cover"
+      },
       body: {
         type: "box",
         layout: "vertical",
         contents: [
-          { type: "text", text: p.name, weight: "bold", size: "sm" },
-          { type: "text", text: `NT$ ${p.price}`, color: "#174a5a", size: "xs" }
+          { type: "text", text: p.title, weight: "regular", size: "sm", wrap: true, maxLines: 2 },
+          { 
+            type: "box", layout: "baseline", margin: "md",
+            contents: [
+              { type: "text", text: "NT$", size: "xs", color: "#888888", flex: 0 },
+              { type: "text", text: Number(p.price).toLocaleString(), size: "md", color: "#d4111e", margin: "sm" }
+            ]
+          }
         ],
-        paddingAll: "8px"
+        paddingAll: "12px"
       },
       footer: {
         type: "box",
         layout: "vertical",
         contents: [
-          { type: "button", action: { type: "postback", label: "立即報名", data: `action=signup&id=${p.id}` }, style: "primary", color: "#174a5a", height: "sm" }
-        ]
+          { 
+            type: "button", 
+            action: { 
+              type: "uri", 
+              label: "查看行程", 
+              uri: `https://fangwl591021.github.io/travelman/travel_website.html?id=${p.id}` 
+            }, 
+            style: "primary", color: "#003b95", height: "sm" 
+          }
+        ],
+        paddingAll: "8px"
       }
     }))
-  }),
-  
-  shareCardLink: (url) => ({
-    type: "bubble",
-    body: {
-      type: "box",
-      layout: "vertical",
-      contents: [
-        { type: "button", action: { type: "uri", label: "📇 生成分享名片", uri: url }, style: "primary", color: "#174a5a" }
-      ]
-    }
   })
 };
