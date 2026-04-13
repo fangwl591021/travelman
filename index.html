@@ -14,10 +14,10 @@
     .menu-item.active { background: #f0f7ff; color: #003b95; }
     .section-block { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid #f8f8f8; }
     .form-label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
-    .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 16px; outline: none; background: transparent; transition: 0.2s; }
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 16px; outline: none; background: transparent; }
     .form-input:focus { border-bottom-color: #003b95; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fafafa; border-radius: 4px; overflow: hidden; position: relative; margin-top: 12px; border: 1px solid #f8f8f8; }
-    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; font-size: 11px; border-radius: 4px; }
     .tab-btn { padding: 10px 0; font-size: 14px; color: #aaa; margin-right: 24px; border-bottom: 2px solid transparent; cursor: pointer; }
     .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
     .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; }
@@ -42,22 +42,17 @@
             </div>
 
             <div v-if="inputType === 'text'">
-                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 text-sm leading-relaxed outline-none" placeholder="貼入行程文字..."></textarea>
+                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 text-sm outline-none" placeholder="貼入行程文字..."></textarea>
             </div>
             <div v-else>
                 <div @click="$refs.dmUploader.click()" class="border-2 border-dashed border-slate-100 h-80 flex flex-col items-center justify-center bg-slate-50 cursor-pointer">
-                    <div v-if="!dmPreview" class="text-center">
-                        <div class="text-3xl text-slate-200 mb-2">📸</div>
-                        <div class="text-xs text-slate-400">點擊上傳 DM 圖片</div>
-                    </div>
+                    <div v-if="!dmPreview" class="text-center"><div class="text-3xl mb-2">📸</div><div class="text-xs text-slate-400">點擊上傳 DM 圖片</div></div>
                     <img v-else :src="dmPreview" class="h-full object-contain p-4">
                 </div>
                 <input type="file" ref="dmUploader" class="hidden" @change="processDmUpload">
             </div>
 
-            <button @click="startParsing" :disabled="loading" class="btn-action mt-10">
-                {{ loading ? '正在解析中，請稍候...' : '開始智能解析' }}
-            </button>
+            <button @click="startParsing" :disabled="loading" class="btn-action mt-10">{{ loading ? '正在透過觀光美學角度解析中...' : '開始智能解析' }}</button>
         </div>
 
         <div v-if="step === 'edit'" class="pb-32">
@@ -75,19 +70,17 @@
                 </div>
             </section>
             
-            <!-- 防錯核心：嚴格檢查 itinerary 是否為陣列 -->
-            <div v-if="course.itinerary && Array.isArray(course.itinerary)">
-                <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
-                    <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
-                    <input v-model="day.route" class="form-input text-base">
-                    <div class="grid grid-cols-3 gap-6 mt-6">
-                        <input v-model="day.b" class="form-input text-xs" placeholder="早">
-                        <input v-model="day.l" class="form-input text-xs" placeholder="午">
-                        <input v-model="day.d" class="form-input text-xs" placeholder="晚">
-                    </div>
-                    <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6"></textarea>
-                    <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
+            <!-- itinerary 防護：始終保證可迭代 -->
+            <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
+                <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
+                <input v-model="day.route" class="form-input text-base">
+                <div class="grid grid-cols-3 gap-6 mt-6">
+                    <input v-model="day.b" class="form-input text-xs" placeholder="早">
+                    <input v-model="day.l" class="form-input text-xs" placeholder="午">
+                    <input v-model="day.d" class="form-input text-xs" placeholder="晚">
                 </div>
+                <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6" placeholder="具體行程描述..."></textarea>
+                <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
             </div>
 
             <div class="fixed bottom-0 left-[240px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
@@ -101,7 +94,6 @@
   <script>
     const { createApp } = Vue;
     const API_BASE = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
-
     createApp({
       data() { return { step: 'input', inputType: 'text', loading: false, rawText: '', dmBase64: '', dmPreview: '', course: { itinerary: [] }, currentTarget: null } },
       async mounted() {
@@ -111,9 +103,9 @@
             try {
                 const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
                 const data = await res.json();
-                if (!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
-                data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.course = data;
+                if (!this.course.itinerary || !Array.isArray(this.course.itinerary)) this.course.itinerary = [];
+                this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.step = 'edit';
             } catch (e) {} finally { this.loading = false; }
         }
@@ -146,14 +138,14 @@
                 body: JSON.stringify(this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 })
             });
             const data = await res.json();
-            // 防錯：強制補齊陣列
-            if(!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
-            data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = data;
+            if(!this.course.itinerary || !Array.isArray(this.course.itinerary)) this.course.itinerary = [];
+            this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
+            
             await this.searchImg(this.course, this.course.title);
             for(let d of this.course.itinerary) await this.searchImg(d, d.searchKw || d.route);
             this.step = 'edit';
-          } catch (e) { alert("解析失敗，請重新嘗試一次。"); }
+          } catch (e) { alert("解析發生問題，請重試。"); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
@@ -183,9 +175,7 @@
         },
         async saveCourse() {
             this.loading = true;
-            if (this.course.itinerary && Array.isArray(this.course.itinerary)) {
-                this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
-            }
+            this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
             try {
                 const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
                 const result = await res.json();
