@@ -3,96 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅遊行程詳情</title>
+    <title>行程詳情</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; color: #333; background: #fff; line-height: 1.7; }
-        .sidebar { position: sticky; top: 30px; height: fit-content; }
-        .day-divider { border-left: 2px solid #e2e8f0; padding-left: 24px; position: relative; margin-bottom: 24px; }
-        .day-dot { position: absolute; left: -5px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: #06C755; }
-        .hero { height: 55vh; background: #f8fafc; position: relative; display: flex; align-items: flex-end; }
-        .hero img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        .hero-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 70%); }
-        .content-wrap { position: relative; z-index: 10; width: 100%; padding: 40px 24px; color: white; }
-        .info-block { border-top: 1px solid #f1f5f9; padding: 24px 0; margin-top: 16px; }
+        body { font-family: -apple-system, "PingFang TC", sans-serif; color: #333; line-height: 1.8; margin: 0; padding: 0; background: #fff; }
+        .hero { width: 100%; height: 50vh; position: relative; background: #f8fafc; }
+        .hero img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-mask { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%); }
+        .hero-content { position: absolute; bottom: 30px; left: 24px; right: 24px; color: white; max-w: 800px; margin: 0 auto; }
+        
+        .content-wrap { max-w: 800px; margin: 0 auto; padding: 40px 24px; }
+        .day-block { margin-bottom: 48px; border-bottom: 1px solid #f1f5f9; padding-bottom: 48px; }
+        .day-block:last-child { border-bottom: none; }
+        .day-title { font-size: 20px; color: #111; margin-bottom: 16px; display: flex; align-items: baseline; gap: 12px; }
+        .day-num { font-size: 12px; color: #06C755; }
+        
+        .day-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-bottom: 20px; border-radius: 2px; }
+        .day-desc { font-size: 15px; color: #555; text-align: justify; margin-bottom: 24px; }
+        
+        .info-panel { font-size: 14px; color: #666; background: #fafafa; padding: 20px; border-radius: 2px; }
+        .info-row { display: flex; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { width: 60px; color: #999; }
+        
+        .price-bar { position: sticky; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #eee; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 50; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-400">載入行程資訊中...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-400">讀取中...</div>
 
         <div v-else-if="course">
-            <!-- 頂部橫幅 -->
             <div class="hero">
                 <img :src="course.imgUrl || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop'">
-                <div class="hero-gradient"></div>
-                <div class="content-wrap max-w-5xl mx-auto">
-                    <div class="text-sm font-medium opacity-80 mb-2">{{ course.days }} 天行程精選</div>
-                    <h1 class="text-3xl md:text-5xl font-bold leading-tight">{{ course.title }}</h1>
+                <div class="hero-mask"></div>
+                <div class="hero-content">
+                    <h1 class="text-2xl md:text-4xl font-medium leading-snug">{{ course.title }}</h1>
+                    <div class="text-sm opacity-80 mt-2">{{ course.days }} 天行程</div>
                 </div>
             </div>
 
-            <!-- 行程內容區 -->
-            <div class="max-w-5xl mx-auto px-6 py-12 md:grid md:grid-cols-12 md:gap-12">
-                
-                <!-- 左側：每日行程 (佔 8 欄) -->
-                <div class="md:col-span-8">
-                    <div class="text-lg text-slate-600 mb-16 bg-slate-50 p-6 rounded-md">{{ course.desc }}</div>
+            <div class="content-wrap">
+                <p class="text-base text-slate-500 mb-16 leading-relaxed">{{ course.desc }}</p>
 
-                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-20">
-                        <div class="day-divider">
-                            <div class="day-dot"></div>
-                            <div class="text-sm text-[#06C755] font-bold mb-1">第 {{ idx + 1 }} 天</div>
-                            <h2 class="text-2xl text-slate-800 font-bold mb-6">{{ day.route }}</h2>
-                            
-                            <!-- 顯示編輯器中儲存的明確圖片網址 -->
-                            <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full aspect-video object-cover rounded border border-slate-100 mb-6">
-                            
-                            <div class="space-y-4 mb-8 text-slate-600">
-                                <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p" class="text-justify">{{ p }}</p>
-                            </div>
+                <div v-for="(day, idx) in course.itinerary" :key="idx" class="day-block">
+                    <div class="day-title">
+                        <span class="day-num">D{{ idx + 1 }}</span>
+                        <span>{{ day.route }}</span>
+                    </div>
+                    
+                    <img v-if="day.imgUrl" :src="day.imgUrl" class="day-img">
+                    
+                    <div class="day-desc space-y-4">
+                        <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p">{{ p }}</p>
+                    </div>
 
-                            <!-- 餐食與住宿資訊 -->
-                            <div class="info-block grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                                <div>
-                                    <div class="font-bold text-slate-800 mb-3">餐食安排</div>
-                                    <div class="flex border-b border-slate-100 py-2"><span class="w-12 text-slate-400">早餐</span><span class="flex-1">{{ day.b || '敬請自理' }}</span></div>
-                                    <div class="flex border-b border-slate-100 py-2"><span class="w-12 text-slate-400">午餐</span><span class="flex-1">{{ day.l || '敬請自理' }}</span></div>
-                                    <div class="flex py-2"><span class="w-12 text-slate-400">晚餐</span><span class="flex-1">{{ day.d || '敬請自理' }}</span></div>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-slate-800 mb-3">住宿安排</div>
-                                    <div class="py-2 text-slate-700">{{ day.hotel || '精選舒適飯店或同級' }}</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="info-panel">
+                        <div class="info-row"><div class="info-label">早餐</div><div class="flex-1 text-slate-800">{{ day.b || '自理' }}</div></div>
+                        <div class="info-row"><div class="info-label">午餐</div><div class="flex-1 text-slate-800">{{ day.l || '自理' }}</div></div>
+                        <div class="info-row"><div class="info-label">晚餐</div><div class="flex-1 text-slate-800">{{ day.d || '自理' }}</div></div>
+                        <div class="info-row mt-2 pt-2 border-t border-slate-200"><div class="info-label">住宿</div><div class="flex-1 text-slate-800">{{ day.hotel || '溫馨旅宿' }}</div></div>
                     </div>
                 </div>
-
-                <!-- 右側：報價與諮詢 (佔 4 欄) -->
-                <aside class="hidden md:block md:col-span-4">
-                    <div class="sidebar border border-slate-200 p-8 rounded-lg">
-                        <div class="text-slate-500 text-sm mb-2">行程報價</div>
-                        <div class="text-4xl font-bold text-red-600 mb-2">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                        <div class="text-xs text-slate-400 mb-8 pb-8 border-b border-slate-100">每位成人起</div>
-                        
-                        <div class="text-sm text-slate-600 mb-4 leading-relaxed">有任何行程問題或報名需求？我們的旅遊專員隨時為您服務。</div>
-                        <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="block w-full bg-[#06C755] text-white text-center py-4 rounded font-bold hover:bg-[#05b34d] transition-colors">
-                            LINE 立即諮詢
-                        </a>
-                    </div>
-                </aside>
             </div>
 
-            <!-- 手機版底部固定欄 -->
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-200 z-50 flex justify-between items-center md:hidden">
+            <!-- 全裝置通用的簡潔底部報價與聯絡列 -->
+            <div class="price-bar">
                 <div>
-                    <div class="text-xl font-bold text-red-600">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                    <div class="text-xs text-slate-400">{{ course.days }} 天行程</div>
+                    <div class="text-2xl text-red-600 font-medium">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                    <div class="text-xs text-slate-400">每位成人</div>
                 </div>
-                <button class="bg-[#06C755] text-white px-6 py-2 rounded font-bold">LINE 諮詢</button>
+                <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="bg-[#06C755] text-white px-6 py-2 rounded text-sm font-medium">
+                    LINE 諮詢
+                </a>
             </div>
+            <!-- 避免底部列遮擋內容 -->
+            <div class="h-24"></div>
         </div>
     </div>
 
@@ -107,6 +94,7 @@
                     const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=` + id);
                     this.course = await res.json();
                     document.title = this.course.title;
+                    window.scrollTo(0, 0);
                 } catch (e) {} finally { this.loading = false; }
             }
         }).mount('#app');
