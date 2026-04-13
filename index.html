@@ -9,8 +9,8 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
     body { font-family: 'PingFang TC', sans-serif; background-color: #f1f5f9; }
-    .label-tag { font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; display: block; margin-left: 4px; }
-    .input-field { width: 100%; background: #f8fafc; border: 2px solid transparent; border-radius: 1rem; padding: 1rem; outline: none; transition: 0.2s; }
+    .label-tag { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; display: block; margin-left: 4px; }
+    .input-field { width: 100%; background: #f8fafc; border: 2px solid transparent; border-radius: 1rem; padding: 1rem; outline: none; transition: 0.2s; font-size: 0.9rem; }
     .input-field:focus { border-color: #174a5a; background: white; }
     .card-ui { background: white; border-radius: 2rem; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); padding: 2rem; border: 1px solid #e2e8f0; }
   </style>
@@ -18,30 +18,31 @@
 <body class="p-4 md:p-10">
   <div id="app" class="max-w-2xl mx-auto">
     
-    <!-- Step 1: 文案貼入 -->
+    <!-- 階段 1: 輸入文案 -->
     <div v-if="step === 'input'" class="card-ui">
-      <h1 class="text-3xl font-black text-[#174a5a] mb-6 flex items-center gap-2">🚀 <span>行程上稿</span></h1>
-      <label class="label-tag">貼入文案 (GPT-4o 將自動提取並翻譯景點關鍵字)</label>
-      <textarea v-model="rawText" class="input-field h-80 mb-6 text-sm" placeholder="第一天：..."></textarea>
-      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 disabled:opacity-30 transition-all">
-        {{ loading ? 'GPT-4o 解析中，請稍候...' : '生成預覽編輯框架' }}
+      <h1 class="text-2xl font-black text-[#174a5a] mb-6 flex items-center gap-2">🚀 <span>行程上稿</span></h1>
+      <label class="label-tag">貼入文案內容 (GPT-4o 將自動提取並翻譯景點關鍵字)</label>
+      <textarea v-model="rawText" class="input-field h-80 mb-6" placeholder="第一天：..."></textarea>
+      <button @click="parseDraft" :disabled="!rawText || loading" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-black text-lg shadow-xl">
+        {{ loading ? 'GPT-4o 正在極速解析...' : '生成預覽編輯框架' }}
       </button>
     </div>
 
-    <!-- Step 2: 編輯校對 -->
+    <!-- 階段 2: 編輯校對 -->
     <div v-if="step === 'edit'" class="pb-32 space-y-6">
       <div class="card-ui">
-        <h2 class="text-xl font-black text-slate-800 mb-8">🛠️ 基本資訊編修</h2>
+        <h2 class="text-lg font-black text-slate-800 mb-6">🛠️ 基本資訊編修</h2>
         <div class="space-y-6">
           <div><label class="label-tag">行程總標題</label><input v-model="course.title" class="input-field font-black text-lg"></div>
           <div class="grid grid-cols-2 gap-4">
             <div><label class="label-tag">報價 (純數字)</label><input v-model="course.price" type="number" class="input-field font-black text-red-500"></div>
             <div><label class="label-tag">總天數</label><input v-model="course.days" type="number" class="input-field font-bold"></div>
           </div>
-          <div><label class="label-tag">感性摘要 (約 50 字)</label><textarea v-model="course.desc" class="input-field text-sm h-24"></textarea></div>
+          <div><label class="label-tag">摘要簡介 (約 50 字)</label><textarea v-model="course.desc" class="input-field text-sm h-24"></textarea></div>
         </div>
       </div>
 
+      <!-- 每日行程列表 -->
       <div v-for="(day, idx) in course.itinerary" :key="idx" class="card-ui relative overflow-hidden">
         <div class="absolute top-0 left-0 bg-slate-900 text-white px-5 py-1.5 text-[10px] font-black rounded-br-2xl">DAY 0{{ idx + 1 }}</div>
         <div class="mt-6 space-y-6">
@@ -51,29 +52,30 @@
             <div><label class="label-tag text-center">午</label><input v-model="day.l" class="input-field text-center p-3 text-xs"></div>
             <div><label class="label-tag text-center">晚</label><input v-model="day.d" class="input-field text-center p-3 text-xs"></div>
           </div>
-          <div><label class="label-tag">行程內容 (分段描述)</label><textarea v-model="day.infosStr" class="input-field text-xs h-32 leading-relaxed"></textarea></div>
+          <div><label class="label-tag">詳細內容 (分段描述)</label><textarea v-model="day.infosStr" class="input-field text-xs h-32 leading-relaxed"></textarea></div>
           <div><label class="label-tag">入住飯店</label><input v-model="day.hotel" class="input-field text-xs"></div>
-          <div class="bg-teal-50 p-6 rounded-2xl border border-teal-100">
-            <label class="label-tag text-teal-600 font-black">配圖關鍵字 (可直接輸入中文，AI 已自動翻譯)</label>
+          <div class="bg-teal-50 p-4 rounded-2xl border border-teal-100">
+            <label class="label-tag text-teal-600 font-black">配圖關鍵字 (支援中文，AI 已自動翻譯)</label>
             <input v-model="day.kw" class="w-full bg-transparent border-none text-sm font-bold text-teal-800 outline-none" placeholder="例如：張家界、雪地...">
           </div>
         </div>
       </div>
 
+      <!-- 固定底部底欄 -->
       <div class="fixed bottom-0 left-0 w-full p-6 bg-white/90 backdrop-blur-xl border-t flex gap-4 z-50">
-        <button @click="step = 'input'" class="flex-1 bg-slate-100 text-slate-500 py-5 rounded-[1.5rem] font-bold">重新解析</button>
-        <button @click="saveCourse" :disabled="loading" class="flex-[2] bg-[#174a5a] text-white py-5 rounded-[1.5rem] font-black text-lg shadow-2xl active:scale-95">
-          {{ loading ? '發布中...' : '確認發布網站' }}
+        <button @click="step = 'input'" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold">重新解析</button>
+        <button @click="saveCourse" :disabled="loading" class="flex-[2] bg-[#174a5a] text-white py-4 rounded-2xl font-black shadow-xl">
+          {{ loading ? '發布中...' : '確認並儲存發布' }}
         </button>
       </div>
     </div>
 
-    <!-- Step 3: Success -->
+    <!-- 階段 3: 成功 -->
     <div v-if="step === 'success'" class="card-ui text-center py-20">
       <div class="text-7xl mb-8 animate-bounce">✨</div>
-      <h2 class="text-3xl font-black text-slate-800 mb-10">發布成功！</h2>
-      <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-black text-xl shadow-2xl mb-4">預覽正式行程網頁</button>
-      <button @click="reset" class="text-slate-400 font-bold underline">處理下一份行程</button>
+      <h2 class="text-3xl font-black text-slate-800 mb-10">行程已成功發布！</h2>
+      <button @click="openSite" class="w-full bg-[#174a5a] text-white py-5 rounded-2xl font-black text-xl shadow-2xl mb-4">預覽行程網頁</button>
+      <button @click="reset" class="text-slate-400 font-bold underline text-sm">繼續下一份行程</button>
     </div>
   </div>
 
@@ -87,7 +89,7 @@
         if (id) {
           const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=${id}`);
           const data = await res.json();
-          this.course = { ...data, id };
+          this.course = { ...data, id }; // 鎖定原本的 ID
           this.course.itinerary.forEach(d => d.infosStr = (d.infos || []).join('\n'));
           this.step = 'edit';
         }
@@ -103,9 +105,9 @@
             });
             const data = await res.json();
             data.itinerary = (data.itinerary || []).map(d => ({ ...d, infosStr: (d.infos || []).join('\n') }));
-            this.course = { ...this.course, ...data };
+            this.course = { ...this.course, ...data }; // 合併草稿，保留原有 ID
             this.step = 'edit';
-          } catch (e) { alert("AI 解析草稿超時，請縮短文案重試。"); }
+          } catch (e) { alert("AI 解析失敗"); }
           finally { this.loading = false; }
         },
         async saveCourse() {
