@@ -75,7 +75,7 @@
                 </div>
             </section>
             
-            <!-- 【關鍵修復】：嚴格檢查 itinerary 是否為陣列 -->
+            <!-- 防錯核心：嚴格檢查 itinerary 是否為陣列 -->
             <div v-if="course.itinerary && Array.isArray(course.itinerary)">
                 <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
                     <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
@@ -111,9 +111,8 @@
             try {
                 const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
                 const data = await res.json();
-                if (data.itinerary && Array.isArray(data.itinerary)) {
-                    data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
-                }
+                if (!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
+                data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.course = data;
                 this.step = 'edit';
             } catch (e) {} finally { this.loading = false; }
@@ -142,13 +141,12 @@
           this.loading = true;
           try {
             const endpoint = this.inputType === 'text' ? 'api/parse-draft' : 'api/parse-image';
-            const payload = this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 };
             const res = await fetch(`${API_BASE}/${endpoint}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 })
             });
             const data = await res.json();
-            // 【核心防禦】：確保 itinerary 存在且為陣列
+            // 防錯：強制補齊陣列
             if(!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
             data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = data;
@@ -186,13 +184,10 @@
         async saveCourse() {
             this.loading = true;
             if (this.course.itinerary && Array.isArray(this.course.itinerary)) {
-                this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
+                this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
             }
             try {
-                const res = await fetch(`${API_BASE}/api/save-course`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(this.course)
-                });
+                const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
                 const result = await res.json();
                 if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
             } catch (e) { alert("儲存失敗"); }
