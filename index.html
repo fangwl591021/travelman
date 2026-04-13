@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>行程編輯系統</title>
+  <title>智能解析工作台</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
@@ -14,19 +14,19 @@
     .menu-item.active { background: #f8f9fa; color: #003b95; }
     .section-block { padding-bottom: 30px; margin-bottom: 30px; border-bottom: 1px solid #f8f8f8; }
     .form-label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; }
-    .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; outline: none; background: transparent; }
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; outline: none; background: transparent; font-weight: 400; }
     .form-input:focus { border-bottom-color: #003b95; }
-    .img-box { width: 100%; aspect-ratio: 16/9; background: #fcfcfc; border-radius: 4px; overflow: hidden; position: relative; margin-top: 10px; border: 1px solid #f0f0f0; }
-    .btn-upload { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.4); color: white; padding: 4px 10px; font-size: 10px; border-radius: 4px; }
+    .img-box { width: 100%; aspect-ratio: 16/9; background: #fafafa; border-radius: 4px; overflow: hidden; position: relative; margin-top: 10px; border: 1px solid #f8f8f8; }
+    .btn-upload { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.4); color: white; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer; }
     .tab-btn { padding: 10px 0; font-size: 13px; color: #aaa; margin-right: 24px; border-bottom: 2px solid transparent; cursor: pointer; }
     .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
-    .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; cursor: pointer; }
+    .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; cursor: pointer; border: none; }
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #999; }
   </style>
 </head>
 <body>
   <div id="app">
-    <div v-if="loading" class="loading-overlay italic">正在專業解析資料中...</div>
+    <div v-if="loading" class="loading-overlay italic">正在專業解析並載入資料庫中...</div>
     
     <aside class="sidebar">
         <div class="text-[9px] text-slate-300 tracking-[0.2em] mb-10 uppercase">Travel Keeper</div>
@@ -37,14 +37,13 @@
     </aside>
 
     <main class="main-content">
-        <!-- 階段 1: 輸入 -->
         <div v-if="step === 'input'">
-            <div class="text-lg text-slate-800 mb-8">新增行程項目</div>
+            <div class="text-lg text-slate-800 mb-8 font-normal">新增旅遊行程</div>
             <div class="flex border-b mb-8">
                 <div @click="inputType='text'" :class="['tab-btn', inputType==='text' ? 'active' : '']">文字解析</div>
                 <div @click="inputType='image'" :class="['tab-btn', inputType==='image' ? 'active' : '']">DM 圖片解析</div>
             </div>
-            <div v-if="inputType === 'text'"><textarea v-model="rawText" class="w-full h-80 border-none p-4 bg-slate-50 text-sm outline-none" placeholder="貼入內容..."></textarea></div>
+            <div v-if="inputType === 'text'"><textarea v-model="rawText" class="w-full h-80 border-none p-4 bg-slate-50 text-sm outline-none font-normal" placeholder="貼入行程文案..."></textarea></div>
             <div v-else>
                 <div @click="$refs.dmUploader.click()" class="border border-dashed border-slate-200 h-80 flex flex-col items-center justify-center bg-slate-50 cursor-pointer">
                     <div v-if="!dmPreview" class="text-center"><div class="text-2xl mb-2">📸</div><div class="text-[11px] text-slate-400">點擊上傳 DM 圖片</div></div>
@@ -55,32 +54,31 @@
             <button @click="startParsing" :disabled="loading" class="btn-action mt-10">開始智能解析</button>
         </div>
 
-        <!-- 階段 2: 編輯校對 (小明修復：秒切不跳回) -->
         <div v-if="step === 'edit'" class="pb-32">
-            <div class="text-lg text-slate-800 mb-8 pb-3 border-b">行程校對 (100% 資料補全)</div>
+            <div class="text-lg text-slate-800 mb-8 pb-3 border-b font-normal">行程校對 (100% 資料補全)</div>
             <section class="section-block">
-                <label class="form-label">總標題</label><input v-model="course.title" class="form-input text-lg">
+                <label class="form-label font-normal">行程總標題</label><input v-model="course.title" class="form-input text-lg">
                 <div class="grid grid-cols-2 gap-8 mt-6">
-                    <div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
-                    <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
+                    <div><label class="form-label font-normal">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
+                    <div><label class="form-label font-normal">天數</label><input v-model="course.days" type="number" class="form-input"></div>
                 </div>
-                <div class="mt-6"><label class="form-label">主視覺圖片</label><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"><div v-else class="h-full flex items-center justify-center text-xs text-slate-300 italic">正在匹配美學風景照...</div><button @click="triggerUpload(course)" class="btn-upload">更換</button></div></div>
+                <div class="mt-6"><label class="form-label font-normal">主視覺圖</label><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"><div v-else class="h-full flex items-center justify-center text-xs text-slate-300 italic">正在獲取風景照...</div><button @click="triggerUpload(course)" class="btn-upload">更換</button></div></div>
             </section>
             
             <div v-for="(day, idx) in (course.itinerary || [])" :key="idx" class="section-block">
-                <div class="text-[10px] text-[#003b95] mb-3 uppercase tracking-widest">Day {{ idx + 1 }}</div>
-                <input v-model="day.route" class="form-input text-base">
+                <div class="text-[10px] text-[#003b95] mb-3 uppercase tracking-widest font-normal">Day {{ idx + 1 }}</div>
+                <input v-model="day.route" class="form-input text-base font-normal">
                 <div class="grid grid-cols-3 gap-4 mt-6">
                     <input v-model="day.b" class="form-input text-xs" placeholder="早">
                     <input v-model="day.l" class="form-input text-xs" placeholder="午">
                     <input v-model="day.d" class="form-input text-xs" placeholder="晚">
                 </div>
-                <textarea v-model="day.infosStr" class="w-full h-32 border-none bg-slate-50 p-4 text-sm outline-none mt-4 leading-relaxed" placeholder="描述內容..."></textarea>
+                <textarea v-model="day.infosStr" class="w-full h-32 border-none bg-slate-50 p-4 text-sm outline-none mt-4 leading-relaxed font-normal" placeholder="行程描述..."></textarea>
                 <div class="img-box"><img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover"><div v-else class="h-full flex items-center justify-center text-xs text-slate-300 italic">搜尋景點照中...</div><button @click="triggerUpload(day)" class="btn-upload">更換</button></div>
             </div>
 
             <div class="fixed bottom-0 left-[220px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
-                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-lg py-3 rounded text-sm">確認並發佈行程</button>
+                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-lg py-3 rounded text-sm font-normal">確認儲存並發佈</button>
             </div>
         </div>
     </main>
@@ -95,105 +93,105 @@
       async mounted() {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
-            this.loading = true;
-            try {
-                const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
-                const data = await res.json();
-                this.injectData(data, id);
-                this.step = 'edit';
-            } catch (e) {} finally { this.loading = false; }
+          this.loading = true;
+          try {
+            const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
+            const data = await res.json();
+            this.injectData(data, id);
+            this.step = 'edit';
+          } catch (e) {} finally { this.loading = false; }
         }
       },
       methods: {
         injectData(data, id = null) {
-            const base = {
-                id: id || data.id || null,
-                title: data.title || "精選行程",
-                price: data.price || 0,
-                days: data.days || 1,
-                desc: data.desc || "",
-                imgUrl: data.imgUrl || "",
-                itinerary: Array.isArray(data.itinerary) ? data.itinerary : []
-            };
-            base.itinerary.forEach(d => {
-                d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
-                d.b = d.b || '精選美食'; d.l = d.l || '特色風味'; d.d = d.d || '飯店內用';
-            });
-            this.course = base;
+          const base = {
+            id: id || data.id || null,
+            title: data.title || "精選行程",
+            price: data.price || 0,
+            days: data.days || 1,
+            desc: data.desc || "",
+            imgUrl: data.imgUrl || "",
+            itinerary: Array.isArray(data.itinerary) ? data.itinerary : []
+          };
+          base.itinerary.forEach(d => {
+            d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
+            d.b = d.b || '精選美食'; d.l = d.l || '在地特色'; d.d = d.d || '飯店內用';
+          });
+          this.course = base;
         },
         processDmUpload(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if(w > 1200) { h = (h*1200)/w; w = 1200; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    this.dmPreview = canvas.toDataURL('image/jpeg', 0.8);
-                    this.dmBase64 = this.dmPreview.split(',')[1];
-                };
-                img.src = ev.target.result;
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let w = img.width, h = img.height;
+              if(w > 1200) { h = (h*1200)/w; w = 1200; }
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              this.dmPreview = canvas.toDataURL('image/jpeg', 0.8);
+              this.dmBase64 = this.dmPreview.split(',')[1];
             };
-            reader.readAsDataURL(file);
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
         },
         async startParsing() {
           this.loading = true;
           try {
             const endpoint = this.inputType === 'text' ? 'api/parse-draft' : 'api/parse-image';
             const res = await fetch(`${API_BASE}/${endpoint}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 })
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 })
             });
             const data = await res.json();
             
-            // 【修復核心】：解析後立即注入並切換畫面，圖片在背景循序更新
+            // 【修復：秒切邏輯】
             this.injectData(data);
             this.step = 'edit';
             
-            // 背景循序搜圖
-            await this.searchImg(this.course, this.course.title);
+            // 背景循序搜圖 (Async)
+            this.searchImg(this.course, this.course.title);
             for(const d of this.course.itinerary) {
-                await this.searchImg(d, (d.searchKw || d.route));
+              await this.searchImg(d, (d.searchKw || d.route));
             }
-          } catch (e) { alert("解析超時，請重新傳送。"); }
+          } catch (e) { alert("解析超時，請重試。"); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
-            if (!kw) return;
-            try {
-                const res = await fetch(`${API_BASE}/api/search-image?q=${encodeURIComponent(kw)}`);
-                const data = await res.json();
-                obj.imgUrl = data.url;
-            } catch (e) {}
+          if (!kw) return;
+          try {
+            const res = await fetch(`${API_BASE}/api/search-image?q=${encodeURIComponent(kw)}`);
+            const data = await res.json();
+            obj.imgUrl = data.url;
+          } catch (e) {}
         },
         triggerUpload(obj) { this.currentTarget = obj; this.$refs.fileUploader.click(); },
         processImageUpload(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 800; canvas.height = (img.height*800)/img.width;
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    this.currentTarget.imgUrl = canvas.toDataURL('image/jpeg', 0.7);
-                };
-                img.src = ev.target.result;
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 800; canvas.height = (img.height*800)/img.width;
+              canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+              this.currentTarget.imgUrl = canvas.toDataURL('image/jpeg', 0.7);
             };
-            reader.readAsDataURL(file);
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
         },
         async saveCourse() {
-            this.loading = true;
-            this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
-            try {
-                const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
-                const result = await res.json();
-                if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
-            } catch (e) { alert("資料同步失敗"); }
-            finally { this.loading = false; }
+          this.loading = true;
+          this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
+          try {
+            const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
+            const result = await res.json();
+            if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
+          } catch (e) { alert("儲存失敗"); }
+          finally { this.loading = false; }
         }
       }
     }).mount('#app');
