@@ -29,7 +29,7 @@
     .collapse-btn { position: fixed; bottom: 20px; left: 20px; z-index: 600; width: 40px; height: 40px; background: #fff; border: 1px solid #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #9ca3af; }
     
     /* 表單元件 */
-    .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 10px 0; font-size: 15px; outline: none; background: transparent; transition: 0.2s; font-weight: 400; }
+    .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 10px 0; font-size: 18px; outline: none; background: transparent; transition: 0.2s; font-weight: 400; }
     .form-input:focus { border-bottom-color: #06c755; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fcfcfc; border-radius: 4px; overflow: hidden; position: relative; margin-top: 10px; border: 1px solid #f0f0f0; }
     .btn-upload { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.4); color: white; padding: 4px 10px; font-size: 10px; border-radius: 4px; cursor: pointer; }
@@ -106,7 +106,7 @@
                 </div>
             </div>
 
-            <!-- 視圖 2: AI 解析輸入 (點擊智能上稿後直接顯示在此) -->
+            <!-- 視圖 2: AI 解析輸入 (內容在右側直接顯示) -->
             <div v-if="view === 'parse'">
                 <div class="text-lg text-slate-800 mb-8 font-normal pb-4 border-b">智能解析行程文案</div>
                 <div class="flex border-b mb-8">
@@ -175,7 +175,7 @@
     createApp({
       data() {
         return {
-          view: 'list', // 'list', 'parse', 'edit'
+          view: 'list', 
           inputType: 'text',
           loading: false,
           collapsed: false,
@@ -189,7 +189,6 @@
       },
       async mounted() {
         this.fetchList();
-        // 如果網址有 ID，直接進編輯模式
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) { this.loadEdit(id); }
       },
@@ -263,7 +262,6 @@
             this.injectData(data);
             this.view = 'edit';
             
-            // 循序搜圖
             await this.searchImg(this.course, this.course.title);
             for(const d of this.course.itinerary) {
               await this.searchImg(d, (d.searchKw || d.route));
