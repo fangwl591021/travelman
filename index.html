@@ -15,12 +15,11 @@
     .section-block { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid #f8f8f8; }
     .form-label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
     .form-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 16px; outline: none; background: transparent; }
-    .form-input:focus { border-bottom-color: #003b95; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fafafa; border-radius: 4px; overflow: hidden; position: relative; margin-top: 12px; border: 1px solid #f8f8f8; }
-    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; font-size: 11px; border-radius: 4px; }
+    .btn-upload { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; }
     .tab-btn { padding: 10px 0; font-size: 14px; color: #aaa; margin-right: 24px; border-bottom: 2px solid transparent; cursor: pointer; }
     .tab-btn.active { color: #003b95; border-bottom-color: #003b95; }
-    .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; }
+    .btn-action { background: #febb02; color: #111; padding: 14px; border-radius: 4px; font-size: 15px; width: 100%; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -34,6 +33,7 @@
     </aside>
 
     <main class="main-content">
+        <!-- 輸入階段 -->
         <div v-if="step === 'input'">
             <div class="text-xl text-slate-800 mb-8">新增旅遊行程</div>
             <div class="flex border-b mb-8">
@@ -52,39 +52,41 @@
                 <input type="file" ref="dmUploader" class="hidden" @change="processDmUpload">
             </div>
 
-            <button @click="startParsing" :disabled="loading" class="btn-action mt-10">{{ loading ? '正在透過觀光美學角度解析中...' : '開始智能解析' }}</button>
+            <button @click="startParsing" :disabled="loading" class="btn-action mt-10">
+                {{ loading ? '正在根據觀光美學架構解析中...' : '開始智能解析' }}
+            </button>
         </div>
 
+        <!-- 編輯階段 -->
         <div v-if="step === 'edit'" class="pb-32">
-            <div class="text-lg text-slate-800 mb-10 pb-4 border-b">行程校對</div>
+            <div class="text-lg text-slate-800 mb-10 pb-4 border-b">行程校對 (100% 資料補全)</div>
             <section class="section-block">
-                <label class="form-label">行程標題</label>
+                <label class="form-label">行程總標題</label>
                 <input v-model="course.title" class="form-input text-lg">
                 <div class="grid grid-cols-2 gap-10 mt-6">
-                    <div><label class="form-label">報價 (數字)</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
-                    <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
+                    <div><label class="form-label">報價 (純數字)</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
+                    <div><label class="form-label">總天數</label><input v-model="course.days" type="number" class="form-input"></div>
                 </div>
                 <div class="mt-8">
-                    <label class="form-label">主視覺圖片</label>
-                    <div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">自訂圖片</button></div>
+                    <label class="form-label">首頁主視覺</label>
+                    <div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">更換圖片</button></div>
                 </div>
             </section>
             
-            <!-- itinerary 防護：始終保證可迭代 -->
             <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
                 <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
-                <input v-model="day.route" class="form-input text-base">
+                <input v-model="day.route" class="form-input text-base" placeholder="路線標題">
                 <div class="grid grid-cols-3 gap-6 mt-6">
-                    <input v-model="day.b" class="form-input text-xs" placeholder="早">
-                    <input v-model="day.l" class="form-input text-xs" placeholder="午">
-                    <input v-model="day.d" class="form-input text-xs" placeholder="晚">
+                    <input v-model="day.b" class="form-input text-xs" placeholder="早餐">
+                    <input v-model="day.l" class="form-input text-xs" placeholder="午餐">
+                    <input v-model="day.d" class="form-input text-xs" placeholder="晚餐">
                 </div>
-                <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6" placeholder="具體行程描述..."></textarea>
+                <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6" placeholder="具體行程細節描述..."></textarea>
                 <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
             </div>
 
             <div class="fixed bottom-0 left-[240px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
-                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-xl py-3 rounded text-sm">{{ loading ? '儲存中...' : '確認發佈行程' }}</button>
+                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-xl py-3 rounded text-sm cursor-pointer">{{ loading ? '儲存中...' : '確認發佈行程' }}</button>
             </div>
         </div>
     </main>
@@ -104,7 +106,7 @@
                 const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
                 const data = await res.json();
                 this.course = data;
-                if (!this.course.itinerary || !Array.isArray(this.course.itinerary)) this.course.itinerary = [];
+                if (!this.course.itinerary) this.course.itinerary = [];
                 this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.step = 'edit';
             } catch (e) {} finally { this.loading = false; }
@@ -138,14 +140,18 @@
                 body: JSON.stringify(this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 })
             });
             const data = await res.json();
+            // 強制初始化陣列，防止 iteratble 錯誤
+            if(!data.itinerary || !Array.isArray(data.itinerary)) data.itinerary = [];
+            data.itinerary.forEach(d => {
+                d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
+                d.b = d.b || '精選美食'; d.l = d.l || '在地特色料理'; d.d = d.d || '飯店內用';
+            });
             this.course = data;
-            if(!this.course.itinerary || !Array.isArray(this.course.itinerary)) this.course.itinerary = [];
-            this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
-            
+            // 抓取圖片
             await this.searchImg(this.course, this.course.title);
             for(let d of this.course.itinerary) await this.searchImg(d, d.searchKw || d.route);
             this.step = 'edit';
-          } catch (e) { alert("解析發生問題，請重試。"); }
+          } catch (e) { alert("解析發生異常，請確認 API 連線後重試。"); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
@@ -180,7 +186,7 @@
                 const res = await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) });
                 const result = await res.json();
                 if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
-            } catch (e) { alert("儲存失敗"); }
+            } catch (e) { alert("資料儲存失敗。"); }
             finally { this.loading = false; }
         }
       }
