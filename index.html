@@ -8,10 +8,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; color: #111; margin: 0; padding: 0; }
+    /* 移除所有粗體與包框，維持乾淨的原生資訊流 */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fff; color: #111; margin: 0; padding: 0; font-weight: normal; }
     .page-container { padding-bottom: 100px; max-w: 800px; margin: 0 auto; }
     
-    .nav-bar { background-color: #003b95; padding: 16px 20px; color: white; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 40; }
+    .nav-bar { background-color: #003b95; padding: 16px 20px; color: white; font-size: 18px; position: sticky; top: 0; z-index: 40; }
     .section-block { border-bottom: 8px solid #f2f2f2; padding: 24px 20px; }
     
     .form-group { margin-bottom: 24px; }
@@ -48,24 +49,20 @@
     
     <div class="nav-bar">行程編輯系統</div>
 
-    <!-- 共用的隱藏檔案上傳元件 -->
     <input type="file" ref="fileUploader" class="hidden" accept="image/jpeg, image/png, image/webp" @change="processImageUpload">
     <input type="file" ref="dmUploader" class="hidden" accept="image/jpeg, image/png, image/webp" @change="processDmUpload">
 
-    <!-- 解析畫面：雙頁籤設計 -->
     <div v-if="step === 'input'" class="p-6">
       <div class="flex mb-6 border-b border-slate-200">
         <button @click="inputType = 'text'" :class="['tab-btn', inputType === 'text' ? 'active' : '']">文字貼上</button>
         <button @click="inputType = 'image'" :class="['tab-btn', inputType === 'image' ? 'active' : '']">DM 圖檔解析</button>
       </div>
 
-      <!-- 模式 1：文字輸入 -->
       <div v-if="inputType === 'text'">
         <div class="text-sm text-slate-500 mb-6">貼入您的行程文案，系統將自動為您整理欄位並搜尋搭配圖片。</div>
         <textarea v-model="rawText" class="form-input h-80 mb-6 border !border-slate-200 p-4" placeholder="請將行程文案貼在此處..."></textarea>
       </div>
 
-      <!-- 模式 2：DM 圖片上傳 -->
       <div v-if="inputType === 'image'">
         <div class="text-sm text-slate-500 mb-6">上傳您的旅遊 DM 圖片 (PPT截圖)，AI 將自動為您擴寫豐富的行程細節。</div>
         <div v-if="!dmPreview" @click="$refs.dmUploader.click()" class="upload-area mb-6">
@@ -84,7 +81,6 @@
       </button>
     </div>
 
-    <!-- 進度條 -->
     <div v-if="step === 'loading'" class="p-10 text-center py-32">
         <div class="inline-block animate-spin w-8 h-8 border-2 border-[#003b95] border-t-transparent rounded-full mb-6"></div>
         <div class="text-base text-[#003b95] mb-4">{{ loadStatus }}</div>
@@ -93,7 +89,6 @@
         </div>
     </div>
 
-    <!-- 編輯畫面 -->
     <div v-if="step === 'edit'">
         <div class="section-block">
             <div class="text-lg text-[#003b95] mb-6">基本資訊</div>
@@ -156,7 +151,7 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">行程說明</label>
+                <label class="form-label">行程說明 (已自動擴寫)</label>
                 <textarea v-model="day.infosStr" class="form-input h-32 text-sm"></textarea>
             </div>
             
@@ -178,7 +173,6 @@
             </div>
         </div>
 
-        <!-- 底部報價發布列 -->
         <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-200 flex gap-4 z-50 items-center justify-between">
             <button @click="step = 'input'" class="px-2 text-slate-500 text-sm bg-transparent border-none">重新解析</button>
             <div class="flex-1 max-w-[200px]">
@@ -189,7 +183,6 @@
         </div>
     </div>
 
-    <!-- 成功畫面 -->
     <div v-if="step === 'success'" class="p-10 text-center py-32">
       <div class="text-6xl text-[#003b95] mb-6">✓</div>
       <h2 class="text-2xl text-slate-800 mb-10">行程發布完成</h2>
@@ -235,7 +228,6 @@
         } catch (e) {}
       },
       methods: {
-        // 處理 DM 圖片上傳 (強制轉換為 image/jpeg)
         processDmUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -266,7 +258,6 @@
             reader.readAsDataURL(file);
         },
 
-        // 統合解析入口
         async startParsing() {
           this.step = 'loading';
           this.loadProgress = 10;
@@ -347,7 +338,6 @@
             } catch (e) { console.error("搜圖錯誤"); }
         },
         
-        // 圖片上傳壓縮引擎 (手動修改配圖)
         triggerUpload(targetObj) {
             this.currentUploadTarget = targetObj;
             this.$refs.fileUploader.click();
