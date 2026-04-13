@@ -8,98 +8,96 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Microsoft JhengHei', sans-serif; color: #334155; line-height: 1.8; background: #fff; }
-        .sidebar-fixed { position: sticky; top: 40px; height: fit-content; }
-        .day-label { border-left: 3px solid #1e293b; padding-left: 1.5rem; margin-bottom: 2.5rem; }
-        .hero-overlay { background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%); }
-        .itinerary-img { width: 100%; border-radius: 4px; aspect-ratio: 16/9; object-cover: cover; margin-bottom: 1.5rem; }
-        /* 去 AI 風格：移除陰影與圓角框 */
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #444; background: #fff; line-height: 1.8; }
+        .sidebar { position: sticky; top: 40px; height: fit-content; }
+        .day-marker { border-left: 2px solid #111; padding-left: 20px; margin-bottom: 40px; }
+        .hero { height: 60vh; background: #111; overflow: hidden; position: relative; }
+        .hero img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .hero-text { position: absolute; bottom: 40px; left: 0; width: 100%; padding: 0 24px; color: #fff; }
+        .img-box { border-radius: 2px; overflow: hidden; margin-bottom: 24px; }
+        .img-box img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .info-table { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 30px 0; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-if="loading" class="flex flex-col items-center justify-center h-screen text-slate-300 font-bold">載入中...</div>
+        <div v-if="loading" class="flex items-center justify-center h-screen text-slate-300 font-medium">Loading...</div>
 
         <div v-else-if="course">
-            <!-- 頂部滿版 Banner -->
-            <div class="relative h-64 md:h-[65vh] bg-slate-900 overflow-hidden">
-                <img :src="`https://images.unsplash.com/featured/?${encodeURIComponent(course.title)}`" class="w-full h-full object-cover opacity-90">
-                <div class="absolute inset-0 hero-overlay"></div>
-                <div class="absolute bottom-10 left-6 right-6 max-w-6xl mx-auto text-white">
-                    <div class="text-[10px] font-black uppercase tracking-[0.4em] mb-4 opacity-70">TK Selection</div>
-                    <h1 class="text-3xl md:text-6xl font-bold leading-tight">{{ course.title }}</h1>
+            <!-- Hero -->
+            <div class="hero">
+                <img :src="'https://images.unsplash.com/photo-1500000000000?q=80&w=1600&auto=format&fit=crop&sig=' + course.title">
+                <div class="hero-text max-w-6xl mx-auto">
+                    <div class="text-[10px] uppercase tracking-[0.4em] mb-3 opacity-60">TK Selection / Itinerary</div>
+                    <h1 class="text-3xl md:text-5xl font-medium leading-tight tracking-tighter">{{ course.title }}</h1>
                 </div>
             </div>
 
-            <!-- 主容器：簡潔白底佈局 -->
-            <div class="max-w-6xl mx-auto px-6 py-16 md:grid md:grid-cols-12 md:gap-16">
+            <!-- Content -->
+            <div class="max-w-6xl mx-auto px-6 py-20 md:grid md:grid-cols-12 md:gap-16">
                 
-                <!-- 行程主體 (8 欄) -->
+                <!-- Left Details (8 cols) -->
                 <div class="md:col-span-8">
-                    <p class="text-xl text-slate-400 italic mb-24 border-l-4 border-slate-50 pl-10 leading-relaxed">{{ course.desc }}</p>
+                    <p class="text-lg text-slate-400 italic mb-32 border-l-2 border-slate-100 pl-8 leading-relaxed">{{ course.desc }}</p>
 
-                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-32">
-                        <div class="day-label">
-                            <span class="text-[10px] font-black text-slate-300 block mb-2 uppercase tracking-widest tracking-tighter">Itinerary Day 0{{ idx + 1 }}</span>
-                            <h2 class="text-2xl md:text-4xl font-black text-slate-800 tracking-tight leading-snug">{{ day.route }}</h2>
+                    <div v-for="(day, idx) in course.itinerary" :key="idx" class="mb-40">
+                        <div class="day-marker">
+                            <span class="text-[10px] text-slate-400 block mb-2 uppercase tracking-widest font-bold">DAY 0{{ idx + 1 }}</span>
+                            <h2 class="text-2xl md:text-4xl text-slate-800 tracking-tight leading-snug">{{ day.route }}</h2>
                         </div>
                         
-                        <!-- AI 自動配圖區 -->
-                        <img :src="`https://images.unsplash.com/featured/?${encodeURIComponent(day.kw || 'travel')}`" 
-                             class="itinerary-img" 
-                             onerror="this.src='https://images.unsplash.com/photo-1500000000000?q=60&w=1200&auto=format&fit=crop'">
+                        <!-- 搜圖加強版 -->
+                        <div class="img-box">
+                            <img :src="'https://images.unsplash.com/featured/?' + encodeURIComponent(day.kw || 'landscape')" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=60&w=1200'">
+                        </div>
                         
                         <div class="space-y-8 mb-16 text-slate-600 text-lg">
-                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p" class="text-justify leading-loose">{{ p }}</p>
+                            <p v-for="p in (Array.isArray(day.infos) ? day.infos : [day.infos])" :key="p" class="text-justify">{{ p }}</p>
                         </div>
 
-                        <!-- 資訊列表 -->
-                        <div class="bg-slate-50 p-10 md:p-12 border-y border-slate-100">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                <div class="space-y-4">
-                                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Meal Arrangement</div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">早</span><span>{{ day.b || '酒店內' }}</span></div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">午</span><span>{{ day.l || '特色餐' }}</span></div>
-                                    <div class="flex justify-between border-b border-slate-200 pb-3 text-sm font-bold"><span class="text-slate-400">晚</span><span>{{ day.d || '精選美饌' }}</span></div>
-                                </div>
-                                <div class="flex flex-col justify-center">
-                                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Accommodation</div>
-                                    <p class="font-black text-slate-800 text-2xl leading-tight mb-2">{{ day.hotel || '豪華精選飯店' }}</p>
-                                    <p class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Or Class Equivalent</p>
-                                </div>
+                        <!-- 資訊列表 (表格化) -->
+                        <div class="info-table grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div class="space-y-4">
+                                <div class="text-[10px] text-slate-400 uppercase tracking-widest mb-6 font-bold">Meals</div>
+                                <div class="flex justify-between border-b border-slate-50 pb-3 text-sm"><span>早餐 Breakfast</span><span class="text-slate-800">{{ day.b || '酒店內' }}</span></div>
+                                <div class="flex justify-between border-b border-slate-50 pb-3 text-sm"><span>午餐 Lunch</span><span class="text-slate-800">{{ day.l || '特色餐' }}</span></div>
+                                <div class="flex justify-between border-b border-slate-50 pb-3 text-sm"><span>晚餐 Dinner</span><span class="text-slate-800">{{ day.d || '精選美饌' }}</span></div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase tracking-widest mb-6 font-bold">Stay</div>
+                                <p class="text-slate-800 text-xl mb-2">{{ day.hotel || '頂級飯店' }}</p>
+                                <p class="text-[10px] text-slate-300 uppercase">Or Class Equivalent</p>
                             </div>
                         </div>
-                        <div class="mt-24 border-t border-slate-100"></div>
                     </div>
                 </div>
 
-                <!-- 側邊報價欄 (4 欄，僅電腦版) -->
+                <!-- Right Sidebar (4 cols) -->
                 <aside class="hidden md:block md:col-span-4">
-                    <div class="sidebar-fixed bg-white border border-slate-100 p-10 text-center">
-                        <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-[0.2em]">Package Rate</p>
+                    <div class="sidebar bg-white border border-slate-100 p-10 text-center shadow-sm">
+                        <p class="text-[10px] text-slate-300 uppercase mb-4 tracking-widest font-bold">Program Package</p>
                         <div class="mb-12">
-                            <div class="text-5xl font-black text-red-600 mb-2 tracking-tighter">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">Starting From / Per Person</p>
+                            <div class="text-5xl font-medium text-red-600 mb-2 tracking-tighter">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold">Per Adult / 每位成人</p>
                         </div>
-                        
-                        <div class="space-y-6 pt-12 border-t border-slate-50">
-                            <p class="text-sm font-bold text-slate-800 leading-relaxed">有任何報名規劃疑問？<br>專屬旅遊管家線上待命中。</p>
-                            <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="w-full bg-[#06C755] text-white py-5 rounded-lg font-black text-lg flex items-center justify-center gap-4 hover:opacity-90 transition-all">
+                        <div class="space-y-4 pt-12 border-t border-slate-50">
+                            <p class="text-sm text-slate-400 leading-relaxed text-left">有任何問題？專屬旅遊管家線上待命中。</p>
+                            <a href="https://line.me/R/ti/p/@yourid" target="_blank" class="w-full bg-[#06C755] text-white py-5 rounded-sm font-bold flex items-center justify-center gap-3">
                                 <i class="fa-brands fa-line text-2xl"></i> LINE 立即諮詢
                             </a>
-                            <p class="text-[10px] text-slate-300 font-bold text-center tracking-widest uppercase">Service Time: 09:00 - 21:00</p>
                         </div>
                     </div>
                 </aside>
             </div>
 
-            <!-- 手機版底部導航 -->
-            <div class="fixed bottom-0 left-0 w-full p-4 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 flex justify-between items-center md:hidden">
-                <div class="pl-2">
-                    <div class="text-2xl font-black text-red-600">NT$ {{ Number(course.price).toLocaleString() }}</div>
-                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ course.days }} 天行程</div>
+            <!-- Mobile Footer -->
+            <div class="fixed bottom-0 left-0 w-full p-5 bg-white/95 backdrop-blur-xl border-t z-50 flex justify-between items-center md:hidden">
+                <div class="pl-2 text-left">
+                    <div class="text-2xl font-bold text-red-600">NT$ {{ Number(course.price).toLocaleString() }}</div>
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ course.days }} Days Tour</div>
                 </div>
-                <button class="bg-[#06C755] text-white px-10 py-4 rounded-xl font-black shadow-lg">LINE 諮詢</button>
+                <button class="bg-[#06C755] text-white px-8 py-3 rounded-sm font-bold shadow-lg">LINE 諮詢</button>
             </div>
         </div>
     </div>
