@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #111; margin: 0; font-weight: normal; }
+    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #111; margin: 0; font-weight: 400; }
     .sidebar { width: 240px; border-right: 1px solid #eee; height: 100vh; position: fixed; left: 0; top: 0; padding: 30px 20px; background: #fff; z-index: 50; }
     .main-content { margin-left: 240px; padding: 40px; max-width: 900px; }
     .menu-item { padding: 12px 16px; font-size: 14px; color: #888; border-radius: 4px; display: block; text-decoration: none; margin-bottom: 4px; }
@@ -32,7 +32,6 @@
             <a href="#" class="menu-item active">● 智能上稿解析</a>
             <a href="https://travelkeeper-saas-worker.fangwl591021.workers.dev/admin" class="menu-item">行程管理中心</a>
             <a href="#" class="menu-item">數據報表</a>
-            <a href="#" class="menu-item">系統設定</a>
         </nav>
     </aside>
 
@@ -51,7 +50,7 @@
                 <div @click="$refs.dmUploader.click()" class="border-2 border-dashed border-slate-100 h-80 flex flex-col items-center justify-center bg-slate-50 cursor-pointer">
                     <div v-if="!dmPreview" class="text-center">
                         <div class="text-3xl text-slate-200 mb-2">📸</div>
-                        <div class="text-xs text-slate-400">點擊上傳 PPT 截圖或 DM 圖片</div>
+                        <div class="text-xs text-slate-400">點擊上傳 DM 圖片</div>
                     </div>
                     <img v-else :src="dmPreview" class="h-full object-contain p-4">
                 </div>
@@ -59,13 +58,12 @@
             </div>
 
             <button @click="startParsing" :disabled="loading" class="btn-action mt-10">
-                {{ loading ? '正在透過觀光美學角度解析中...' : '開始智能解析' }}
+                {{ loading ? '正在解析中，請稍候...' : '開始智能解析' }}
             </button>
         </div>
 
         <div v-if="step === 'edit'" class="pb-32">
-            <div class="text-lg text-slate-800 mb-10 pb-4 border-b">行程詳細校對</div>
-            
+            <div class="text-lg text-slate-800 mb-10 pb-4 border-b">行程校對</div>
             <section class="section-block">
                 <label class="form-label">行程標題</label>
                 <input v-model="course.title" class="form-input text-lg">
@@ -74,79 +72,47 @@
                     <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
                 </div>
                 <div class="mt-8">
-                    <label class="form-label">主視覺橫幅</label>
-                    <div class="img-box">
-                        <img :src="course.imgUrl" class="w-full h-full object-cover">
-                        <button @click="triggerUpload(course)" class="btn-upload">自訂圖片</button>
-                    </div>
+                    <label class="form-label">主視覺圖片</label>
+                    <div class="img-box"><img :src="course.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(course)" class="btn-upload">自訂圖片</button></div>
                 </div>
             </section>
-
             <div v-for="(day, idx) in course.itinerary" :key="idx" class="section-block">
                 <div class="text-[10px] text-[#003b95] mb-4 uppercase tracking-[0.2em]">Day {{ idx + 1 }}</div>
-                <label class="form-label">行程路線</label>
-                <input v-model="day.route" class="form-input">
-                
+                <input v-model="day.route" class="form-input text-base">
                 <div class="grid grid-cols-3 gap-6 mt-6">
-                    <div><label class="form-label">早</label><input v-model="day.b" class="form-input text-xs"></div>
-                    <div><label class="form-label">午</label><input v-model="day.l" class="form-input text-xs"></div>
-                    <div><label class="form-label">晚</label><input v-model="day.d" class="form-input text-xs"></div>
+                    <input v-model="day.b" class="form-input text-xs" placeholder="早">
+                    <input v-model="day.l" class="form-input text-xs" placeholder="午">
+                    <input v-model="day.d" class="form-input text-xs" placeholder="晚">
                 </div>
-                
-                <div class="mt-6">
-                    <label class="form-label">觀光擴寫細節</label>
-                    <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none"></textarea>
-                </div>
-
-                <div class="mt-8">
-                    <label class="form-label">自動配圖縮圖</label>
-                    <div class="img-box">
-                        <img :src="day.imgUrl" class="w-full h-full object-cover">
-                        <button @click="triggerUpload(day)" class="btn-upload">更換照片</button>
-                    </div>
-                </div>
+                <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-4 text-sm leading-loose outline-none mt-6"></textarea>
+                <div class="img-box"><img :src="day.imgUrl" class="w-full h-full object-cover"><button @click="triggerUpload(day)" class="btn-upload">更換照片</button></div>
             </div>
-
             <div class="fixed bottom-0 left-[240px] right-0 p-4 bg-white/90 border-t flex justify-center z-50">
-                <div class="w-full max-w-2xl flex gap-4">
-                    <button @click="step='input'" class="px-8 py-3 text-slate-400 text-sm">重新開始</button>
-                    <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white flex-1 py-3 rounded text-sm">
-                        {{ loading ? '正在發佈...' : '確認發佈行程' }}
-                    </button>
-                </div>
+                <button @click="saveCourse" :disabled="loading" class="bg-[#003b95] text-white w-full max-w-xl py-3 rounded text-sm">{{ loading ? '儲存中...' : '確認發佈行程' }}</button>
             </div>
-        </div>
-
-        <div v-if="step === 'success'" class="text-center py-40">
-            <div class="text-5xl text-[#003b95] mb-6">✓</div>
-            <div class="text-xl mb-10">行程已成功產出</div>
-            <button @click="openSite" class="bg-[#febb02] text-[#111] px-10 py-3 rounded text-sm mb-4">預覽正式網頁</button>
         </div>
     </main>
-
     <input type="file" ref="fileUploader" class="hidden" @change="processImageUpload">
   </div>
 
   <script>
     const { createApp } = Vue;
+    const API_BASE = 'https://travelkeeper-saas-worker.fangwl591021.workers.dev';
+
     createApp({
-      data() { return { 
-          step: 'input', inputType: 'text', loading: false, rawText: '', 
-          dmBase64: '', dmPreview: '', course: {}, finalId: '', currentTarget: null 
-      } },
+      data() { return { step: 'input', inputType: 'text', loading: false, rawText: '', dmBase64: '', dmPreview: '', course: {}, currentTarget: null } },
       async mounted() {
         const id = new URLSearchParams(window.location.search).get('id');
         if (id) {
             this.loading = true;
             try {
-                const res = await fetch(`https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/get-course?id=` + id);
-                const data = await res.json();
-                this.course = data;
+                const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
+                this.course = await res.json();
                 if (this.course.itinerary) {
-                    this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : d.infos);
+                    this.course.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 }
                 this.step = 'edit';
-            } catch (e) {} finally { this.loading = false; }
+            } catch (e) { console.error(e); } finally { this.loading = false; }
         }
       },
       methods: {
@@ -171,31 +137,25 @@
         async startParsing() {
           this.loading = true;
           try {
-            const endpoint = this.inputType === 'text' ? 'parse-draft' : 'parse-image';
+            const endpoint = this.inputType === 'text' ? 'api/parse-draft' : 'api/parse-image';
             const payload = this.inputType === 'text' ? { text: this.rawText } : { imageBase64: this.dmBase64 };
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/' + endpoint, {
+            const res = await fetch(`${API_BASE}/${endpoint}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            if (!res.ok) throw new Error("Worker Error");
             const data = await res.json();
-            if(data.error) throw new Error(data.msg);
-            
-            if(data.itinerary) {
-                data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : d.infos);
-            }
+            if(data.itinerary) data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : d.infos);
             this.course = data;
-            
             await this.searchImg(this.course, this.course.title);
-            for(let d of this.course.itinerary) {
-                await this.searchImg(d, d.searchKw || d.route);
-            }
+            for(let d of this.course.itinerary) await this.searchImg(d, d.searchKw || d.route);
             this.step = 'edit';
           } catch (e) { alert("解析失敗: " + e.message); }
           finally { this.loading = false; }
         },
         async searchImg(obj, kw) {
             try {
-                const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/search-image?q=' + encodeURIComponent(kw));
+                const res = await fetch(`${API_BASE}/api/search-image?q=${encodeURIComponent(kw)}`);
                 const data = await res.json();
                 obj.imgUrl = data.url;
             } catch (e) {}
@@ -203,7 +163,6 @@
         triggerUpload(obj) { this.currentTarget = obj; this.$refs.fileUploader.click(); },
         processImageUpload(e) {
             const file = e.target.files[0];
-            if (!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const img = new Image();
@@ -223,16 +182,14 @@
         async saveCourse() {
             this.loading = true;
             this.course.itinerary.forEach(d => d.infos = d.infosStr.split('\n').filter(Boolean));
-            const res = await fetch('https://travelkeeper-saas-worker.fangwl591021.workers.dev/api/save-course', {
+            const res = await fetch(`${API_BASE}/api/save-course`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.course)
             });
             const result = await res.json();
-            if(result.success) { this.finalId = result.id; this.step = 'success'; }
+            if(result.success) window.open(`https://fangwl591021.github.io/travelman/travel_website.html?id=${result.id}`, '_self');
             this.loading = false;
-        },
-        openSite() { window.open('https://fangwl591021.github.io/travelman/travel_website.html?id=' + this.finalId); },
-        reset() { location.href = "index.html"; }
+        }
       }
     }).mount('#app');
   </script>
