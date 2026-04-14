@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 旗艦多模態中控台 (v12.8.0)</title>
+  <title>旅行管家 - 旗態多模態中控台 (v12.8.1)</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -18,7 +18,7 @@
     .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; transition: 0.3s; }
     .main-content { margin-left: 220px; margin-top: 60px; padding: 40px; }
     
-    .menu-item { padding: 18px 20px; font-size: 18px; color: #555; display: flex; align-items: center; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+    .menu-item { padding: 18px 20px; font-size: 18px; color: #555; display: flex; align-items: center; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: 0.2s; }
     .menu-item.active { background: #fff; color: #06c755; }
     .menu-icon { width: 24px; font-size: 18px; margin-right: 15px; color: #9ca3af; }
     
@@ -34,7 +34,6 @@
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
     
     .badge { color: #06c755; margin-right: 15px; font-size: 18px; }
-    input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #06c755; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fcfcfc; border-radius: 4px; overflow: hidden; position: relative; margin-top: 15px; border: 1px solid #eee; }
     h2 { font-size: 18px !important; font-weight: 400 !important; margin: 0; }
     
@@ -64,16 +63,16 @@
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
             
-            <!-- 1. 清單視圖 (Google Sheets 版) -->
+            <!-- 視圖 1: 行程清單 (解決資料為空的問題) -->
             <div v-if="view === 'list'">
                 <div class="flex justify-between items-end mb-10 pb-4 border-b">
                     <h2>全球行程管理中心</h2>
                     <div class="flex items-center gap-4">
                         <button @click="fetchList" class="text-xs text-blue-400 underline">同步雲端</button>
-                        <button @click="view = 'parse'" class="text-[#06c755] underline">新增行程</button>
+                        <button @click="view = 'parse'" class="text-[#06c755] underline">新增項目</button>
                     </div>
                 </div>
-                <div v-if="courses.length === 0 && !loading" class="py-20 text-center text-slate-300 italic">目前無資料，請開始解析...</div>
+                <div v-if="courses.length === 0 && !loading" class="py-20 text-center text-slate-300 italic">目前無資料，請點擊解析...</div>
                 <div v-for="c in courses" :key="c.id" class="item-row">
                     <div class="flex-1">
                         <div class="text-[#bbb] font-mono text-xs uppercase">{{ c.id }}</div>
@@ -88,18 +87,18 @@
                 </div>
             </div>
 
-            <!-- 2. 智能分析 (雙模態入口：文字模型 + 圖片模型) -->
+            <!-- 視圖 2: 智能分析 (雙模態入口：文字模型 + 圖片模型) -->
             <div v-if="view === 'parse'">
                 <div class="mb-10 pb-4 border-b font-normal">AI 多模態分析系統 (文字與視覺)</div>
                 
-                <!-- 模式 A: 文字模型 -->
+                <!-- 文字模型 -->
                 <section class="parse-box">
-                    <div class="mb-4 text-slate-500 font-normal">模型 A：貼入行程文案解析</div>
+                    <div class="mb-4 text-slate-500 font-normal">模型 A：貼入文案解析</div>
                     <textarea v-model="rawText" class="w-full h-60 border-none p-6 bg-white outline-none text-[18px] font-normal mb-6" placeholder="請貼入詳細行程說明文字..."></textarea>
                     <button @click="startParsingText" :disabled="loading || !rawText" class="btn-action">啟動 AI 內容分析與擴寫</button>
                 </section>
 
-                <!-- 模式 B: 圖片/PDF 模型 -->
+                <!-- 圖片模型 -->
                 <section class="parse-box border-dashed border-2 border-slate-200">
                     <div class="mb-4 text-slate-500 font-normal">模型 B：DM 圖片視覺辨識</div>
                     <div class="flex flex-col items-center justify-center py-10">
@@ -112,7 +111,7 @@
                 </section>
             </div>
 
-            <!-- 3. 編輯校對 (【100% 完整欄位恢復，絕不簡陋】) -->
+            <!-- 視圖 3: 編輯校對 (【100% 完整欄位恢復，絕不簡陋】) -->
             <div v-if="view === 'edit'" class="pb-40">
                 <div class="mb-12 pb-4 border-b font-normal text-slate-800">行程明細校對 (18px 統大法)</div>
                 
@@ -155,7 +154,6 @@
                     </div>
                 </div>
 
-                <!-- 底部儲存 -->
                 <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50">
                     <button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-5 rounded font-normal text-[18px]">確認儲存並同步發佈</button>
                 </div>
@@ -221,7 +219,6 @@
             finally { this.loading = false; }
         },
 
-        // --- 文字解析模型 ---
         async startParsingText() {
           if (!this.rawText) return;
           this.loading = true;
@@ -235,11 +232,10 @@
                 data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.course = data; this.view = 'edit';
             }
-          } catch (e) { alert("文字解析模型目前連線中斷"); } 
+          } catch (e) { alert("文字解析失敗"); } 
           finally { this.loading = false; }
         },
 
-        // --- 圖片解析模型 ---
         handleFileChange(e) { this.selectedFile = e.target.files[0]; },
         async startParsingFile() {
             if (!this.selectedFile) return;
@@ -255,7 +251,7 @@
                     });
                     const data = await this.safeParseJson(res);
                     if (data && data.success) { await this.loadEdit(data.courseId); } 
-                    else { alert("圖片辨識失敗，請檢查 DM 內容是否清晰"); }
+                    else { alert("圖片辨識失敗"); }
                 } catch (e) { alert("視覺辨識連線異常"); }
                 finally { this.loading = false; this.selectedFile = null; }
             };
@@ -264,16 +260,14 @@
         async saveCourse() {
           this.loading = true;
           if(this.course.itinerary) {
-              this.course.itinerary.forEach(d => {
-                  d.infos = (d.infosStr||'').split('\n').filter(l => l.trim() !== '');
-              });
+              this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(l => l.trim() !== ''));
           }
           try { 
               const res = await fetch(`${API_BASE}/api/save-course`, { 
                   method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                   body: JSON.stringify(this.course) 
               }); 
-              if (res.ok) { alert('行程儲存成功，雲端資料同步中！'); await this.fetchList(); this.view = 'list'; }
+              if (res.ok) { alert('行程儲存成功！'); await this.fetchList(); this.view = 'list'; }
           } finally { this.loading = false; }
         }
       }
