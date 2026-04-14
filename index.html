@@ -3,142 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 全功能中控台 (WEB1-v2.1)</title>
+  <title>旅行管家 - 全功能中控台 (WEB1-v2.2)</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* WEB1-v2.1 旗艦規格：全站文字大小 18px 統大法 */
+    /* WEB1-v2.2 旗艦規格：全站文字大小 18px 統大法 */
     body { font-family: -apple-system, sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.6; font-weight: 400; }
     .header { height: 60px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; left: 0; right: 0; background: #fff; z-index: 500; }
     .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; }
     .nav-link.active { color: #06c755; border-bottom: 2px solid #06c755; padding-bottom: 5px; }
-    
     .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; transition: 0.3s; }
     .main-content { margin-left: 220px; margin-top: 60px; padding: 40px; }
-    
     .menu-item { padding: 18px 20px; font-size: 18px; color: #555; display: flex; align-items: center; text-decoration: none; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
     .menu-item.active { background: #fff; color: #06c755; }
-    .menu-icon { width: 24px; font-size: 18px; margin-right: 15px; color: #9ca3af; }
-    
     .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 15px 0; font-size: 18px; outline: none; background: transparent; transition: 0.2s; }
     .form-input:focus { border-bottom-color: #06c755; }
     .form-label { font-size: 18px; color: #94a3b8; margin-bottom: 10px; display: block; }
-    
     .item-row { border-bottom: 1px solid #f3f4f6; padding: 30px 0; display: flex; justify-content: space-between; align-items: center; }
-    .btn-action { background: #febb02; color: #111; padding: 20px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; }
+    .btn-action { background: #febb02; color: #111; padding: 18px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; }
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
-    
     .badge { color: #06c755; margin-right: 15px; font-size: 18px; }
     input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #06c755; }
-    h2 { font-size: 18px !important; font-weight: 400 !important; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fcfcfc; border-radius: 4px; overflow: hidden; position: relative; margin-top: 15px; border: 1px solid #eee; }
+    h2 { font-size: 18px !important; font-weight: 400 !important; }
   </style>
 </head>
 <body>
   <div id="app">
-    <div v-if="loading" class="loading-overlay italic">與雲端數據同步中...</div>
+    <div v-if="loading" class="loading-overlay italic">與雲端系統同步中...</div>
     
     <header class="header">
-        <div class="flex items-center">
-            <div class="text-[#06c755] font-normal tracking-tighter">旅遊管家</div>
-            <nav class="hidden md:flex">
-                <a @click="view = 'list'" :class="['nav-link', view === 'list' ? 'active' : '']">找行程</a>
-                <a @click="view = 'parse'" :class="['nav-link', view === 'parse' || view === 'edit' ? 'active' : '']">智能上稿</a>
-            </nav>
+        <div class="flex items-center"><div class="text-[#06c755] font-normal tracking-tighter">旅遊管家</div>
+            <nav class="hidden md:flex"><a @click="view = 'list'" :class="['nav-link', view === 'list' ? 'active' : '']">找行程</a><a @click="view = 'parse'" :class="['nav-link', view === 'parse' || view === 'edit' ? 'active' : '']">智能上稿</a></nav>
         </div>
-        <div v-if="partnerId" class="text-xs text-slate-300 font-mono">Partner: {{ partnerId }}</div>
+        <div v-if="partnerId" class="text-xs text-slate-300 font-mono uppercase">Partner: {{ partnerId }}</div>
     </header>
 
     <aside class="sidebar">
         <div class="p-6 border-b text-slate-400">Dashboard</div>
         <nav>
-            <a @click="view = 'list'" :class="['menu-item', view === 'list' ? 'active' : '']"><i class="fa-solid fa-list-ul menu-icon"></i>行程管理清單</a>
-            <a @click="view = 'parse'" :class="['menu-item', view === 'parse' || view === 'edit' ? 'active' : '']"><i class="fa-solid fa-wand-magic-sparkles menu-icon"></i>AI 智能解析</a>
-            <a @click="view = 'partner'" :class="['menu-item', view === 'partner' ? 'active' : '']"><i class="fa-solid fa-user-tag menu-icon"></i>銷售夥伴註冊</a>
+            <a @click="view = 'list'" :class="['menu-item', view === 'list' ? 'active' : '']"><i class="fa-solid fa-list-ul mr-3"></i>行程管理清單</a>
+            <a @click="view = 'parse'" :class="['menu-item', view === 'parse' ? 'active' : '']"><i class="fa-solid fa-wand-magic-sparkles mr-3"></i>AI 智能解析</a>
+            <a @click="view = 'partner'" :class="['menu-item', view === 'partner' ? 'active' : '']"><i class="fa-solid fa-user-tag mr-3"></i>銷售夥伴註冊</a>
         </nav>
     </aside>
 
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
-            
-            <!-- 視圖 1: 行程清單 (支援多選與夥伴分享) -->
+            <!-- 1. 行程清單 -->
             <div v-if="view === 'list'">
-                <div class="flex justify-between items-end mb-10 pb-4 border-b">
-                    <h2>行程管理與分享</h2>
-                    <div class="flex gap-4">
-                        <button v-if="selectedIds.length > 0" @click="generateShareCard" class="bg-[#06c755] text-white px-6 py-2 rounded text-sm">生成歸屬分享 ({{selectedIds.length}})</button>
-                        <button @click="view = 'parse'" class="text-[#06c755] underline">新增行程</button>
-                    </div>
-                </div>
+                <div class="flex justify-between items-end mb-10 pb-4 border-b"><h2>行程管理與分享</h2><div class="flex gap-4"><button v-if="selectedIds.length > 0" @click="generateShareCard" class="bg-[#06c755] text-white px-6 py-2 rounded text-sm">生成歸屬分享 ({{selectedIds.length}})</button><button @click="view = 'parse'" class="text-[#06c755] underline">新增行程</button></div></div>
                 <div v-for="c in courses" :key="c.id" class="item-row">
-                    <div class="flex items-center gap-6 flex-1">
-                        <input type="checkbox" :value="c.id" v-model="selectedIds">
-                        <div>
-                            <div class="text-[#bbb] font-mono uppercase">{{ c.id }}</div>
-                            <div class="py-2"><span class="badge">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div>
-                            <div class="text-slate-400 font-normal">{{ c.days }} DAYS ｜ <span class="text-red-500">NT$ {{ formatPrice(c.price) }}</span></div>
-                        </div>
-                    </div>
-                    <div class="flex gap-10 text-[#003b95] font-normal">
-                        <a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="underline">預覽</a>
-                        <span @click="loadEdit(c.id)" class="cursor-pointer underline">編輯</span>
-                    </div>
+                    <div class="flex items-center gap-6 flex-1"><input type="checkbox" :value="c.id" v-model="selectedIds"><div><div class="text-[#bbb] font-mono uppercase">{{ c.id }}</div><div class="py-2"><span class="badge">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div><div class="text-slate-400">{{ c.days }} DAYS ｜ <span class="text-red-500">NT$ {{ formatPrice(c.price) }}</span></div></div></div>
+                    <div class="flex gap-10 text-[#003b95]"><a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="underline">預覽</a><span @click="loadEdit(c.id)" class="cursor-pointer underline">編輯</span></div>
                 </div>
             </div>
 
-            <!-- 視圖 2: 夥伴註冊 (UID + 生日) -->
+            <!-- 2. 夥伴註冊 (強化反應邏輯) -->
             <div v-if="view === 'partner'" class="py-10">
                 <div class="mb-10 pb-4 border-b"><h2>申請金牌銷售夥伴</h2></div>
                 <div class="space-y-10">
-                    <div><label class="form-label">您的 LINE UID</label><input v-model="uid" class="form-input" disabled></div>
-                    <div><label class="form-label">生日 (YYMMDD)</label><input v-model="birthday" class="form-input" placeholder="例如：591021"></div>
-                    <div v-if="birthday.length === 6" class="p-6 bg-slate-50 rounded">
-                        <label class="form-label">您的專屬代碼</label>
-                        <div class="text-[#06c755] font-mono text-xl">{{ uid.substring(0,8) }}{{ birthday }}</div>
+                    <div><label class="form-label">您的 LINE UID</label>
+                        <div class="flex gap-4"><input v-model="uid" class="form-input flex-1" disabled><button @click="reDetectUid" class="text-xs text-blue-400 underline">重新偵測</button></div>
                     </div>
-                    <button @click="registerPartner" :disabled="birthday.length !== 6 || uid.includes('Detect')" class="btn-action">送出註冊申請並綁定</button>
+                    <div><label class="form-label">生日 (YYMMDD)</label><input v-model="birthday" class="form-input" placeholder="例如：591021" maxlength="6"></div>
+                    <div v-if="birthday.length === 6 && !uid.includes('Detect')" class="p-6 bg-slate-50 rounded">
+                        <label class="form-label">專屬代碼確認</label><div class="text-[#06c755] font-mono text-xl">{{ uid.substring(0,8) }}{{ birthday }}</div>
+                    </div>
+                    <button @click="registerPartner" :disabled="birthday.length !== 6 || loading" class="btn-action">
+                        {{ loading ? '註冊處理中...' : '送出註冊申請並綁定' }}
+                    </button>
                 </div>
             </div>
 
-            <!-- 視圖 3: 解析 -->
-            <div v-if="view === 'parse'">
-                <div class="mb-10 pb-4 border-b font-normal">智能解析行程文案</div>
-                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none font-normal" placeholder="貼入說明文案..."></textarea>
-                <button @click="startParsing" :disabled="loading" class="btn-action mt-10">開始 AI 自動分類與解析</button>
-            </div>
+            <!-- 3. 解析 -->
+            <div v-if="view === 'parse'"><div class="mb-10 pb-4 border-b font-normal">智能解析行程文案</div><textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px]" placeholder="請直接貼入說明文案..."></textarea><button @click="startParsing" :disabled="loading" class="btn-action mt-10">開始 AI 自動分類與解析</button></div>
 
-            <!-- 視圖 4: 編輯校對 (【修復】完整補齊，絕不簡略) -->
+            <!-- 4. 編輯校對 (【100% 完整補齊】) -->
             <div v-if="view === 'edit'" class="pb-40">
                 <div class="mb-12 pb-4 border-b font-normal">行程詳情校對 (18px 統大法)</div>
                 <section class="space-y-10">
                     <div><label class="form-label">地區分類</label><select v-model="course.region" class="form-input"><option v-for="r in ['亞洲','歐洲','美洲','大洋洲','非洲','中東','南極']" :value="r">{{r}}</option></select></div>
                     <div><label class="form-label">行程總標題</label><input v-model="course.title" class="form-input"></div>
-                    <div class="grid grid-cols-2 gap-10">
-                        <div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
-                        <div><label class="form-label">總天數</label><input v-model="course.days" type="number" class="form-input"></div>
-                    </div>
-                    <div><label class="form-label">封面視覺</label><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"></div></div>
+                    <div class="grid grid-cols-2 gap-10"><div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div><div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div></div>
+                    <div><label class="form-label">封面圖網址</label><input v-model="course.imgUrl" class="form-input text-xs text-slate-400"><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"></div></div>
                 </section>
-
+                <!-- 每日行程欄位 -->
                 <div v-for="(day, idx) in (course.itinerary || [])" :key="idx" class="mt-12 pt-10 border-t">
-                    <div class="text-[#06c755] mb-4 font-normal">Day {{ idx + 1 }}</div>
-                    <input v-model="day.route" class="form-input mb-6" placeholder="地點路線">
+                    <div class="text-[#06c755] mb-4">Day {{ idx + 1 }}</div>
+                    <input v-model="day.route" class="form-input mb-6" placeholder="路線名稱">
                     <div class="grid grid-cols-3 gap-6 mb-6">
                         <input v-model="day.b" class="form-input text-center" placeholder="早餐">
                         <input v-model="day.l" class="form-input text-center" placeholder="午餐">
                         <input v-model="day.d" class="form-input text-center" placeholder="晚餐">
                     </div>
-                    <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-6 outline-none font-normal" placeholder="景點細節..."></textarea>
+                    <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-6 outline-none font-normal leading-relaxed mb-6" placeholder="行程景點描述..."></textarea>
+                    <div><label class="form-label">住宿飯店</label><input v-model="day.hotel" class="form-input mb-6"></div>
                     <div class="img-box"><img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover"></div>
                 </div>
-
-                <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50">
-                    <button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-5 rounded font-normal">確認儲存並同步發佈</button>
-                </div>
+                <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50"><button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-5 rounded">確認儲存並同步發佈</button></div>
             </div>
-
         </div>
     </main>
   </div>
@@ -151,19 +117,26 @@
         try {
             await liff.init({ liffId: "2008729640-bptxTkoO" });
             if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                this.uid = profile.userId;
-                const savedPid = localStorage.getItem('tk_partner_id');
-                if (savedPid) this.partnerId = savedPid;
-            } else { liff.login(); }
-            // 處理 URL 傳參直接切換 View
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('view')) this.view = params.get('view');
-        } catch (e) { this.uid = 'U-Guest-' + Math.random().toString(36).substr(2, 9); }
+                const profile = await liff.getProfile(); this.uid = profile.userId;
+                const savedPid = localStorage.getItem('tk_partner_id'); if (savedPid) this.partnerId = savedPid;
+            }
+            const params = new URLSearchParams(window.location.search); if (params.get('view')) this.view = params.get('view');
+        } catch (e) { this.uid = 'U-Guest-' + Math.random().toString(36).substr(2, 6); }
       },
       methods: {
         formatPrice(p) { return isNaN(Number(p)) ? (p||'0') : Number(p).toLocaleString(); },
         async fetchList() { try { const res = await fetch(`${API_BASE}/api/courses`); this.courses = await res.json(); } catch (e) {} },
+        async reDetectUid() { if (liff.isLoggedIn()) { const p = await liff.getProfile(); this.uid = p.userId; } else { liff.login(); } },
+        async registerPartner() {
+            if (this.uid.includes('Detect')) { alert('尚未偵測到 LINE ID，請點擊重新偵測'); return; }
+            this.loading = true;
+            const pId = this.uid.substring(0,8) + this.birthday;
+            try {
+                const res = await fetch(`${API_BASE}/api/register-partner`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid: this.uid, birthday: this.birthday, partnerId: pId }) });
+                const data = await res.json();
+                if (data.success) { alert('申請已送出！代碼為：' + pId); this.partnerId = pId; localStorage.setItem('tk_partner_id', pId); this.view = 'list'; }
+            } catch(e) { alert('連線失敗，請稍後重試'); } finally { this.loading = false; }
+        },
         async loadEdit(id) {
           this.loading = true;
           try {
@@ -173,21 +146,9 @@
             this.course = { ...data, id }; this.view = 'edit';
           } finally { this.loading = false; }
         },
-        async registerPartner() {
-            this.loading = true;
-            const pId = this.uid.substring(0,8) + this.birthday;
-            try {
-                const res = await fetch(`${API_BASE}/api/register-partner`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid: this.uid, birthday: this.birthday, partnerId: pId }) });
-                const data = await res.json();
-                if (data.success) {
-                    alert('申請送出！專屬代碼：' + pId);
-                    this.partnerId = pId; localStorage.setItem('tk_partner_id', pId); this.view = 'list';
-                }
-            } finally { this.loading = false; }
-        },
         async generateShareCard() {
-            if (!this.partnerId) { alert('請先完成銷售夥伴註冊'); this.view = 'partner'; return; }
-            alert(`已生成歸屬代碼 [${this.partnerId}] 的分享卡片！`);
+            if (!this.partnerId) { alert('請先完成「銷售夥伴註冊」'); this.view = 'partner'; return; }
+            alert(`已生成代碼 [${this.partnerId}] 分享成功！`);
         },
         async startParsing() {
           this.loading = true;
@@ -196,12 +157,12 @@
             const data = await res.json();
             if(data.itinerary) data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = data; this.view = 'edit';
-          } catch (e) { alert("解析失敗"); } finally { this.loading = false; }
+          } catch (e) { alert("解析超時"); } finally { this.loading = false; }
         },
         async saveCourse() {
           this.loading = true;
           if(this.course.itinerary) this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
-          try { await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) }); alert('發佈成功！'); this.fetchList(); this.view = 'list'; } finally { this.loading = false; }
+          try { await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) }); alert('發佈成功！'); this.fetchList(); this.view = 'list'; } catch(e) { alert('儲存失敗'); } finally { this.loading = false; }
         }
       }
     }).mount('#app');
