@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 旗態多模態中控台 (v12.8.1)</title>
+  <title>旅行管家 - 旗艦多模態中控台 (v12.8.5)</title>
+  <!-- 生產環境校正載入 -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* WEB1 規格：全站文字固定 18px 統大法，絕不縮水 */
-    body { font-family: -apple-system, sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.6; font-weight: 400; }
+    /* WEB1 規格：全站文字固定 18px 統大法，嚴禁縮水 */
+    body { font-family: -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.6; font-weight: 400; -webkit-font-smoothing: antialiased; }
+    
     .header { height: 60px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; left: 0; right: 0; background: #fff; z-index: 500; }
-    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
-    .nav-link.active { color: #06c755; border-bottom-color: #06c755; padding-bottom: 5px; }
+    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; padding: 5px 0; }
+    .nav-link.active { color: #06c755; border-bottom-color: #06c755; }
     
     .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; transition: 0.3s; }
     .main-content { margin-left: 220px; margin-top: 60px; padding: 40px; }
@@ -26,10 +28,12 @@
     .form-input:focus { border-bottom-color: #06c755; }
     .form-label { font-size: 18px; color: #94a3b8; margin-bottom: 10px; display: block; font-weight: 400; }
     
-    .item-row { border-bottom: 1px solid #f3f4f6; padding: 25px 0; display: flex; justify-content: space-between; align-items: center; }
+    .item-row { border-bottom: 1px solid #f3f4f6; padding: 25px 0; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+    .item-row:hover { background: #fafafa; }
+    
     .btn-action { background: #febb02; color: #111; padding: 20px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; font-weight: 400; transition: 0.2s; }
     .btn-action:hover { background: #f9c000; }
-    .btn-outline { border: 1px solid #e2e8f0; padding: 15px; border-radius: 4px; font-size: 18px; cursor: pointer; text-align: center; }
+    .btn-outline { border: 1px solid #e2e8f0; padding: 15px; border-radius: 4px; font-size: 18px; cursor: pointer; text-align: center; background: white; color: #64748b; }
 
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
     
@@ -38,28 +42,33 @@
     h2 { font-size: 18px !important; font-weight: 400 !important; margin: 0; }
     
     .day-card { margin-top: 40px; padding-top: 40px; border-top: 1px solid #f3f4f6; }
-    .parse-box { background: #fafafa; padding: 30px; border-radius: 4px; margin-bottom: 30px; }
+    .parse-box { background: #fafafa; padding: 30px; border-radius: 4px; margin-bottom: 30px; border: 1px solid #f0f0f0; }
   </style>
 </head>
 <body>
   <div id="app">
     <!-- 同步遮罩 -->
-    <div v-if="loading" class="loading-overlay italic">與雲端核心同步校核中...</div>
+    <div v-if="loading" class="loading-overlay italic">與雲端旗艦核心同步校核中...</div>
     
+    <!-- 頂部導航 -->
     <header class="header">
         <div class="flex items-center"><div class="text-[#06c755] font-normal tracking-tighter">旅遊管家</div>
-            <nav class="hidden md:flex"><a @click="view = 'list'" :class="['nav-link', view === 'list' ? 'active' : '']">行程管理</a><a @click="view = 'parse'" :class="['nav-link', view === 'parse' || view === 'edit' ? 'active' : '']">智能上稿</a></nav>
+            <nav class="hidden md:flex"><a @click="view = 'list'" :class="['nav-link', view === 'list' ? 'active' : '']">行程清單</a><a @click="view = 'parse'" :class="['nav-link', view === 'parse' || view === 'edit' ? 'active' : '']">智能上稿</a></nav>
         </div>
+        <div class="text-slate-300 text-[10px] font-mono uppercase hidden sm:block">Production v12.8.5</div>
     </header>
 
+    <!-- 側邊選單 -->
     <aside class="sidebar">
         <div class="p-6 border-b text-slate-400">Dashboard</div>
         <nav>
-            <a @click="view = 'list'" :class="['menu-item', view === 'list' ? 'active' : '']"><i class="fa-solid fa-list-ul mr-4"></i>已發佈清單</a>
-            <a @click="view = 'parse'" :class="['menu-item', view === 'parse' ? 'active' : '']"><i class="fa-solid fa-wand-magic-sparkles mr-4"></i>AI 智能分析</a>
+            <a @click="view = 'list'" :class="['menu-item', view === 'list' ? 'active' : '']"><i class="fa-solid fa-list-ul menu-icon"></i>已發佈清單</a>
+            <a @click="view = 'parse'" :class="['menu-item', view === 'parse' ? 'active' : '']"><i class="fa-solid fa-wand-magic-sparkles menu-icon"></i>AI 智能分析</a>
+            <a href="https://docs.google.com/spreadsheets/d/1_EfMGrlKZAZCfhnJNF-3nmjrjJ8tYDlbfaCgu6v06CM/edit" target="_blank" class="menu-item"><i class="fa-solid fa-table menu-icon"></i>雲端試算表</a>
         </nav>
     </aside>
 
+    <!-- 主工作區 -->
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
             
@@ -68,16 +77,20 @@
                 <div class="flex justify-between items-end mb-10 pb-4 border-b">
                     <h2>全球行程管理中心</h2>
                     <div class="flex items-center gap-4">
-                        <button @click="fetchList" class="text-xs text-blue-400 underline">同步雲端</button>
-                        <button @click="view = 'parse'" class="text-[#06c755] underline">新增項目</button>
+                        <button @click="fetchList" class="text-xs text-blue-400 underline">同步數據</button>
+                        <button @click="view = 'parse'" class="text-[#06c755] underline">新增行程</button>
                     </div>
                 </div>
-                <div v-if="courses.length === 0 && !loading" class="py-20 text-center text-slate-300 italic">目前無資料，請點擊解析...</div>
+                
+                <div v-if="courses.length === 0 && !loading" class="py-32 text-center text-slate-300 italic">
+                    試算表中尚未找到行程，請開始解析...
+                </div>
+
                 <div v-for="c in courses" :key="c.id" class="item-row">
                     <div class="flex-1">
-                        <div class="text-[#bbb] font-mono text-xs uppercase">{{ c.id }}</div>
-                        <div class="py-2 font-normal"><span class="badge">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div>
-                        <div class="text-slate-400">{{ c.days }} DAYS ｜ <span class="text-red-500">NT$ {{ formatPrice(c.price) }}</span></div>
+                        <div class="text-[#bbb] font-mono text-[10px] uppercase mb-1">{{ c.id }}</div>
+                        <div class="py-1 font-normal"><span class="badge">[{{ c.region || '未分類' }}]</span>{{ c.title }}</div>
+                        <div class="text-slate-400 text-sm">{{ c.days }} DAYS ｜ <span class="text-red-500 font-normal">NT$ {{ formatPrice(c.price) }}</span></div>
                     </div>
                     <div class="flex gap-10 text-[#003b95] font-normal">
                         <a :href="'https://fangwl591021.github.io/travelman/travel_website.html?id=' + c.id" target="_blank" class="underline">預覽</a>
@@ -87,52 +100,56 @@
                 </div>
             </div>
 
-            <!-- 視圖 2: 智能分析 (雙模態入口：文字模型 + 圖片模型) -->
+            <!-- 視圖 2: 智能分析 (雙模態：文字 + 圖片) -->
             <div v-if="view === 'parse'">
                 <div class="mb-10 pb-4 border-b font-normal">AI 多模態分析系統 (文字與視覺)</div>
                 
-                <!-- 文字模型 -->
+                <!-- 模式 A：文案模型 -->
                 <section class="parse-box">
-                    <div class="mb-4 text-slate-500 font-normal">模型 A：貼入文案解析</div>
-                    <textarea v-model="rawText" class="w-full h-60 border-none p-6 bg-white outline-none text-[18px] font-normal mb-6" placeholder="請貼入詳細行程說明文字..."></textarea>
-                    <button @click="startParsingText" :disabled="loading || !rawText" class="btn-action">啟動 AI 內容分析與擴寫</button>
+                    <div class="mb-4 text-slate-500 font-normal">模型 A：行程文案貼上解析</div>
+                    <textarea v-model="rawText" class="w-full h-60 border-none p-6 bg-white outline-none text-[18px] font-normal mb-6" placeholder="請貼入 NotebookLM 或行程 DM 說明文字..."></textarea>
+                    <button @click="startParsingText" :disabled="loading || !rawText" class="btn-action">啟動 AI 內容分類與景點擴寫</button>
                 </section>
 
-                <!-- 圖片模型 -->
+                <!-- 模式 B：圖片模型 -->
                 <section class="parse-box border-dashed border-2 border-slate-200">
                     <div class="mb-4 text-slate-500 font-normal">模型 B：DM 圖片視覺辨識</div>
-                    <div class="flex flex-col items-center justify-center py-10">
-                        <i class="fa-solid fa-cloud-arrow-up text-slate-300 text-4xl mb-4"></i>
+                    <div class="flex flex-col items-center justify-center py-10 text-center">
+                        <i class="fa-solid fa-cloud-arrow-up text-slate-300 text-5xl mb-6"></i>
                         <input type="file" ref="fileInput" class="hidden" accept="image/*,application/pdf" @change="handleFileChange">
-                        <button @click="$refs.fileInput.click()" class="btn-outline w-full max-w-sm mb-4">選取 DM 檔案</button>
-                        <div v-if="selectedFile" class="text-xs text-[#06c755] mb-4">已備妥：{{ selectedFile.name }}</div>
-                        <button v-if="selectedFile" @click="startParsingFile" :disabled="loading" class="btn-action max-w-sm bg-[#174a5a] text-white">開啟視覺 OCR 辨識</button>
+                        <button @click="$refs.fileInput.click()" class="btn-outline w-full max-w-sm mb-4">選取 DM 圖片或 PDF</button>
+                        <div v-if="selectedFile" class="text-sm text-[#06c755] mb-6 font-mono">已就緒：{{ selectedFile.name }}</div>
+                        <button v-if="selectedFile" @click="startParsingFile" :disabled="loading" class="btn-action max-w-sm bg-[#174a5a] text-white">啟動 Vision 視覺 OCR</button>
+                        <p class="mt-4 text-slate-400 text-xs italic">※ 建議上傳內容清晰的圖片，解析成功率更高</p>
                     </div>
                 </section>
             </div>
 
-            <!-- 視圖 3: 編輯校對 (【100% 完整欄位恢復，絕不簡陋】) -->
+            <!-- 視圖 3: 編輯校對 (【100% 全量補全，嚴禁縮水】) -->
             <div v-if="view === 'edit'" class="pb-40">
                 <div class="mb-12 pb-4 border-b font-normal text-slate-800">行程明細校對 (18px 統大法)</div>
                 
-                <section class="space-y-10">
-                    <div><label class="form-label">地區分類 (影響 LINE 標籤篩選)</label>
+                <!-- 基礎設定 -->
+                <section class="space-y-12">
+                    <div>
+                        <label class="form-label">地區分類 (影響 LINE 篩選標籤)</label>
                         <select v-model="course.region" class="form-input">
                             <option v-for="r in ['亞洲','歐洲','美洲','大洋洲','非洲','中東','南極']" :value="r">{{r}}</option>
                         </select>
                     </div>
                     <div><label class="form-label">行程總標題</label><input v-model="course.title" class="form-input"></div>
-                    <div class="grid grid-cols-2 gap-10">
-                        <div><label class="form-label">成人預售價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
+                    <div class="grid grid-cols-2 gap-12">
+                        <div><label class="form-label">成人預售報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
                         <div><label class="form-label">行程總天數</label><input v-model="course.days" type="number" class="form-input"></div>
                     </div>
-                    <div><label class="form-label">封面視覺 (AI 已自動配圖)</label>
-                        <input v-model="course.imgUrl" class="form-input text-xs text-slate-300" placeholder="圖片網址">
+                    <div>
+                        <label class="form-label">封面視覺 (URL)</label>
+                        <input v-model="course.imgUrl" class="form-input text-xs text-slate-300" placeholder="https://...">
                         <div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"></div>
                     </div>
                 </section>
 
-                <!-- 每日行程明細 (補全所有穩定欄位) -->
+                <!-- 每日行程明細 (補全 B/L/D、飯店、詳細描述) -->
                 <div v-for="(day, idx) in (course.itinerary || [])" :key="idx" class="day-card">
                     <div class="text-[#06c755] mb-4 uppercase tracking-widest font-normal">Day {{ idx + 1 }}</div>
                     <input v-model="day.route" class="form-input mb-8 font-normal" placeholder="路線景點標題">
@@ -143,19 +160,22 @@
                         <div><label class="form-label text-xs text-center">晚餐</label><input v-model="day.d" class="form-input text-center"></div>
                     </div>
 
-                    <div><label class="form-label">行程詳細描述 (GPT 擴寫內容)</label>
-                        <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-6 outline-none font-normal leading-relaxed mb-8" placeholder="輸入詳細內容..."></textarea>
+                    <div><label class="form-label">行程詳情描述 (AI 擴寫結果)</label>
+                        <textarea v-model="day.infosStr" class="w-full h-44 border-none bg-slate-50 p-6 outline-none font-normal leading-relaxed mb-8" placeholder="詳細描述細節..."></textarea>
                     </div>
 
-                    <div class="mb-8"><label class="form-label">下榻飯店</label><input v-model="day.hotel" class="form-input" placeholder="精選飯店或同級"></div>
+                    <div class="mb-8"><label class="form-label">當晚下榻飯店</label><input v-model="day.hotel" class="form-input" placeholder="精選飯店或同級"></div>
                     
-                    <div><label class="form-label">每日美圖預覽</label>
-                        <div class="img-box"><img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover"></div>
+                    <div><label class="form-label">景點美圖預覽</label>
+                        <div class="img-box">
+                          <img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover">
+                          <div v-else class="h-full flex items-center justify-center text-slate-300 italic text-xs">圖庫匹配中...</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50">
-                    <button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-5 rounded font-normal text-[18px]">確認儲存並同步發佈</button>
+                <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/95 border-t flex justify-center z-50 backdrop-blur-md shadow-2xl">
+                    <button @click="saveCourse" :disabled="loading" class="bg-[#06c755] text-white w-full max-w-lg py-6 rounded font-normal text-[18px] active:scale-95 transition-all">確認儲存並同步發佈</button>
                 </div>
             </div>
 
@@ -180,7 +200,7 @@
             await liff.init({ liffId: "2008729640-bptxTkoO" });
             const params = new URLSearchParams(window.location.search);
             if (params.get('id')) this.loadEdit(params.get('id'));
-        } catch (e) {}
+        } catch (e) { console.warn("LIFF 跳過"); }
       },
       methods: {
         formatPrice(p) { return (isNaN(Number(p)) || p === null || p === "") ? '未提供' : Number(p).toLocaleString(); },
@@ -188,7 +208,10 @@
         async safeParseJson(response) {
             const text = await response.text();
             try { return JSON.parse(text); } 
-            catch (e) { return (text === "OK" || text === "") ? { status: "SUCCESS" } : null; }
+            catch (e) { 
+                console.warn("JSON 解析失敗，原始：", text);
+                return (text === "OK" || text === "") ? { status: "SUCCESS" } : null; 
+            }
         },
 
         async fetchList() { 
@@ -197,7 +220,8 @@
                 const res = await fetch(`${API_BASE}/api/courses`); 
                 const data = await this.safeParseJson(res);
                 this.courses = Array.isArray(data) ? data : [];
-            } catch (e) { this.courses = []; } finally { this.loading = false; }
+            } catch (e) { this.courses = []; } 
+            finally { this.loading = false; }
         },
 
         async loadEdit(id) {
@@ -206,8 +230,11 @@
             const res = await fetch(`${API_BASE}/api/get-course?id=${id}`);
             const data = await this.safeParseJson(res);
             if(data && data.itinerary) {
-                data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
-                this.course = { ...data, id }; this.view = 'edit';
+                data.itinerary.forEach(d => {
+                    d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || '');
+                });
+                this.course = { ...data, id };
+                this.view = 'edit';
             }
           } finally { this.loading = false; }
         },
@@ -219,6 +246,7 @@
             finally { this.loading = false; }
         },
 
+        // --- 文字解析 ---
         async startParsingText() {
           if (!this.rawText) return;
           this.loading = true;
@@ -232,10 +260,11 @@
                 data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
                 this.course = data; this.view = 'edit';
             }
-          } catch (e) { alert("文字解析失敗"); } 
+          } catch (e) { alert("AI 解析超時，請檢查網路。"); } 
           finally { this.loading = false; }
         },
 
+        // --- 視覺 OCR 解析 ---
         handleFileChange(e) { this.selectedFile = e.target.files[0]; },
         async startParsingFile() {
             if (!this.selectedFile) return;
@@ -249,10 +278,10 @@
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ fileData: base64, fileName: this.selectedFile.name, mimeType: this.selectedFile.type })
                     });
-                    const data = await this.safeParseJson(res);
+                    const data = await res.json();
                     if (data && data.success) { await this.loadEdit(data.courseId); } 
-                    else { alert("圖片辨識失敗"); }
-                } catch (e) { alert("視覺辨識連線異常"); }
+                    else { alert("圖片辨識失敗，請確認圖中行程文字清晰。"); }
+                } catch (e) { alert("連線超時。"); }
                 finally { this.loading = false; this.selectedFile = null; }
             };
         },
@@ -260,14 +289,16 @@
         async saveCourse() {
           this.loading = true;
           if(this.course.itinerary) {
-              this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(l => l.trim() !== ''));
+              this.course.itinerary.forEach(d => {
+                  d.infos = (d.infosStr||'').split('\n').filter(l => l.trim() !== '');
+              });
           }
           try { 
               const res = await fetch(`${API_BASE}/api/save-course`, { 
                   method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                   body: JSON.stringify(this.course) 
               }); 
-              if (res.ok) { alert('行程儲存成功！'); await this.fetchList(); this.view = 'list'; }
+              if (res.ok) { alert('儲存成功！雲端資料已同步。'); await this.fetchList(); this.view = 'list'; }
           } finally { this.loading = false; }
         }
       }
