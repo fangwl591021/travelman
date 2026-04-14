@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 全功能中控台 (WEB1-v3.1 旗艦不縮水版)</title>
+  <title>旅行管家 - 全功能中控台 (WEB1-v3.2 旗艦版)</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -12,10 +12,10 @@
     /* WEB1 規格：全站文字大小 18px 統大法，絕不縮水 */
     body { font-family: -apple-system, sans-serif; color: #333; background: #fff; font-size: 18px; line-height: 1.6; font-weight: 400; }
     .header { height: 60px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: fixed; top: 0; left: 0; right: 0; background: #fff; z-index: 500; }
-    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
-    .nav-link.active { color: #06c755; border-bottom-color: #06c755; padding-bottom: 5px; }
+    .nav-link { font-size: 18px; color: #666; text-decoration: none; margin-left: 30px; cursor: pointer; transition: 0.2s; }
+    .nav-link.active { color: #06c755; border-bottom: 2px solid #06c755; padding-bottom: 5px; }
     
-    .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; }
+    .sidebar { width: 220px; border-right: 1px solid #e5e7eb; height: calc(100vh - 60px); position: fixed; left: 0; top: 60px; background: #f9fafb; z-index: 400; transition: 0.3s; }
     .main-content { margin-left: 220px; margin-top: 60px; padding: 40px; }
     
     .menu-item { padding: 18px 20px; font-size: 18px; color: #555; display: flex; align-items: center; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
@@ -24,12 +24,12 @@
     
     .form-input { width: 100%; border: none; border-bottom: 1px solid #f0f0f0; padding: 15px 0; font-size: 18px; outline: none; background: transparent; transition: 0.2s; font-weight: 400; }
     .form-input:focus { border-bottom-color: #06c755; }
-    .form-label { font-size: 18px; color: #94a3b8; margin-bottom: 10px; display: block; }
+    .form-label { font-size: 18px; color: #94a3b8; margin-bottom: 10px; display: block; font-weight: 400; }
     
     .item-row { border-bottom: 1px solid #f3f4f6; padding: 30px 0; display: flex; justify-content: space-between; align-items: center; }
-    .btn-action { background: #febb02; color: #111; padding: 20px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; }
-    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
+    .btn-action { background: #febb02; color: #111; padding: 20px; border-radius: 4px; font-size: 18px; width: 100%; cursor: pointer; border: none; font-weight: 400; }
     
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #999; }
     .badge { color: #06c755; margin-right: 15px; font-size: 18px; }
     input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #06c755; }
     .img-box { width: 100%; aspect-ratio: 16/9; background: #fcfcfc; border-radius: 4px; overflow: hidden; position: relative; margin-top: 15px; border: 1px solid #eee; }
@@ -41,7 +41,7 @@
 <body>
   <div id="app">
     <!-- 同步遮罩 -->
-    <div v-if="loading" class="loading-overlay italic">與雲端系統同步中...</div>
+    <div v-if="loading" class="loading-overlay italic">與雲端旗艦系統同步中...</div>
     
     <!-- 頂部導航 -->
     <header class="header">
@@ -65,10 +65,10 @@
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
             
-            <!-- 視圖 1: 行程清單 (包含多選分享) -->
+            <!-- 視圖 1: 行程清單 (包含多選) -->
             <div v-if="view === 'list'">
                 <div class="flex justify-between items-end mb-10 pb-4 border-b">
-                    <h2>行程管理與分享</h2>
+                    <h2>行程管理與歸屬分享</h2>
                     <div class="flex gap-4">
                         <button v-if="selectedIds.length > 0" @click="generateShareCard" class="bg-[#06c755] text-white px-6 py-2 rounded text-sm">生成歸屬分享 ({{selectedIds.length}})</button>
                         <button @click="view = 'parse'" class="text-[#06c755] underline">新增項目</button>
@@ -90,20 +90,20 @@
                 </div>
             </div>
 
-            <!-- 視圖 2: 夥伴註冊頁面 (強化 UID 重刷) -->
+            <!-- 視圖 2: 夥伴註冊頁面 (強化反應與 UID) -->
             <div v-if="view === 'partner'" class="py-10">
                 <div class="mb-10 pb-4 border-b"><h2>申請金牌銷售夥伴</h2></div>
                 <div class="space-y-10">
-                    <div><label class="form-label">您的 LINE UID</label>
+                    <div><label class="form-label">您的 LINE UID (自動偵測中)</label>
                         <div class="flex gap-4"><input v-model="uid" class="form-input flex-1" disabled><button @click="reDetectUid" class="text-blue-400 underline">手動刷新</button></div>
                     </div>
                     <div><label class="form-label">生日 (格式：YYMMDD)</label><input v-model="birthday" class="form-input" placeholder="例如：591021" maxlength="6"></div>
-                    <div v-if="birthday.length === 6 && !uid.includes('Wait')" class="p-6 bg-slate-50 rounded">
+                    <div v-if="birthday.length === 6 && !uid.includes('Detect')" class="p-6 bg-slate-50 rounded">
                         <label class="form-label">您的專屬代碼</label>
                         <div class="text-[#06c755] font-mono text-xl">{{ uid.substring(0,8) }}{{ birthday }}</div>
                     </div>
                     <button @click="registerPartner" :disabled="birthday.length !== 6 || loading" class="btn-action">
-                        {{ loading ? '註冊處理中...' : '送出註冊申請並綁定' }}
+                        {{ loading ? '資料處理中...' : '送出註冊申請並綁定' }}
                     </button>
                 </div>
             </div>
@@ -111,11 +111,11 @@
             <!-- 視圖 3: AI 解析 -->
             <div v-if="view === 'parse'">
                 <div class="mb-10 pb-4 border-b font-normal">智能解析行程文案</div>
-                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px] font-normal" placeholder="請直接貼入行程說明文案..."></textarea>
+                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px] font-normal" placeholder="請直接貼入行程說明文案，AI 將自動進行景點擴寫與標籤分類..."></textarea>
                 <button @click="startParsing" :disabled="loading || !rawText" class="btn-action mt-10">開始 AI 自動分類與解析</button>
             </div>
 
-            <!-- 視圖 4: 編輯校對 (【100% 恢復全量欄位，不縮水】) -->
+            <!-- 視圖 4: 編輯校對 (【100% 恢復全量欄位，絕不縮水】) -->
             <div v-if="view === 'edit'" class="pb-40">
                 <div class="mb-12 pb-4 border-b font-normal text-slate-800">行程明細校對 (18px 統大法)</div>
                 <section class="space-y-10">
@@ -125,13 +125,13 @@
                         <div><label class="form-label">報價</label><input v-model="course.price" type="number" class="form-input text-red-600"></div>
                         <div><label class="form-label">天數</label><input v-model="course.days" type="number" class="form-input"></div>
                     </div>
-                    <div><label class="form-label">封面視覺預覽</label><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"></div></div>
+                    <div><label class="form-label">封面視覺</label><div class="img-box"><img v-if="course.imgUrl" :src="course.imgUrl" class="w-full h-full object-cover"></div></div>
                 </section>
 
-                <!-- 每日行程明細 (恢復全量編輯欄位) -->
+                <!-- 每日行程明細 (補全 B/L/D、飯店、描述) -->
                 <div v-for="(day, idx) in (course.itinerary || [])" :key="idx" class="day-card">
                     <div class="text-[#06c755] mb-4 uppercase tracking-widest font-normal">Day {{ idx + 1 }}</div>
-                    <input v-model="day.route" class="form-input mb-8 font-normal" placeholder="景點路線標題">
+                    <input v-model="day.route" class="form-input mb-8 font-normal" placeholder="路線與景點標題">
                     
                     <div class="grid grid-cols-3 gap-6 mb-8">
                         <div><label class="form-label text-xs text-center">早餐</label><input v-model="day.b" class="form-input text-center"></div>
@@ -139,14 +139,14 @@
                         <div><label class="form-label text-xs text-center">晚餐</label><input v-model="day.d" class="form-input text-center"></div>
                     </div>
 
-                    <div><label class="form-label">景點詳細描述 (AI 擴寫結果)</label>
-                        <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-6 outline-none font-normal leading-relaxed mb-8" placeholder="行程景點內容..."></textarea>
+                    <div><label class="form-label">行程描述 (AI 自動擴寫內容)</label>
+                        <textarea v-model="day.infosStr" class="w-full h-40 border-none bg-slate-50 p-6 outline-none font-normal leading-relaxed mb-8" placeholder="詳細細節..."></textarea>
                     </div>
 
-                    <div class="mb-8"><label class="form-label">當晚入住飯店</label><input v-model="day.hotel" class="form-input" placeholder="精選飯店或同級"></div>
+                    <div class="mb-8"><label class="form-label">當晚飯店</label><input v-model="day.hotel" class="form-input" placeholder="精選飯店或同級"></div>
                     
                     <div><label class="form-label">景點美圖預覽</label>
-                        <div class="img-box"><img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover"><div v-else class="h-full flex items-center justify-center text-slate-300 italic">景點圖正在匹配...</div></div>
+                        <div class="img-box"><img v-if="day.imgUrl" :src="day.imgUrl" class="w-full h-full object-cover"></div>
                     </div>
                 </div>
 
@@ -171,11 +171,10 @@
                 const profile = await liff.getProfile(); this.uid = profile.userId;
                 const savedPid = localStorage.getItem('tk_partner_id'); if (savedPid) this.partnerId = savedPid;
             } else { liff.login(); }
-            
             const params = new URLSearchParams(window.location.search);
             if (params.get('view')) this.view = params.get('view');
             if (params.get('id')) this.loadEdit(params.get('id'));
-        } catch (e) { this.uid = 'Guest-' + Math.random().toString(36).substr(2, 6); }
+        } catch (e) { this.uid = 'U-Guest-' + Math.random().toString(36).substr(2, 6); }
       },
       methods: {
         formatPrice(p) { return isNaN(Number(p)) ? (p||'0') : Number(p).toLocaleString(); },
@@ -188,8 +187,8 @@
             try {
                 const res = await fetch(`${API_BASE}/api/register-partner`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid: this.uid, birthday: this.birthday, partnerId: pId }) });
                 const data = await res.json();
-                if (data.success) { alert('夥伴註冊成功！您的代碼：' + pId); this.partnerId = pId; localStorage.setItem('tk_partner_id', pId); this.view = 'list'; }
-            } catch(e) { alert('通訊繁忙，請檢查連線'); } finally { this.loading = false; }
+                if (data.success) { alert('註冊申請送出！專屬代碼：' + pId); this.partnerId = pId; localStorage.setItem('tk_partner_id', pId); this.view = 'list'; }
+            } catch(e) { alert('通訊繁忙，請稍候重試'); } finally { this.loading = false; }
         },
         async loadEdit(id) {
           this.loading = true;
@@ -198,9 +197,8 @@
             const data = await res.json();
             if(data.itinerary) data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = { ...data, id }; this.view = 'edit';
-          } catch(e) { alert('行程載入失敗'); } finally { this.loading = false; }
+          } finally { this.loading = false; }
         },
-        async generateShareCard() { alert(`夥伴 [${this.partnerId}] 的推薦連結生成成功！`); },
         async startParsing() {
           this.loading = true;
           try {
@@ -208,12 +206,12 @@
             const data = await res.json();
             if(data.itinerary) data.itinerary.forEach(d => d.infosStr = Array.isArray(d.infos) ? d.infos.join('\n') : (d.infos || ''));
             this.course = data; this.view = 'edit';
-          } catch (e) { alert("AI 解析超時，請重新貼上"); } finally { this.loading = false; }
+          } catch (e) { alert("解析失敗"); } finally { this.loading = false; }
         },
         async saveCourse() {
           this.loading = true;
           if(this.course.itinerary) this.course.itinerary.forEach(d => d.infos = (d.infosStr||'').split('\n').filter(Boolean));
-          try { await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) }); alert('行程發佈成功！'); this.fetchList(); this.view = 'list'; } catch(e) { alert('儲存失敗'); } finally { this.loading = false; }
+          try { await fetch(`${API_BASE}/api/save-course`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.course) }); alert('行程發佈成功！'); this.fetchList(); this.view = 'list'; } finally { this.loading = false; }
         }
       }
     }).mount('#app');
