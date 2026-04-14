@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行管家 - 管理中心 (WEB1-v2.7 旗艦全量版)</title>
+  <title>旅行管家 - 全功能中控台 (WEB1-v2.7 旗艦全量版)</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -38,7 +38,7 @@
 </head>
 <body>
   <div id="app">
-    <!-- 全球同步遮罩 -->
+    <!-- 雲端同步遮罩 -->
     <div v-if="loading" class="loading-overlay italic">與雲端系統同步中...</div>
     
     <!-- 導航列 -->
@@ -63,7 +63,7 @@
     <main class="main-content">
         <div class="max-w-4xl mx-auto">
             
-            <!-- 視圖 1: 行程清單 (包含勾選分享) -->
+            <!-- 視圖 1: 行程清單 (包含多選) -->
             <div v-if="view === 'list'">
                 <div class="flex justify-between items-end mb-10 pb-4 border-b">
                     <h2>行程管理與歸屬分享</h2>
@@ -109,7 +109,7 @@
             <!-- 視圖 3: AI 解析 -->
             <div v-if="view === 'parse'">
                 <div class="mb-10 pb-4 border-b font-normal">智能解析行程文案</div>
-                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px] font-normal" placeholder="請貼入完整行程說明文案..."></textarea>
+                <textarea v-model="rawText" class="w-full h-80 border-none p-6 bg-slate-50 outline-none text-[18px] font-normal" placeholder="請直接貼入完整行程說明文案..."></textarea>
                 <button @click="startParsing" :disabled="loading" class="btn-action mt-10">開始 AI 自動分類與解析</button>
             </div>
 
